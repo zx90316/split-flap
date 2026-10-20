@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-only
-// ESP32 purchased-module adaptation of David Königsmann's split-flap project.
+// ESP32 modular adaptation of David Königsmann's split-flap project.
 #include <Arduino.h>
 #include <Wire.h>
 #include <Preferences.h>

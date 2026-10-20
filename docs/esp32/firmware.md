@@ -18,7 +18,7 @@ cd firmware/esp32
 pio run
 ```
 
-`esp32dev` 是通用 WROOM-32 起始設定，不能由「30pin／CH340／Type-C」推定 Flash 容量或供電原理。到貨後核對模組型號、Flash、板子 GPIO 標示、USB 驅動與資料線。若不同，調整 board/flash 設定再燒錄。沒有 GitHub Actions 工作流程，驗證走本地，不額外使用付費 CI。
+`esp32dev` 是通用 WROOM-32 起始設定，不能由「30pin／CH340／Type-C」推定 Flash 容量或供電原理。組裝前核對模組型號、Flash、板子 GPIO 標示、USB 驅動與資料線。若不同，調整 board/flash 設定再燒錄。沒有 GitHub Actions 工作流程，驗證走本地，不額外使用付費 CI。
 
 ```sh
 # 遵守外接 5V 與 USB 的供電隔離要求，馬達12V先關閉
@@ -79,7 +79,7 @@ MOVE 0 1
 
 ## 4. 預設值與測量
 
-- 45 flaps；每圈 **4096 半步只是起點**，不是本批馬達的實測值
+- 45 flaps；每圈 **4096 半步只是起點**，不是實際馬達的實測值
 - `offset=0` 只是先找 Hall 邊緣，不保證空白正確朝前
 - 預設每半步 8000µs、相序方向 +1、Hall active-low
 - 28BYJ-48 實際齒輪比可能不是整數64；上游 `STEPS=2038` 是全步，**不能直接當成本版半步數**
