@@ -1,0 +1,7 @@
+# Generated ESP32 build/test files and private local credentials
+firmware/esp32/.pio/
+firmware/esp32/.vscode/
+firmware/esp32/include/secrets.h
+firmware/esp32/test/native/.build/
+__pycache__/
+*.pyc
