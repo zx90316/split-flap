@@ -18,7 +18,7 @@
       "left": -300,
       "top": -290,
       "attrs": {
-        "text": "Custom MCP23017 + ideal ULN2003/unipolar phase observer.\nNo 12V electrical, current, torque, power sequencing or magnet simulation.\n3.3V/5V level shifting is omitted in this Boolean model; see docs/esp32/wiring.md for REAL wiring."
+        "text": "Custom MCP23017 + ideal ULN2003/unipolar phase observer.\nAutomatic position-driven Hall; no 12V electrical, current, torque or real magnet physics.\n3.3V/5V level shifting is omitted in this Boolean model; see docs/esp32/wiring.md for REAL wiring."
       }
     },
     {
@@ -114,7 +114,10 @@
       "left": -240,
       "top": 530,
       "attrs": {
-        "unit": "0"
+        "unit": "0",
+        "position": "0",
+        "revolution": "4096",
+        "hallWidth": "32"
       }
     },
     {
@@ -123,7 +126,7 @@
       "left": -240,
       "top": 480,
       "attrs": {
-        "text": "U0 | ULN2003 + 12V 28BYJ-48\n4-coil UNIPOLAR logical observer"
+        "text": "U0 | ULN2003 + 12V 28BYJ-48\n4-coil rotor + automatic Hall"
       }
     },
     {
@@ -132,7 +135,7 @@
       "left": -60,
       "top": 625,
       "attrs": {
-        "value": "1",
+        "value": "0",
         "bounce": "0"
       }
     },
@@ -142,7 +145,7 @@
       "left": -80,
       "top": 680,
       "attrs": {
-        "text": "H_U0 manual Hall\nleft=active, right=inactive"
+        "text": "H_U0 Hall fault switch\nleft=AUTO, right=disconnected"
       }
     },
     {
@@ -151,7 +154,10 @@
       "left": 80,
       "top": 530,
       "attrs": {
-        "unit": "1"
+        "unit": "1",
+        "position": "359",
+        "revolution": "4096",
+        "hallWidth": "32"
       }
     },
     {
@@ -160,7 +166,7 @@
       "left": 80,
       "top": 480,
       "attrs": {
-        "text": "U1 | ULN2003 + 12V 28BYJ-48\n4-coil UNIPOLAR logical observer"
+        "text": "U1 | ULN2003 + 12V 28BYJ-48\n4-coil rotor + automatic Hall"
       }
     },
     {
@@ -169,7 +175,7 @@
       "left": 260,
       "top": 625,
       "attrs": {
-        "value": "1",
+        "value": "0",
         "bounce": "0"
       }
     },
@@ -179,7 +185,7 @@
       "left": 240,
       "top": 680,
       "attrs": {
-        "text": "H_U1 manual Hall\nleft=active, right=inactive"
+        "text": "H_U1 Hall fault switch\nleft=AUTO, right=disconnected"
       }
     },
     {
@@ -188,7 +194,10 @@
       "left": 400,
       "top": 530,
       "attrs": {
-        "unit": "2"
+        "unit": "2",
+        "position": "718",
+        "revolution": "4096",
+        "hallWidth": "32"
       }
     },
     {
@@ -197,7 +206,7 @@
       "left": 400,
       "top": 480,
       "attrs": {
-        "text": "U2 | ULN2003 + 12V 28BYJ-48\n4-coil UNIPOLAR logical observer"
+        "text": "U2 | ULN2003 + 12V 28BYJ-48\n4-coil rotor + automatic Hall"
       }
     },
     {
@@ -206,7 +215,7 @@
       "left": 580,
       "top": 625,
       "attrs": {
-        "value": "1",
+        "value": "0",
         "bounce": "0"
       }
     },
@@ -216,7 +225,7 @@
       "left": 560,
       "top": 680,
       "attrs": {
-        "text": "H_U2 manual Hall\nleft=active, right=inactive"
+        "text": "H_U2 Hall fault switch\nleft=AUTO, right=disconnected"
       }
     },
     {
@@ -225,7 +234,10 @@
       "left": 720,
       "top": 530,
       "attrs": {
-        "unit": "3"
+        "unit": "3",
+        "position": "1077",
+        "revolution": "4096",
+        "hallWidth": "32"
       }
     },
     {
@@ -234,7 +246,7 @@
       "left": 720,
       "top": 480,
       "attrs": {
-        "text": "U3 | ULN2003 + 12V 28BYJ-48\n4-coil UNIPOLAR logical observer"
+        "text": "U3 | ULN2003 + 12V 28BYJ-48\n4-coil rotor + automatic Hall"
       }
     },
     {
@@ -243,7 +255,7 @@
       "left": 900,
       "top": 625,
       "attrs": {
-        "value": "1",
+        "value": "0",
         "bounce": "0"
       }
     },
@@ -253,7 +265,7 @@
       "left": 880,
       "top": 680,
       "attrs": {
-        "text": "H_U3 manual Hall\nleft=active, right=inactive"
+        "text": "H_U3 Hall fault switch\nleft=AUTO, right=disconnected"
       }
     },
     {
@@ -262,7 +274,10 @@
       "left": 1040,
       "top": 530,
       "attrs": {
-        "unit": "4"
+        "unit": "4",
+        "position": "1436",
+        "revolution": "4096",
+        "hallWidth": "32"
       }
     },
     {
@@ -271,7 +286,7 @@
       "left": 1040,
       "top": 480,
       "attrs": {
-        "text": "U4 | ULN2003 + 12V 28BYJ-48\n4-coil UNIPOLAR logical observer"
+        "text": "U4 | ULN2003 + 12V 28BYJ-48\n4-coil rotor + automatic Hall"
       }
     },
     {
@@ -280,7 +295,7 @@
       "left": 1220,
       "top": 625,
       "attrs": {
-        "value": "1",
+        "value": "0",
         "bounce": "0"
       }
     },
@@ -290,7 +305,7 @@
       "left": 1200,
       "top": 680,
       "attrs": {
-        "text": "H_U4 manual Hall\nleft=active, right=inactive"
+        "text": "H_U4 Hall fault switch\nleft=AUTO, right=disconnected"
       }
     },
     {
@@ -299,7 +314,10 @@
       "left": -240,
       "top": 870,
       "attrs": {
-        "unit": "5"
+        "unit": "5",
+        "position": "1795",
+        "revolution": "4096",
+        "hallWidth": "32"
       }
     },
     {
@@ -308,7 +326,7 @@
       "left": -240,
       "top": 820,
       "attrs": {
-        "text": "U5 | ULN2003 + 12V 28BYJ-48\n4-coil UNIPOLAR logical observer"
+        "text": "U5 | ULN2003 + 12V 28BYJ-48\n4-coil rotor + automatic Hall"
       }
     },
     {
@@ -317,7 +335,7 @@
       "left": -60,
       "top": 965,
       "attrs": {
-        "value": "1",
+        "value": "0",
         "bounce": "0"
       }
     },
@@ -327,7 +345,7 @@
       "left": -80,
       "top": 1020,
       "attrs": {
-        "text": "H_U5 manual Hall\nleft=active, right=inactive"
+        "text": "H_U5 Hall fault switch\nleft=AUTO, right=disconnected"
       }
     },
     {
@@ -336,7 +354,10 @@
       "left": 80,
       "top": 870,
       "attrs": {
-        "unit": "6"
+        "unit": "6",
+        "position": "2154",
+        "revolution": "4096",
+        "hallWidth": "32"
       }
     },
     {
@@ -345,7 +366,7 @@
       "left": 80,
       "top": 820,
       "attrs": {
-        "text": "U6 | ULN2003 + 12V 28BYJ-48\n4-coil UNIPOLAR logical observer"
+        "text": "U6 | ULN2003 + 12V 28BYJ-48\n4-coil rotor + automatic Hall"
       }
     },
     {
@@ -354,7 +375,7 @@
       "left": 260,
       "top": 965,
       "attrs": {
-        "value": "1",
+        "value": "0",
         "bounce": "0"
       }
     },
@@ -364,7 +385,7 @@
       "left": 240,
       "top": 1020,
       "attrs": {
-        "text": "H_U6 manual Hall\nleft=active, right=inactive"
+        "text": "H_U6 Hall fault switch\nleft=AUTO, right=disconnected"
       }
     },
     {
@@ -373,7 +394,10 @@
       "left": 400,
       "top": 870,
       "attrs": {
-        "unit": "7"
+        "unit": "7",
+        "position": "2513",
+        "revolution": "4096",
+        "hallWidth": "32"
       }
     },
     {
@@ -382,7 +406,7 @@
       "left": 400,
       "top": 820,
       "attrs": {
-        "text": "U7 | ULN2003 + 12V 28BYJ-48\n4-coil UNIPOLAR logical observer"
+        "text": "U7 | ULN2003 + 12V 28BYJ-48\n4-coil rotor + automatic Hall"
       }
     },
     {
@@ -391,7 +415,7 @@
       "left": 580,
       "top": 965,
       "attrs": {
-        "value": "1",
+        "value": "0",
         "bounce": "0"
       }
     },
@@ -401,7 +425,7 @@
       "left": 560,
       "top": 1020,
       "attrs": {
-        "text": "H_U7 manual Hall\nleft=active, right=inactive"
+        "text": "H_U7 Hall fault switch\nleft=AUTO, right=disconnected"
       }
     },
     {
@@ -410,7 +434,10 @@
       "left": 720,
       "top": 870,
       "attrs": {
-        "unit": "8"
+        "unit": "8",
+        "position": "2872",
+        "revolution": "4096",
+        "hallWidth": "32"
       }
     },
     {
@@ -419,7 +446,7 @@
       "left": 720,
       "top": 820,
       "attrs": {
-        "text": "U8 | ULN2003 + 12V 28BYJ-48\n4-coil UNIPOLAR logical observer"
+        "text": "U8 | ULN2003 + 12V 28BYJ-48\n4-coil rotor + automatic Hall"
       }
     },
     {
@@ -428,7 +455,7 @@
       "left": 900,
       "top": 965,
       "attrs": {
-        "value": "1",
+        "value": "0",
         "bounce": "0"
       }
     },
@@ -438,7 +465,7 @@
       "left": 880,
       "top": 1020,
       "attrs": {
-        "text": "H_U8 manual Hall\nleft=active, right=inactive"
+        "text": "H_U8 Hall fault switch\nleft=AUTO, right=disconnected"
       }
     },
     {
@@ -447,7 +474,10 @@
       "left": 1040,
       "top": 870,
       "attrs": {
-        "unit": "9"
+        "unit": "9",
+        "position": "3231",
+        "revolution": "4096",
+        "hallWidth": "32"
       }
     },
     {
@@ -456,7 +486,7 @@
       "left": 1040,
       "top": 820,
       "attrs": {
-        "text": "U9 | ULN2003 + 12V 28BYJ-48\n4-coil UNIPOLAR logical observer"
+        "text": "U9 | ULN2003 + 12V 28BYJ-48\n4-coil rotor + automatic Hall"
       }
     },
     {
@@ -465,7 +495,7 @@
       "left": 1220,
       "top": 965,
       "attrs": {
-        "value": "1",
+        "value": "0",
         "bounce": "0"
       }
     },
@@ -475,7 +505,7 @@
       "left": 1200,
       "top": 1020,
       "attrs": {
-        "text": "H_U9 manual Hall\nleft=active, right=inactive"
+        "text": "H_U9 Hall fault switch\nleft=AUTO, right=disconnected"
       }
     },
     {
@@ -484,7 +514,7 @@
       "left": -240,
       "top": 1250,
       "attrs": {
-        "text": "Motor display: four green coil indicators, estimated shaft pointer (assumed 4096 half-steps/rev),\ngreen status bar=legal phase order; red=illegal/skipped phase. Hall switches are independent of shaft position.\nSerial: s stop | a all motors | 0..9 select motor | r reverse. This sketch is a diagnostic, not production homing firmware."
+        "text": "Motor display: four green coil indicators, estimated shaft pointer (assumed 4096 half-steps/rev),\ngreen status bar=legal phase order; red=illegal/skipped phase. Hall follows rotor; switches disconnect Hall for fault injection.\nProduction serial: INIT POWER_OFF | ENABLE 10 | LIMIT 10 | ARM | HOME ALL | STATUS | TEXT HELLO | STOP"
       }
     }
   ],
@@ -743,8 +773,8 @@
     ],
     [
       "h0:1",
-      "rails:GND",
-      "black",
+      "u0:HALL",
+      "cyan",
       []
     ],
     [
@@ -791,8 +821,8 @@
     ],
     [
       "h1:1",
-      "rails:GND",
-      "black",
+      "u1:HALL",
+      "cyan",
       []
     ],
     [
@@ -839,8 +869,8 @@
     ],
     [
       "h2:1",
-      "rails:GND",
-      "black",
+      "u2:HALL",
+      "cyan",
       []
     ],
     [
@@ -887,8 +917,8 @@
     ],
     [
       "h3:1",
-      "rails:GND",
-      "black",
+      "u3:HALL",
+      "cyan",
       []
     ],
     [
@@ -935,8 +965,8 @@
     ],
     [
       "h4:1",
-      "rails:GND",
-      "black",
+      "u4:HALL",
+      "cyan",
       []
     ],
     [
@@ -983,8 +1013,8 @@
     ],
     [
       "h5:1",
-      "rails:GND",
-      "black",
+      "u5:HALL",
+      "cyan",
       []
     ],
     [
@@ -1031,8 +1061,8 @@
     ],
     [
       "h6:1",
-      "rails:GND",
-      "black",
+      "u6:HALL",
+      "cyan",
       []
     ],
     [
@@ -1079,8 +1109,8 @@
     ],
     [
       "h7:1",
-      "rails:GND",
-      "black",
+      "u7:HALL",
+      "cyan",
       []
     ],
     [
@@ -1127,8 +1157,8 @@
     ],
     [
       "h8:1",
-      "rails:GND",
-      "black",
+      "u8:HALL",
+      "cyan",
       []
     ],
     [
@@ -1175,8 +1205,8 @@
     ],
     [
       "h9:1",
-      "rails:GND",
-      "black",
+      "u9:HALL",
+      "cyan",
       []
     ]
   ],

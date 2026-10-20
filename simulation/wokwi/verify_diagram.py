@@ -20,7 +20,8 @@ for u in range(10):
   wired(f'm{u//4}:GP'+('A' if gp<8 else 'B')+str(gp%8),f'u{u}:IN{b+1}')
  bit=u if u<7 else u+1
  wired(f'h{u}:2','m3:GP'+('A' if bit<8 else 'B')+str(bit%8))
- wired(f'h{u}:1','rails:GND')
+ wired(f'h{u}:1',f'u{u}:HALL')
+ assert parts[f'h{u}']['attrs']['value']=='0'
  wired('rails:V12_MOTOR',f'u{u}:COMMON_12V')
 for e in edges:
  assert not ('rails:V12_MOTOR' in e and any(x.startswith('esp:') for x in e))

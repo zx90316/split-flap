@@ -1,35 +1,93 @@
-# ESP32 十字元數位接線示範
+# ESP32 正式韌體閉迴路模擬
 
-本目錄為獨立的 Wokwi 診斷專案，對應本專案 ESP32、四片 MCP23017、十組 ULN2003／12V 28BYJ-48，以及十路 Hall 的邏輯通道。不是硬體正式韌體，也不執行翻頁歸零或字元定位。
+此專案執行 `firmware/esp32` 的正式韌體，不再使用獨立相序診斷程式。實際路徑是 **ESP32 setup/loop → I²C → MCP23017 OLAT → 40 路馬達相位 → 十個理想轉子 → 自動 Hall → MCP23017 GPIO → 韌體歸零／定位狀態機**。
 
-線上專案：[開啟已驗證的十通道 Wokwi 示範](https://wokwi.com/projects/478367216064916481)。直接開啟後按播放即可；修改後可另存複本。
+[開啟完整模擬專案](https://wokwi.com/projects/478374804791943169)。舊專案 `478367216064916481` 保留作先前診斷版本，不代表本版。
 
-## 快速複現
+## 啟動與驗證
 
-1. 開啟 https://wokwi.com/projects/new/esp32 。
-2. 程式檔案列右側選單選 **Upload file(s)...**。
-3. 上傳三組 `*.chip.c` 與 `*.chip.json`，共六個模型檔案。網站不允許上傳同名既有檔案；切到 `sketch.ino` 與 `diagram.json` 頁籤，分別全選後貼上本目錄同名檔案的完整內容。
-4. 按綠色播放鍵。預期序列埠顯示四個 MCP 位址初始化檢查及 READY。
-5. 切換 H_U0–H_U9 開關，觀察序列埠的十位 Hall 狀態。馬達觀察器顯示四相訊號與假定位置。
-6. 序列埠輸入 `s` 停止、`a` 全部運轉、`0`–`9` 單獨測試一路、`r` 反轉。
+按 ▶ 後馬達不會自動轉動。序列監控器使用 115200 baud／換行，每次輸入一行並送出：
 
-`python3 generate_diagram.py` 可決定性重建 diagram.json。所有四十相線與十路 Hall 都明確列在檔案中，不需要手動拖線。
+```text
+INIT POWER_OFF
+ENABLE 10
+LIMIT 10
+ARM
+HOME ALL
+```
 
-## 模型與硬體的界線
+- `INIT POWER_OFF` 仍是正式韌體的操作者確認。模擬器不能量測 12V，實機必須先關閉馬達電源；不要把模擬中的操作視為實機安全驗收。
+- 十個 Hall 開關預設左側 AUTO：感測輸出由對應馬達的實際模型位置決定，不需手動配合歸零。
+- 預設 4096 半步／圈、8000µs 步距。全通道同時歸零約需 34 個模擬秒，瀏覽器負載可能使實際等待時間較長。
+- 歸零期間 `STATUS` 顯示 BUSY。完成後再次輸入 `STATUS`，應見十路 `READY`、`homed=1`、`slot=0`，而非只看模型指針猜測成功。
 
-- MCP23017 僅實作 BANK=0 所需方向、極性、上拉、GPIO、OLAT、IOCON SEQOP 與低有效 RESET；沒有中斷或完整錯誤／類比模型。
-- 每個自訂馬達方塊合併 ULN2003 的理想低側驅動及四線圈單極馬達相序觀察，不使用雙極步進馬達冒充。指針依 4096 半步／圈的示範假設繪製，實際減速比須校正。
-- 5V、12V 標記都是布林 HIGH，不能驗證電壓、電流、ULN 壓降、散熱、扭矩、失步、供電時序或 USB 回灌。
-- 模擬圖省略電位轉換的電氣作用，ESP32 與 MCP 的直接數位線僅適用模擬。實機必須依 `docs/esp32/wiring.md` 經 3.3V↔5V 轉換，禁止照模擬圖直連不同電源域。
-- Hall 用手動接地／斷開開關代替磁感測器；與轉軸位置無連動，不能當成自動歸零測試。
-- 本診斷程式在模擬啟動後會自動輸出相序；不要燒進實機。正式韌體位於 `firmware/esp32`，預設上電不運轉。
+接著：
+
+```text
+TEXT HELLO
+STATUS
+```
+
+等待動作完成後，`STATUS` 的前五路應為 8、5、12、12、15，其餘為 0。模型圖是位置指針及四相指示燈，不是翻頁字型顯示器；字元結果以韌體回報為準。
+
+更多驗證：
+
+```text
+MOVE 0 44
+MOVE 0 1
+CAL 0 4096 45 -1 8000
+SAVE
+ARM
+HOME 0
+STATUS
+STOP
+```
+
+每個 MOVE／HOME 都應等上一動作完成再送下一行。由較大字元移到較小字元會先重新歸零。CAL 會取消 ARM 並使該單元位置失效；SAVE 儲存校準但不儲存啟用／ARM 狀態。NVS 在模擬器中的跨執行保存依平台行為，不等於真實 ESP32 斷電持久性測試。
+
+## 故障注入
+
+1. 停止動作後，將任一 H_U 開關移到右側：該路 Hall 斷開，MCP 上拉會讀成持續未觸發。
+2. 對該路執行 HOME；等候步數／時間門檻。預期出現 `FAULT MOTION_HOME`、全部停止、RESET 拉低且解除 ARM。
+3. 把開關切回 AUTO，重新 `INIT POWER_OFF`、`ARM`、`HOME` 才能恢復。
+4. `STOP` 可在移動中使用：全部輸出歸零、解除 ARM、位置失效，須再 HOME。
+
+主機測試另覆蓋 Hall 持續觸發、I²C 失敗與完整指令解析；網站沒有以手動切換 Hall 充當成功歸零。
+
+## 快速複現與來源一致性
+
+```sh
+python3 simulation/wokwi/export_firmware.py
+python3 simulation/wokwi/generate_diagram.py
+python3 simulation/wokwi/export_firmware.py --check
+python3 simulation/wokwi/verify_diagram.py
+bash firmware/esp32/test/native/run.sh
+bash simulation/wokwi/test/run.sh
+```
+
+`export_firmware.py` 將正式來源的四個 header、motion.cpp 與 main.cpp 合成 sketch.ino，只展開本地 include、移除 pragma once，不注入自動啟用或替代控制程式。每份來源附 SHA256；`--check` 在韌體或輸出漂移時失敗。
+
+新建 Wokwi ESP32 專案時，上傳三組 `*.chip.c`／`*.chip.json`（共六檔），把 sketch.ino 與 diagram.json 同名內容貼入編輯器即可。若以既有專案另存副本，Wokwi 不允許上傳同名檔案，請直接在編輯器全選並貼上新版內容，不要重複上傳。圖中全部四十相線、十路 Hall、四個 MCP 位址及 RESET 都已確定義，不必逐線拖拉。`generate_diagram.py` 可重建同樣的圖。
+
+模型屬性 `revolution`、`position`、`hallWidth` 分別為理想半步／圈、起始位置、磁區寬度。預設 4096／各單元不同位置／32。若改模型圈數，必須相應 CAL 韌體；CAL 不會偷改物理模型。
+
+## 模型邊界
+
+- MCP23017 僅實作正式韌體使用的 BANK=0、方向、上拉、GPIO、OLAT、IPOL、IOCON SEQOP 與 RESET，不是完整晶片模型。
+- ULN2003／28BYJ-48 合為理想四線圈單極馬達模型。合法相序推進位置，位置進入磁區時輸出低有效開漏 Hall。第一個相位只建立參考，掉電後轉子保持位置；不模擬齒隙、慣性、負載失步、真實磁場、KY-003 閾值或齒輪比偏差。
+- 4096 是未量測的示範值，不能拿來取代實機校準。紅色模型狀態條表示看到跳相／不合法相位；重新歸零時相位重新鎖定也可能產生此診斷，不等於真實機械故障。
+- 5V／12V 標記僅布林訊號；電位轉換電氣效果省略。**實機不可照此數位圖直連不同電源域**，必須遵守 `docs/esp32/wiring.md`。
+- 不驗證電源電流、壓降、溫升、扭力、保險絲、USB 回灌、電力時序或實際十字元機構。不能宣稱硬體完整驗收。
+- 本版涵蓋 repo 目前的 USB 串列控制韌體；repo 尚未實作的 Wi-Fi／Web／NTP／OTA 不會因本模擬而新增。
+
+## 驗證紀錄
+
+2026-10-20：主機端五組測試通過，包括原有 20 項 motion 測試、MCP／字元／adapter 測試，以及新增的 production setup/loop 閉迴路測試。新增測試由實際輸出暫存器驅動理想轉子，再產生 Hall，涵蓋十路 HOME、TEXT、45 個位置、跨圈重歸零、反向／offset 校準、NVS 載入、STOP、Hall 斷開／固定低與 I²C 故障。拓撲與生成程式來源一致性檢查通過。
+
+主機測試不等於 Wokwi 瀏覽器執行，也不等於真實硬體。網站編譯及互動驗證另以實際結果記錄，不以舊診斷版的通過紀錄替代。
 
 ## Wokwi MCP
 
-官方 `wokwi-cli` 提供實驗性 stdio MCP：`wokwi-cli mcp`。執行模擬需要 Wokwi CI token，並非免登入遠端 MCP endpoint。不要把 token 寫入 repo 或聊天訊息。此次網站配線途徑不需要 token；沒有宣稱 MCP 已連線測試成功。
+官方 `wokwi-cli mcp` 為實驗性 stdio 模式，需要 Wokwi CI token。此次網站操作不需要 token，未宣稱 MCP 已連線。不要把 token 放入 repo 或聊天。
 
-參考：[官方 CLI／MCP](https://github.com/wokwi/wokwi-cli/blob/main/README.md)、[Custom Chips API](https://docs.wokwi.com/chips-api/getting-started)。
-
-## 驗證狀態
-
-本目錄的線路拓撲可以用 `python3 verify_diagram.py` 檢查。2026-10-20 已在 Wokwi 網站完成編譯並運行：四個位址方向／OLAT 檢查 PASS；H_U0、H_U7、H_U9 手動切換分別對應正確十位輸出；`s` 回報四十輸出為低，`a` 恢復全通道相序。其餘 Hall 映射經靜態拓撲檢查，未逐個點擊驗證。這些只證明數位示範，不代表正式韌體或實機驗證。
+參考：[官方 CLI](https://github.com/wokwi/wokwi-cli/blob/main/README.md)、[Custom Chips API](https://docs.wokwi.com/chips-api/getting-started)。

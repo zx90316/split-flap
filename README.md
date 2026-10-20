@@ -68,6 +68,6 @@ GitHub fork 關係及既有歷史仍來自 David Königsmann 的倉庫；「主�
 
 授權維持 [GPL-3.0](LICENSE)。原專案、照片、組裝設計歸原作者；本分支新增 ESP32 實作與文件保留其來源。外部 3D 檔的使用以原發布頁授權為準。
 
-## 線上數位接線示範
+## 線上正式韌體模擬
 
-[開啟 Wokwi 十通道示範](https://wokwi.com/projects/478367216064916481)；[完整來源、快速複現與模型限制](simulation/wokwi/README.md)。包含 ESP32、四個 MCP 位址、四十相輸出與十路手動 Hall 輸入。這是獨立數位診斷程式；電位轉換、12V 電氣安全、馬達力學與正式歸零韌體不在此模擬驗證範圍。
+[開啟 Wokwi 閉迴路模擬](https://wokwi.com/projects/478374804791943169)；[快速複現、操作與驗證邊界](simulation/wokwi/README.md)。執行本 repo 正式 ESP32 韌體，四個 MCP 位址、四十相輸出及十個轉子模型自動產生 Hall 回授，可操作 HOME／TEXT／MOVE／CAL／SAVE／STOP。上電不自動啟用，須依說明送入指令。模型不驗證電位轉換、12V 電氣安全、扭力或真實翻頁機構；尚未移植的 Wi-Fi／Web／NTP 亦不在此模擬範圍。

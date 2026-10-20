@@ -24,3 +24,7 @@ done
 "${CXX:-g++}" "${flags[@]}" -I "$root/test/native/adapter_stubs" -I "$root/include" \
   "$root/src/motion.cpp" "$root/test/native/test_adapter.cpp" -o "$build/test_adapter"
 "$build/test_adapter"
+
+"${CXX:-g++}" "${flags[@]}" -I "$root/test/native/adapter_stubs" -I "$root/include" \
+  "$root/src/motion.cpp" "$root/test/native/test_closed_loop.cpp" -o "$build/test_closed_loop"
+"$build/test_closed_loop"
