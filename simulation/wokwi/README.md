@@ -91,3 +91,9 @@ bash simulation/wokwi/test/run.sh
 官方 `wokwi-cli mcp` 為實驗性 stdio 模式，需要 Wokwi CI token。此次網站操作不需要 token，未宣稱 MCP 已連線。不要把 token 放入 repo 或聊天。
 
 參考：[官方 CLI](https://github.com/wokwi/wokwi-cli/blob/main/README.md)、[Custom Chips API](https://docs.wokwi.com/chips-api/getting-started)。
+
+### 網站實際驗證（2026-10-20）
+
+在新分享專案完成編譯與重新開啟檢查；四份變更檔案逐檔與 repo 內容比較完全一致。實際執行 INIT、ENABLE 10、LIMIT 10、ARM、HOME ALL，十路均回報 ready、homed=1、slot=0。TEXT HELLO 完成後前五路為 8/5/12/12/15，其餘為 0。再執行 MOVE、STOP、CAL、SAVE，確認停止解除 ARM、位置失效，校準更新與儲存回報成功。[原始序列輸出](evidence/browser-runtime.txt)。
+
+Hall 斷線／固定低及 I²C 故障的自動化驗證在主機測試完成，未宣稱已在瀏覽器逐項執行。主機五組測試亦通過 ASan/UBSan（此執行環境不支援 LeakSanitizer，因此 detect_leaks=0；不宣稱洩漏檢查通過）。另已測試實際 Wokwi C 轉子回呼。瀏覽器觀察到模擬速度約 16–24%，因此 34 個模擬秒可能需要數分鐘實際時間。
