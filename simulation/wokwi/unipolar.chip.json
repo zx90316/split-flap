@@ -1,0 +1,16 @@
+{
+  "name": "ULN2003 + 28BYJ-48 LOGIC",
+  "author": "Split-flap project",
+  "pins": [
+    "IN1",
+    "IN2",
+    "IN3",
+    "IN4",
+    "GND",
+    "COMMON_12V"
+  ],
+  "display": {
+    "width": 96,
+    "height": 96
+  }
+}

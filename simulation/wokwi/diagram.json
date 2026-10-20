@@ -1,0 +1,1187 @@
+{
+  "version": 1,
+  "author": "Split-flap project",
+  "editor": "wokwi",
+  "parts": [
+    {
+      "type": "wokwi-text",
+      "id": "title",
+      "left": -300,
+      "top": -330,
+      "attrs": {
+        "text": "TEN-CHARACTER SPLIT-FLAP: DIGITAL LOGIC SIMULATION"
+      }
+    },
+    {
+      "type": "wokwi-text",
+      "id": "limits",
+      "left": -300,
+      "top": -290,
+      "attrs": {
+        "text": "Custom MCP23017 + ideal ULN2003/unipolar phase observer.\nNo 12V electrical, current, torque, power sequencing or magnet simulation.\n3.3V/5V level shifting is omitted in this Boolean model; see docs/esp32/wiring.md for REAL wiring."
+      }
+    },
+    {
+      "type": "board-esp32-devkit-c-v4",
+      "id": "esp",
+      "left": -300,
+      "top": -140,
+      "attrs": {}
+    },
+    {
+      "type": "chip-rails",
+      "id": "rails",
+      "left": -290,
+      "top": 230,
+      "attrs": {}
+    },
+    {
+      "type": "wokwi-text",
+      "id": "power_note",
+      "left": -300,
+      "top": 340,
+      "attrs": {
+        "text": "DIGITAL rail labels only; outputs are Boolean HIGH.\n12V_MOTOR never connects to ESP32."
+      }
+    },
+    {
+      "type": "chip-mcp23017",
+      "id": "m0",
+      "left": 60,
+      "top": -100,
+      "attrs": {}
+    },
+    {
+      "type": "wokwi-text",
+      "id": "mlabel0",
+      "left": 60,
+      "top": -165,
+      "attrs": {
+        "text": "M0 | 0x20\nU0-U3"
+      }
+    },
+    {
+      "type": "chip-mcp23017",
+      "id": "m1",
+      "left": 420,
+      "top": -100,
+      "attrs": {}
+    },
+    {
+      "type": "wokwi-text",
+      "id": "mlabel1",
+      "left": 420,
+      "top": -165,
+      "attrs": {
+        "text": "M1 | 0x21\nU4-U7"
+      }
+    },
+    {
+      "type": "chip-mcp23017",
+      "id": "m2",
+      "left": 780,
+      "top": -100,
+      "attrs": {}
+    },
+    {
+      "type": "wokwi-text",
+      "id": "mlabel2",
+      "left": 780,
+      "top": -165,
+      "attrs": {
+        "text": "M2 | 0x22\nU8-U9"
+      }
+    },
+    {
+      "type": "chip-mcp23017",
+      "id": "m3",
+      "left": 1140,
+      "top": -100,
+      "attrs": {}
+    },
+    {
+      "type": "wokwi-text",
+      "id": "mlabel3",
+      "left": 1140,
+      "top": -165,
+      "attrs": {
+        "text": "H0 | 0x23\nHall GPA0-6, GPB0-2"
+      }
+    },
+    {
+      "type": "chip-unipolar",
+      "id": "u0",
+      "left": -240,
+      "top": 530,
+      "attrs": {
+        "unit": "0"
+      }
+    },
+    {
+      "type": "wokwi-text",
+      "id": "ulabel0",
+      "left": -240,
+      "top": 480,
+      "attrs": {
+        "text": "U0 | ULN2003 + 12V 28BYJ-48\n4-coil UNIPOLAR logical observer"
+      }
+    },
+    {
+      "type": "wokwi-slide-switch",
+      "id": "h0",
+      "left": -60,
+      "top": 625,
+      "attrs": {
+        "value": "1",
+        "bounce": "0"
+      }
+    },
+    {
+      "type": "wokwi-text",
+      "id": "hlabel0",
+      "left": -80,
+      "top": 680,
+      "attrs": {
+        "text": "H_U0 manual Hall\nleft=active, right=inactive"
+      }
+    },
+    {
+      "type": "chip-unipolar",
+      "id": "u1",
+      "left": 80,
+      "top": 530,
+      "attrs": {
+        "unit": "1"
+      }
+    },
+    {
+      "type": "wokwi-text",
+      "id": "ulabel1",
+      "left": 80,
+      "top": 480,
+      "attrs": {
+        "text": "U1 | ULN2003 + 12V 28BYJ-48\n4-coil UNIPOLAR logical observer"
+      }
+    },
+    {
+      "type": "wokwi-slide-switch",
+      "id": "h1",
+      "left": 260,
+      "top": 625,
+      "attrs": {
+        "value": "1",
+        "bounce": "0"
+      }
+    },
+    {
+      "type": "wokwi-text",
+      "id": "hlabel1",
+      "left": 240,
+      "top": 680,
+      "attrs": {
+        "text": "H_U1 manual Hall\nleft=active, right=inactive"
+      }
+    },
+    {
+      "type": "chip-unipolar",
+      "id": "u2",
+      "left": 400,
+      "top": 530,
+      "attrs": {
+        "unit": "2"
+      }
+    },
+    {
+      "type": "wokwi-text",
+      "id": "ulabel2",
+      "left": 400,
+      "top": 480,
+      "attrs": {
+        "text": "U2 | ULN2003 + 12V 28BYJ-48\n4-coil UNIPOLAR logical observer"
+      }
+    },
+    {
+      "type": "wokwi-slide-switch",
+      "id": "h2",
+      "left": 580,
+      "top": 625,
+      "attrs": {
+        "value": "1",
+        "bounce": "0"
+      }
+    },
+    {
+      "type": "wokwi-text",
+      "id": "hlabel2",
+      "left": 560,
+      "top": 680,
+      "attrs": {
+        "text": "H_U2 manual Hall\nleft=active, right=inactive"
+      }
+    },
+    {
+      "type": "chip-unipolar",
+      "id": "u3",
+      "left": 720,
+      "top": 530,
+      "attrs": {
+        "unit": "3"
+      }
+    },
+    {
+      "type": "wokwi-text",
+      "id": "ulabel3",
+      "left": 720,
+      "top": 480,
+      "attrs": {
+        "text": "U3 | ULN2003 + 12V 28BYJ-48\n4-coil UNIPOLAR logical observer"
+      }
+    },
+    {
+      "type": "wokwi-slide-switch",
+      "id": "h3",
+      "left": 900,
+      "top": 625,
+      "attrs": {
+        "value": "1",
+        "bounce": "0"
+      }
+    },
+    {
+      "type": "wokwi-text",
+      "id": "hlabel3",
+      "left": 880,
+      "top": 680,
+      "attrs": {
+        "text": "H_U3 manual Hall\nleft=active, right=inactive"
+      }
+    },
+    {
+      "type": "chip-unipolar",
+      "id": "u4",
+      "left": 1040,
+      "top": 530,
+      "attrs": {
+        "unit": "4"
+      }
+    },
+    {
+      "type": "wokwi-text",
+      "id": "ulabel4",
+      "left": 1040,
+      "top": 480,
+      "attrs": {
+        "text": "U4 | ULN2003 + 12V 28BYJ-48\n4-coil UNIPOLAR logical observer"
+      }
+    },
+    {
+      "type": "wokwi-slide-switch",
+      "id": "h4",
+      "left": 1220,
+      "top": 625,
+      "attrs": {
+        "value": "1",
+        "bounce": "0"
+      }
+    },
+    {
+      "type": "wokwi-text",
+      "id": "hlabel4",
+      "left": 1200,
+      "top": 680,
+      "attrs": {
+        "text": "H_U4 manual Hall\nleft=active, right=inactive"
+      }
+    },
+    {
+      "type": "chip-unipolar",
+      "id": "u5",
+      "left": -240,
+      "top": 870,
+      "attrs": {
+        "unit": "5"
+      }
+    },
+    {
+      "type": "wokwi-text",
+      "id": "ulabel5",
+      "left": -240,
+      "top": 820,
+      "attrs": {
+        "text": "U5 | ULN2003 + 12V 28BYJ-48\n4-coil UNIPOLAR logical observer"
+      }
+    },
+    {
+      "type": "wokwi-slide-switch",
+      "id": "h5",
+      "left": -60,
+      "top": 965,
+      "attrs": {
+        "value": "1",
+        "bounce": "0"
+      }
+    },
+    {
+      "type": "wokwi-text",
+      "id": "hlabel5",
+      "left": -80,
+      "top": 1020,
+      "attrs": {
+        "text": "H_U5 manual Hall\nleft=active, right=inactive"
+      }
+    },
+    {
+      "type": "chip-unipolar",
+      "id": "u6",
+      "left": 80,
+      "top": 870,
+      "attrs": {
+        "unit": "6"
+      }
+    },
+    {
+      "type": "wokwi-text",
+      "id": "ulabel6",
+      "left": 80,
+      "top": 820,
+      "attrs": {
+        "text": "U6 | ULN2003 + 12V 28BYJ-48\n4-coil UNIPOLAR logical observer"
+      }
+    },
+    {
+      "type": "wokwi-slide-switch",
+      "id": "h6",
+      "left": 260,
+      "top": 965,
+      "attrs": {
+        "value": "1",
+        "bounce": "0"
+      }
+    },
+    {
+      "type": "wokwi-text",
+      "id": "hlabel6",
+      "left": 240,
+      "top": 1020,
+      "attrs": {
+        "text": "H_U6 manual Hall\nleft=active, right=inactive"
+      }
+    },
+    {
+      "type": "chip-unipolar",
+      "id": "u7",
+      "left": 400,
+      "top": 870,
+      "attrs": {
+        "unit": "7"
+      }
+    },
+    {
+      "type": "wokwi-text",
+      "id": "ulabel7",
+      "left": 400,
+      "top": 820,
+      "attrs": {
+        "text": "U7 | ULN2003 + 12V 28BYJ-48\n4-coil UNIPOLAR logical observer"
+      }
+    },
+    {
+      "type": "wokwi-slide-switch",
+      "id": "h7",
+      "left": 580,
+      "top": 965,
+      "attrs": {
+        "value": "1",
+        "bounce": "0"
+      }
+    },
+    {
+      "type": "wokwi-text",
+      "id": "hlabel7",
+      "left": 560,
+      "top": 1020,
+      "attrs": {
+        "text": "H_U7 manual Hall\nleft=active, right=inactive"
+      }
+    },
+    {
+      "type": "chip-unipolar",
+      "id": "u8",
+      "left": 720,
+      "top": 870,
+      "attrs": {
+        "unit": "8"
+      }
+    },
+    {
+      "type": "wokwi-text",
+      "id": "ulabel8",
+      "left": 720,
+      "top": 820,
+      "attrs": {
+        "text": "U8 | ULN2003 + 12V 28BYJ-48\n4-coil UNIPOLAR logical observer"
+      }
+    },
+    {
+      "type": "wokwi-slide-switch",
+      "id": "h8",
+      "left": 900,
+      "top": 965,
+      "attrs": {
+        "value": "1",
+        "bounce": "0"
+      }
+    },
+    {
+      "type": "wokwi-text",
+      "id": "hlabel8",
+      "left": 880,
+      "top": 1020,
+      "attrs": {
+        "text": "H_U8 manual Hall\nleft=active, right=inactive"
+      }
+    },
+    {
+      "type": "chip-unipolar",
+      "id": "u9",
+      "left": 1040,
+      "top": 870,
+      "attrs": {
+        "unit": "9"
+      }
+    },
+    {
+      "type": "wokwi-text",
+      "id": "ulabel9",
+      "left": 1040,
+      "top": 820,
+      "attrs": {
+        "text": "U9 | ULN2003 + 12V 28BYJ-48\n4-coil UNIPOLAR logical observer"
+      }
+    },
+    {
+      "type": "wokwi-slide-switch",
+      "id": "h9",
+      "left": 1220,
+      "top": 965,
+      "attrs": {
+        "value": "1",
+        "bounce": "0"
+      }
+    },
+    {
+      "type": "wokwi-text",
+      "id": "hlabel9",
+      "left": 1200,
+      "top": 1020,
+      "attrs": {
+        "text": "H_U9 manual Hall\nleft=active, right=inactive"
+      }
+    },
+    {
+      "type": "wokwi-text",
+      "id": "legend",
+      "left": -240,
+      "top": 1250,
+      "attrs": {
+        "text": "Motor display: four green coil indicators, estimated shaft pointer (assumed 4096 half-steps/rev),\ngreen status bar=legal phase order; red=illegal/skipped phase. Hall switches are independent of shaft position.\nSerial: s stop | a all motors | 0..9 select motor | r reverse. This sketch is a diagnostic, not production homing firmware."
+      }
+    }
+  ],
+  "connections": [
+    [
+      "esp:TX",
+      "$serialMonitor:RX",
+      "",
+      []
+    ],
+    [
+      "esp:RX",
+      "$serialMonitor:TX",
+      "",
+      []
+    ],
+    [
+      "rails:GND",
+      "esp:GND.1",
+      "black",
+      []
+    ],
+    [
+      "esp:21",
+      "m0:SDA",
+      "green",
+      []
+    ],
+    [
+      "esp:22",
+      "m0:SCL",
+      "blue",
+      []
+    ],
+    [
+      "esp:23",
+      "m0:RESET",
+      "orange",
+      []
+    ],
+    [
+      "rails:V5_LOGIC",
+      "m0:VDD",
+      "red",
+      []
+    ],
+    [
+      "rails:GND",
+      "m0:VSS",
+      "black",
+      []
+    ],
+    [
+      "rails:GND",
+      "m0:A0",
+      "black",
+      []
+    ],
+    [
+      "rails:GND",
+      "m0:A1",
+      "black",
+      []
+    ],
+    [
+      "rails:GND",
+      "m0:A2",
+      "black",
+      []
+    ],
+    [
+      "esp:21",
+      "m1:SDA",
+      "green",
+      []
+    ],
+    [
+      "esp:22",
+      "m1:SCL",
+      "blue",
+      []
+    ],
+    [
+      "esp:23",
+      "m1:RESET",
+      "orange",
+      []
+    ],
+    [
+      "rails:V5_LOGIC",
+      "m1:VDD",
+      "red",
+      []
+    ],
+    [
+      "rails:GND",
+      "m1:VSS",
+      "black",
+      []
+    ],
+    [
+      "rails:V5_LOGIC",
+      "m1:A0",
+      "red",
+      []
+    ],
+    [
+      "rails:GND",
+      "m1:A1",
+      "black",
+      []
+    ],
+    [
+      "rails:GND",
+      "m1:A2",
+      "black",
+      []
+    ],
+    [
+      "esp:21",
+      "m2:SDA",
+      "green",
+      []
+    ],
+    [
+      "esp:22",
+      "m2:SCL",
+      "blue",
+      []
+    ],
+    [
+      "esp:23",
+      "m2:RESET",
+      "orange",
+      []
+    ],
+    [
+      "rails:V5_LOGIC",
+      "m2:VDD",
+      "red",
+      []
+    ],
+    [
+      "rails:GND",
+      "m2:VSS",
+      "black",
+      []
+    ],
+    [
+      "rails:GND",
+      "m2:A0",
+      "black",
+      []
+    ],
+    [
+      "rails:V5_LOGIC",
+      "m2:A1",
+      "red",
+      []
+    ],
+    [
+      "rails:GND",
+      "m2:A2",
+      "black",
+      []
+    ],
+    [
+      "esp:21",
+      "m3:SDA",
+      "green",
+      []
+    ],
+    [
+      "esp:22",
+      "m3:SCL",
+      "blue",
+      []
+    ],
+    [
+      "esp:23",
+      "m3:RESET",
+      "orange",
+      []
+    ],
+    [
+      "rails:V5_LOGIC",
+      "m3:VDD",
+      "red",
+      []
+    ],
+    [
+      "rails:GND",
+      "m3:VSS",
+      "black",
+      []
+    ],
+    [
+      "rails:V5_LOGIC",
+      "m3:A0",
+      "red",
+      []
+    ],
+    [
+      "rails:V5_LOGIC",
+      "m3:A1",
+      "red",
+      []
+    ],
+    [
+      "rails:GND",
+      "m3:A2",
+      "black",
+      []
+    ],
+    [
+      "m0:GPA0",
+      "u0:IN1",
+      "green",
+      []
+    ],
+    [
+      "m0:GPA1",
+      "u0:IN2",
+      "blue",
+      []
+    ],
+    [
+      "m0:GPA2",
+      "u0:IN3",
+      "purple",
+      []
+    ],
+    [
+      "m0:GPA3",
+      "u0:IN4",
+      "orange",
+      []
+    ],
+    [
+      "rails:V12_MOTOR",
+      "u0:COMMON_12V",
+      "red",
+      []
+    ],
+    [
+      "rails:GND",
+      "u0:GND",
+      "black",
+      []
+    ],
+    [
+      "h0:2",
+      "m3:GPA0",
+      "cyan",
+      []
+    ],
+    [
+      "h0:1",
+      "rails:GND",
+      "black",
+      []
+    ],
+    [
+      "m0:GPA4",
+      "u1:IN1",
+      "green",
+      []
+    ],
+    [
+      "m0:GPA5",
+      "u1:IN2",
+      "blue",
+      []
+    ],
+    [
+      "m0:GPA6",
+      "u1:IN3",
+      "purple",
+      []
+    ],
+    [
+      "m0:GPA7",
+      "u1:IN4",
+      "orange",
+      []
+    ],
+    [
+      "rails:V12_MOTOR",
+      "u1:COMMON_12V",
+      "red",
+      []
+    ],
+    [
+      "rails:GND",
+      "u1:GND",
+      "black",
+      []
+    ],
+    [
+      "h1:2",
+      "m3:GPA1",
+      "cyan",
+      []
+    ],
+    [
+      "h1:1",
+      "rails:GND",
+      "black",
+      []
+    ],
+    [
+      "m0:GPB0",
+      "u2:IN1",
+      "green",
+      []
+    ],
+    [
+      "m0:GPB1",
+      "u2:IN2",
+      "blue",
+      []
+    ],
+    [
+      "m0:GPB2",
+      "u2:IN3",
+      "purple",
+      []
+    ],
+    [
+      "m0:GPB3",
+      "u2:IN4",
+      "orange",
+      []
+    ],
+    [
+      "rails:V12_MOTOR",
+      "u2:COMMON_12V",
+      "red",
+      []
+    ],
+    [
+      "rails:GND",
+      "u2:GND",
+      "black",
+      []
+    ],
+    [
+      "h2:2",
+      "m3:GPA2",
+      "cyan",
+      []
+    ],
+    [
+      "h2:1",
+      "rails:GND",
+      "black",
+      []
+    ],
+    [
+      "m0:GPB4",
+      "u3:IN1",
+      "green",
+      []
+    ],
+    [
+      "m0:GPB5",
+      "u3:IN2",
+      "blue",
+      []
+    ],
+    [
+      "m0:GPB6",
+      "u3:IN3",
+      "purple",
+      []
+    ],
+    [
+      "m0:GPB7",
+      "u3:IN4",
+      "orange",
+      []
+    ],
+    [
+      "rails:V12_MOTOR",
+      "u3:COMMON_12V",
+      "red",
+      []
+    ],
+    [
+      "rails:GND",
+      "u3:GND",
+      "black",
+      []
+    ],
+    [
+      "h3:2",
+      "m3:GPA3",
+      "cyan",
+      []
+    ],
+    [
+      "h3:1",
+      "rails:GND",
+      "black",
+      []
+    ],
+    [
+      "m1:GPA0",
+      "u4:IN1",
+      "green",
+      []
+    ],
+    [
+      "m1:GPA1",
+      "u4:IN2",
+      "blue",
+      []
+    ],
+    [
+      "m1:GPA2",
+      "u4:IN3",
+      "purple",
+      []
+    ],
+    [
+      "m1:GPA3",
+      "u4:IN4",
+      "orange",
+      []
+    ],
+    [
+      "rails:V12_MOTOR",
+      "u4:COMMON_12V",
+      "red",
+      []
+    ],
+    [
+      "rails:GND",
+      "u4:GND",
+      "black",
+      []
+    ],
+    [
+      "h4:2",
+      "m3:GPA4",
+      "cyan",
+      []
+    ],
+    [
+      "h4:1",
+      "rails:GND",
+      "black",
+      []
+    ],
+    [
+      "m1:GPA4",
+      "u5:IN1",
+      "green",
+      []
+    ],
+    [
+      "m1:GPA5",
+      "u5:IN2",
+      "blue",
+      []
+    ],
+    [
+      "m1:GPA6",
+      "u5:IN3",
+      "purple",
+      []
+    ],
+    [
+      "m1:GPA7",
+      "u5:IN4",
+      "orange",
+      []
+    ],
+    [
+      "rails:V12_MOTOR",
+      "u5:COMMON_12V",
+      "red",
+      []
+    ],
+    [
+      "rails:GND",
+      "u5:GND",
+      "black",
+      []
+    ],
+    [
+      "h5:2",
+      "m3:GPA5",
+      "cyan",
+      []
+    ],
+    [
+      "h5:1",
+      "rails:GND",
+      "black",
+      []
+    ],
+    [
+      "m1:GPB0",
+      "u6:IN1",
+      "green",
+      []
+    ],
+    [
+      "m1:GPB1",
+      "u6:IN2",
+      "blue",
+      []
+    ],
+    [
+      "m1:GPB2",
+      "u6:IN3",
+      "purple",
+      []
+    ],
+    [
+      "m1:GPB3",
+      "u6:IN4",
+      "orange",
+      []
+    ],
+    [
+      "rails:V12_MOTOR",
+      "u6:COMMON_12V",
+      "red",
+      []
+    ],
+    [
+      "rails:GND",
+      "u6:GND",
+      "black",
+      []
+    ],
+    [
+      "h6:2",
+      "m3:GPA6",
+      "cyan",
+      []
+    ],
+    [
+      "h6:1",
+      "rails:GND",
+      "black",
+      []
+    ],
+    [
+      "m1:GPB4",
+      "u7:IN1",
+      "green",
+      []
+    ],
+    [
+      "m1:GPB5",
+      "u7:IN2",
+      "blue",
+      []
+    ],
+    [
+      "m1:GPB6",
+      "u7:IN3",
+      "purple",
+      []
+    ],
+    [
+      "m1:GPB7",
+      "u7:IN4",
+      "orange",
+      []
+    ],
+    [
+      "rails:V12_MOTOR",
+      "u7:COMMON_12V",
+      "red",
+      []
+    ],
+    [
+      "rails:GND",
+      "u7:GND",
+      "black",
+      []
+    ],
+    [
+      "h7:2",
+      "m3:GPB0",
+      "cyan",
+      []
+    ],
+    [
+      "h7:1",
+      "rails:GND",
+      "black",
+      []
+    ],
+    [
+      "m2:GPA0",
+      "u8:IN1",
+      "green",
+      []
+    ],
+    [
+      "m2:GPA1",
+      "u8:IN2",
+      "blue",
+      []
+    ],
+    [
+      "m2:GPA2",
+      "u8:IN3",
+      "purple",
+      []
+    ],
+    [
+      "m2:GPA3",
+      "u8:IN4",
+      "orange",
+      []
+    ],
+    [
+      "rails:V12_MOTOR",
+      "u8:COMMON_12V",
+      "red",
+      []
+    ],
+    [
+      "rails:GND",
+      "u8:GND",
+      "black",
+      []
+    ],
+    [
+      "h8:2",
+      "m3:GPB1",
+      "cyan",
+      []
+    ],
+    [
+      "h8:1",
+      "rails:GND",
+      "black",
+      []
+    ],
+    [
+      "m2:GPA4",
+      "u9:IN1",
+      "green",
+      []
+    ],
+    [
+      "m2:GPA5",
+      "u9:IN2",
+      "blue",
+      []
+    ],
+    [
+      "m2:GPA6",
+      "u9:IN3",
+      "purple",
+      []
+    ],
+    [
+      "m2:GPA7",
+      "u9:IN4",
+      "orange",
+      []
+    ],
+    [
+      "rails:V12_MOTOR",
+      "u9:COMMON_12V",
+      "red",
+      []
+    ],
+    [
+      "rails:GND",
+      "u9:GND",
+      "black",
+      []
+    ],
+    [
+      "h9:2",
+      "m3:GPB2",
+      "cyan",
+      []
+    ],
+    [
+      "h9:1",
+      "rails:GND",
+      "black",
+      []
+    ]
+  ],
+  "serialMonitor": {
+    "display": "always",
+    "newline": "lf"
+  }
+}

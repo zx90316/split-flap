@@ -67,3 +67,7 @@ GitHub fork 關係及既有歷史仍來自 David Königsmann 的倉庫；「主�
 - Git 歷史 fork 起點：`14a22d9f38900aa520feeb70656357b8fd719e45`
 
 授權維持 [GPL-3.0](LICENSE)。原專案、照片、組裝設計歸原作者；本分支新增 ESP32 實作與文件保留其來源。外部 3D 檔的使用以原發布頁授權為準。
+
+## 線上數位接線示範
+
+[開啟 Wokwi 十通道示範](https://wokwi.com/projects/478367216064916481)；[完整來源、快速複現與模型限制](simulation/wokwi/README.md)。包含 ESP32、四個 MCP 位址、四十相輸出與十路手動 Hall 輸入。這是獨立數位診斷程式；電位轉換、12V 電氣安全、馬達力學與正式歸零韌體不在此模擬驗證範圍。
