@@ -114,3 +114,7 @@ MOVE 0 1
 ## 6. 後續通訊工作
 
 本版僅 USB 串列。原 `ESPMaster` 的 ESP8266 Web/NTP 程式未接新核心，不能當成 ESP32 可用 UI。單顆、電源、十顆驗收完成後，再以有界輸入佇列、驗證與授權，把同一份命令語意接到 ESP32 Wi-Fi。網路處理不可阻塞步進，不開放未驗證的互聯網控制，也不把 Wi-Fi 密碼存進 repo。
+
+## JonnyBooker 相容性
+
+45 字元順序與 `Unit/Unit.ino` 相同，測試另涵蓋其調機序列（空白、Z、A、U、N、?、0、1、2、9）及全部 45 個索引。保留本版非阻塞控制與 NVS 校準；上游 Nano 的全步 offset、2-byte I²C 命令與 EEPROM 不能直接套用。Web／訊息切段／排程／倒數等移植界線見 [參考比對與計畫](upstream-reference.md)。

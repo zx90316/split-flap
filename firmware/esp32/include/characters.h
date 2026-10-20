@@ -3,7 +3,8 @@
 #include <stddef.h>
 #include <stdint.h>
 namespace splitflap {
-// Physical order in upstream Instructions/SplitFlapInstructions.pdf, page 14.
+// Physical order: JonnyBooker/split-flap Unit/Unit.ino at 0c6ef692,
+// identical to the retained Instructions/SplitFlapInstructions.pdf, page 14.
 // Default uses umlaut flaps. Set noUmlauts for the alternative $, &, # flaps.
 inline bool parseText(const char* text, uint8_t* indices, size_t count, bool noUmlauts=false) {
   size_t n=0;

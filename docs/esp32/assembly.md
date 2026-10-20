@@ -2,6 +2,8 @@
 
 本版完成文件及軟體層的規劃／檢查，尚未完成實物供電與運轉驗證。組裝時按下列順序逐項記錄，沒有證據的格子留空。
 
+機構依 JonnyBooker 固定參考版核對，其組裝 PDF 與本倉庫保留版 SHA-256 相同；[比對與模型來源](upstream-reference.md)。
+
 先讀 [架構與安全限制](architecture.md) 及 [接線表](wiring.md)。上游 [組裝 PDF](../../Instructions/SplitFlapInstructions.pdf) 的機構頁可沿用，但其 Nano、ESP-01、客製 PCB、L7805 與串接電路不屬於本版。
 
 ## A. 元件與規格檢查

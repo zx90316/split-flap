@@ -1,6 +1,6 @@
 # Split-Flap · ESP32 模組版（10 字元）
 
-本分支把 [David Königsmann 的 split-flap](https://github.com/davidkingsman/split-flap) 改成 **一片 ESP32＋現成模組＋洞洞板**，作為本專案的標準組建方式。保留原本 10 字元、每字元 45 片翻頁的機構與字元順序，不再要求 ESP-01、10 片 Nano 或訂製 PCB。
+本專案以 [JonnyBooker/split-flap](https://github.com/JonnyBooker/split-flap) 為主要參考，延續 David Königsmann 的機構設計，控制系統改成 **一片 ESP32＋現成模組＋洞洞板**，作為本專案的標準組建方式。保留原本 10 字元、每字元 45 片翻頁的機構與字元順序，不再要求 ESP-01、10 片 Nano 或訂製 PCB。
 
 > **工程原型，尚未實物驗證。** 尚未完成實板接線、燒錄、馬達／電源／十字元測試。軟體測試不是硬體安全認證。先閱讀電源及組裝門檻，再接線或通電。
 
@@ -11,7 +11,8 @@
 3. [元件檢查、機構比對與分階段組裝](docs/esp32/assembly.md)
 4. [編譯、串列命令、歸零與校準](docs/esp32/firmware.md)
 5. [軟體驗證結果與硬體驗收表](docs/esp32/validation.md)
-6. [標準組建 BOM](hardware/project-bom.csv) 與[選配零件](hardware/optional-parts.csv)
+6. [參考版本、相容性比對與功能移植計畫](docs/esp32/upstream-reference.md)
+7. [標準組建 BOM](hardware/project-bom.csv) 與[選配零件](hardware/optional-parts.csv)
 
 ## 實際採用的架構
 
@@ -51,12 +52,18 @@ pio device monitor --baud 115200
 
 初次開機保持馬達 12V 關閉，先依文件完成檢查。`INIT POWER_OFF` 只是操作者確認，韌體沒有電壓感測器能驗證你真的斷電。
 
-## 保留的上游資料
+## 主要參考與來源沿革
 
-- [原版 README](Instructions/README.upstream.md)
+主要參考鎖定 JonnyBooker 的 [`0c6ef692`](https://github.com/JonnyBooker/split-flap/tree/0c6ef692ac6a5d21a9bc858fa79ecbe816530d8d)。該版本仍採 ESP8266＋Nano；本版 ESP32 韌體為獨立控制實作，未宣稱已移植其 Web、排程、倒數、Wi-Fi 設定或 OTA。其作者說明只能在時間允許下提供協助與更新，不能視為持續維護保證。詳細證據與規劃見[參考比對](docs/esp32/upstream-reference.md)。
+
+GitHub fork 關係及既有歷史仍來自 David Königsmann 的倉庫；「主要參考」不代表已改動 GitHub 的 fork parent。
+
+
+- [歷史 David 版 README](Instructions/README.upstream.md)
 - [原始完整組裝 PDF](Instructions/SplitFlapInstructions.pdf)
 - 原始 `unit/`、`ESPMaster/`、`EEPROM_Write_Offset/`、`PCB/` 原封保留，**不適用本分支新接線**
 - [原作者 3D 檔來源](https://www.printables.com/model/69464-split-flap-display)；本 repo 未包含 STL，也沒有未經量測就重畫孔位
-- Fork 起點：`14a22d9f38900aa520feeb70656357b8fd719e45`
+- JonnyBooker 的 [3D 備份說明](https://github.com/JonnyBooker/split-flap/blob/0c6ef692ac6a5d21a9bc858fa79ecbe816530d8d/3dModels/README.md) 亦指向同一模型來源；列印前確認發布頁授權與版本。
+- Git 歷史 fork 起點：`14a22d9f38900aa520feeb70656357b8fd719e45`
 
 授權維持 [GPL-3.0](LICENSE)。原專案、照片、組裝設計歸原作者；本分支新增 ESP32 實作與文件保留其來源。外部 3D 檔的使用以原發布頁授權為準。
