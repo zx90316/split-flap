@@ -39,6 +39,8 @@ U0 armed=1 homed=0 reference=MANUAL value=Z index=26 REVSTEPS=4096 OFFSET=0 SPEE
 
 完整兩板、字元保存與手機頁面結果見 [整合驗證](../esp32cam/validation.md)。本版並行機構、負載／壓降、實際失聯與保存斷電驗收仍待現場執行。
 
+2026-10-26 後續：使用者回報現版「實際測試通過，目前完美運行」，記為現場運行通過；沒有另提供位數／逐項負載、Hall 或斷電驗收紀錄。後續單 USB／單包雙板更新為 [設計研究](../esp32cam/dual-update-research.md)，目前未修改本版韌體。
+
 ## 可重複的軟體檢查
 
 ```sh
