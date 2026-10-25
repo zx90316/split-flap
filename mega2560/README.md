@@ -86,6 +86,8 @@ D0／D1 留給 USB，D18 TX1／D19 RX1 預留未來 UART，D20 SDA／D21 SCL 預
 
 ## 燒錄與串列操作
 
+**VS Code 使用者：已提供 [F5 建置／燒錄／串列除錯與主機中斷點配置](vscode.md)。Ctrl+Shift+B 可直接建置；F5 選「MEGA: 建置＋燒錄＋串列除錯」。**
+
 Arduino IDE 開啟 `unit_test/unit_test.ino`，選 **Arduino Mega or Mega 2560／ATmega2560**。不需第三方函式庫。燒錄前關馬達 12V，USB 供電；本次不自動對實板燒錄或啟動馬達。
 
 Arduino CLI（repo 根目錄）：

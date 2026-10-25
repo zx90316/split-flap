@@ -7,6 +7,7 @@
 3. [目前 BOM](hardware/project-bom.csv)／[暫不使用及未來選配](hardware/optional-parts.csv)
 4. [KY-003 的 3.39V 量測與鎖存排查](mega2560/hall-diagnostics.md)
 5. [軟體驗證與實機紀錄](mega2560/validation.md)
+6. [VS Code F5 建置、燒錄、串列除錯與主機中斷點](mega2560/vscode.md)
 
 ![單顆測試接線](mega2560/wiring-single.svg)
 

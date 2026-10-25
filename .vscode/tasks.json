@@ -1,0 +1,379 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "MEGA: 建置韌體",
+      "type": "process",
+      "command": "${command:python.interpreterPath}",
+      "args": [
+        "${workspaceFolder}/mega2560/tools/dev.py",
+        "build"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}",
+        "env": {
+          "PYTHONUTF8": "1",
+          "PYTHONUNBUFFERED": "1"
+        }
+      },
+      "problemMatcher": [
+        "$gcc"
+      ],
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated",
+        "clear": true
+      },
+      "runOptions": {
+        "instanceLimit": 1
+      },
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      }
+    },
+    {
+      "label": "MEGA: 重新建置韌體",
+      "type": "process",
+      "command": "${command:python.interpreterPath}",
+      "args": [
+        "${workspaceFolder}/mega2560/tools/dev.py",
+        "rebuild"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}",
+        "env": {
+          "PYTHONUTF8": "1",
+          "PYTHONUNBUFFERED": "1"
+        }
+      },
+      "problemMatcher": [
+        "$gcc"
+      ],
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated",
+        "clear": true
+      },
+      "runOptions": {
+        "instanceLimit": 1
+      }
+    },
+    {
+      "label": "MEGA: 建置＋燒錄",
+      "type": "process",
+      "command": "${command:python.interpreterPath}",
+      "args": [
+        "${workspaceFolder}/mega2560/tools/dev.py",
+        "upload",
+        "--port",
+        "${input:megaPort}"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}",
+        "env": {
+          "PYTHONUTF8": "1",
+          "PYTHONUNBUFFERED": "1"
+        }
+      },
+      "problemMatcher": [
+        "$gcc"
+      ],
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated",
+        "clear": true
+      },
+      "runOptions": {
+        "instanceLimit": 1
+      }
+    },
+    {
+      "label": "MEGA: 建置＋燒錄＋串列除錯",
+      "type": "process",
+      "command": "${command:python.interpreterPath}",
+      "args": [
+        "${workspaceFolder}/mega2560/tools/dev.py",
+        "upload-monitor",
+        "--port",
+        "${input:megaPort}"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}",
+        "env": {
+          "PYTHONUTF8": "1",
+          "PYTHONUNBUFFERED": "1"
+        }
+      },
+      "problemMatcher": [
+        "$gcc"
+      ],
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated",
+        "clear": true
+      },
+      "runOptions": {
+        "instanceLimit": 1
+      }
+    },
+    {
+      "label": "MEGA: 串列除錯（115200）",
+      "type": "process",
+      "command": "${command:python.interpreterPath}",
+      "args": [
+        "${workspaceFolder}/mega2560/tools/dev.py",
+        "monitor",
+        "--port",
+        "${input:megaPort}"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}",
+        "env": {
+          "PYTHONUTF8": "1",
+          "PYTHONUNBUFFERED": "1"
+        }
+      },
+      "problemMatcher": [
+        "$gcc"
+      ],
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated",
+        "clear": true
+      },
+      "runOptions": {
+        "instanceLimit": 1
+      }
+    },
+    {
+      "label": "MEGA: 查詢連接埠",
+      "type": "process",
+      "command": "${command:python.interpreterPath}",
+      "args": [
+        "${workspaceFolder}/mega2560/tools/dev.py",
+        "ports"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}",
+        "env": {
+          "PYTHONUTF8": "1",
+          "PYTHONUNBUFFERED": "1"
+        }
+      },
+      "problemMatcher": [
+        "$gcc"
+      ],
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated",
+        "clear": true
+      },
+      "runOptions": {
+        "instanceLimit": 1
+      }
+    },
+    {
+      "label": "MEGA: 工具檢查",
+      "type": "process",
+      "command": "${command:python.interpreterPath}",
+      "args": [
+        "${workspaceFolder}/mega2560/tools/dev.py",
+        "doctor"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}",
+        "env": {
+          "PYTHONUTF8": "1",
+          "PYTHONUNBUFFERED": "1"
+        }
+      },
+      "problemMatcher": [
+        "$gcc"
+      ],
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated",
+        "clear": true
+      },
+      "runOptions": {
+        "instanceLimit": 1
+      }
+    },
+    {
+      "label": "MEGA: 準備AVR核心",
+      "type": "process",
+      "command": "${command:python.interpreterPath}",
+      "args": [
+        "${workspaceFolder}/mega2560/tools/dev.py",
+        "setup"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}",
+        "env": {
+          "PYTHONUTF8": "1",
+          "PYTHONUNBUFFERED": "1"
+        }
+      },
+      "problemMatcher": [
+        "$gcc"
+      ],
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated",
+        "clear": true
+      },
+      "runOptions": {
+        "instanceLimit": 1
+      }
+    },
+    {
+      "label": "MEGA: 準備主機偵錯工具",
+      "type": "process",
+      "command": "${command:python.interpreterPath}",
+      "args": [
+        "${workspaceFolder}/mega2560/tools/dev.py",
+        "setup-host"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}",
+        "env": {
+          "PYTHONUTF8": "1",
+          "PYTHONUNBUFFERED": "1"
+        }
+      },
+      "problemMatcher": [
+        "$gcc"
+      ],
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated",
+        "clear": true
+      },
+      "runOptions": {
+        "instanceLimit": 1
+      }
+    },
+    {
+      "label": "MEGA: 執行全部主機測試",
+      "type": "process",
+      "command": "${command:python.interpreterPath}",
+      "args": [
+        "${workspaceFolder}/mega2560/tools/dev.py",
+        "test"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}",
+        "env": {
+          "PYTHONUTF8": "1",
+          "PYTHONUNBUFFERED": "1"
+        }
+      },
+      "problemMatcher": [
+        "$gcc"
+      ],
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated",
+        "clear": true
+      },
+      "runOptions": {
+        "instanceLimit": 1
+      },
+      "group": "test"
+    },
+    {
+      "label": "MEGA: 重建接線圖",
+      "type": "process",
+      "command": "${command:python.interpreterPath}",
+      "args": [
+        "${workspaceFolder}/mega2560/tools/dev.py",
+        "diagrams"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}",
+        "env": {
+          "PYTHONUTF8": "1",
+          "PYTHONUNBUFFERED": "1"
+        }
+      },
+      "problemMatcher": [
+        "$gcc"
+      ],
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated",
+        "clear": true
+      },
+      "runOptions": {
+        "instanceLimit": 1
+      }
+    },
+    {
+      "label": "MEGA: 建置主機偵錯 bench",
+      "type": "process",
+      "command": "${command:python.interpreterPath}",
+      "args": [
+        "${workspaceFolder}/mega2560/tools/dev.py",
+        "native-debug",
+        "--suite",
+        "bench"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}",
+        "env": {
+          "PYTHONUTF8": "1",
+          "PYTHONUNBUFFERED": "1"
+        }
+      },
+      "problemMatcher": [
+        "$gcc"
+      ],
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated",
+        "clear": true
+      },
+      "runOptions": {
+        "instanceLimit": 1
+      }
+    },
+    {
+      "label": "MEGA: 建置主機偵錯 adapter",
+      "type": "process",
+      "command": "${command:python.interpreterPath}",
+      "args": [
+        "${workspaceFolder}/mega2560/tools/dev.py",
+        "native-debug",
+        "--suite",
+        "adapter"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}",
+        "env": {
+          "PYTHONUTF8": "1",
+          "PYTHONUNBUFFERED": "1"
+        }
+      },
+      "problemMatcher": [
+        "$gcc"
+      ],
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated",
+        "clear": true
+      },
+      "runOptions": {
+        "instanceLimit": 1
+      }
+    }
+  ],
+  "inputs": [
+    {
+      "id": "megaPort",
+      "type": "promptString",
+      "description": "輸入已確認的 Mega COM 埠（先以查詢連接埠確認；燒錄前關閉馬達12V分支）",
+      "default": "COM3"
+    }
+  ]
+}

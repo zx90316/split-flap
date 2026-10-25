@@ -1,0 +1,36 @@
+{
+  "version": 4,
+  "configurations": [
+    {
+      "name": "Mega 2560 AVR",
+      "compilerPath": "${workspaceFolder}/.tools/arduino-data/packages/arduino/tools/avr-gcc/7.3.0-atmel3.6.1-arduino7/bin/avr-g++.exe",
+      "compilerArgs": ["-mmcu=atmega2560"],
+      "includePath": [
+        "${workspaceFolder}/mega2560/unit_test",
+        "${workspaceFolder}/.tools/arduino-data/packages/arduino/hardware/avr/1.8.8/cores/arduino",
+        "${workspaceFolder}/.tools/arduino-data/packages/arduino/hardware/avr/1.8.8/variants/mega"
+      ],
+      "defines": [
+        "ARDUINO=10607",
+        "ARDUINO_AVR_MEGA2560",
+        "ARDUINO_ARCH_AVR",
+        "__AVR_ATmega2560__",
+        "F_CPU=16000000L"
+      ],
+      "cStandard": "c11",
+      "cppStandard": "c++11"
+    },
+    {
+      "name": "Host test Windows",
+      "compilerPath": "${workspaceFolder}/.tools/host-compiler/ziglang/zig.exe",
+      "compilerArgs": ["c++"],
+      "includePath": [
+        "${workspaceFolder}/mega2560/unit_test",
+        "${workspaceFolder}/mega2560/test/stubs"
+      ],
+      "intelliSenseMode": "windows-clang-x64",
+      "cStandard": "c11",
+      "cppStandard": "c++11"
+    }
+  ]
+}
