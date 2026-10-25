@@ -2,7 +2,7 @@
 import contextlib
 import gzip
 import hashlib
-import http.cookiejar
+import http.client
 import importlib.util
 import io
 import json
@@ -137,22 +137,58 @@ class ArtifactsTest(unittest.TestCase):
             ElementTree.parse(ROOT / 'esp32cam' / name)
 
 
-class HttpFixtureTest(unittest.TestCase):
-    @classmethod
-    def setUpClass(cls):
-        cls.server, cls.model = mock.create_server(0)
-        cls.thread = threading.Thread(target=cls.server.serve_forever, daemon=True)
-        cls.thread.start()
-        cls.url = f'http://127.0.0.1:{cls.server.server_port}'
+class FixtureClient:
+    """One local HTTP connection; consume error bodies before the next request."""
+    def __init__(self, url):
+        parsed = urllib.parse.urlparse(url)
+        self.connection = http.client.HTTPConnection(parsed.hostname, parsed.port, timeout=3)
+        self.cookie = ''
 
-    @classmethod
-    def tearDownClass(cls):
-        cls.server.shutdown()
-        cls.server.server_close()
-        cls.thread.join(timeout=3)
+    def close(self):
+        self.connection.close()
+
+    def open(self, request, data=None, timeout=3):
+        if isinstance(request, urllib.request.Request):
+            url, method, data = request.full_url, request.get_method(), request.data
+            headers = dict(request.header_items())
+        else:
+            url, method, headers = request, 'POST' if data is not None else 'GET', {}
+        path = urllib.parse.urlsplit(url).path or '/'
+        if self.cookie:
+            headers['Cookie'] = self.cookie
+        if data is not None:
+            headers.setdefault('Content-Type', 'application/x-www-form-urlencoded')
+        self.connection.request(method, path, body=data, headers=headers)
+        response = self.connection.getresponse()
+        contents = response.read()
+        if response.getheader('Set-Cookie'):
+            self.cookie = response.getheader('Set-Cookie').split(';')[0]
+        if response.status == 303:
+            return self.open(urllib.parse.urljoin(url, response.getheader('Location')))
+        if response.status >= 400:
+            raise urllib.error.HTTPError(url, response.status, response.reason, response.headers, io.BytesIO(contents))
+        return io.BytesIO(contents)
+
+
+class HttpFixtureTest(unittest.TestCase):
+    def setUp(self):
+        self.server, self.model = mock.create_server(0)
+        self.thread = threading.Thread(target=self.server.serve_forever, daemon=True)
+        self.thread.start()
+        self.url = f'http://127.0.0.1:{self.server.server_port}'
+        self.clients = []
+
+    def tearDown(self):
+        for client in self.clients:
+            client.close()
+        self.server.shutdown()
+        self.server.server_close()
+        self.thread.join(timeout=3)
 
     def client(self):
-        return urllib.request.build_opener(urllib.request.HTTPCookieProcessor(http.cookiejar.CookieJar()))
+        client = FixtureClient(self.url)
+        self.clients.append(client)
+        return client
 
     def login(self, client):
         data = urllib.parse.urlencode({'username': 'admin', 'password': self.model.admin_password}).encode()
@@ -173,6 +209,24 @@ class HttpFixtureTest(unittest.TestCase):
         with self.assertRaises(urllib.error.HTTPError) as error:
             self.post(client, '/api/command', {'op': 'STOP'}, csrf=False)
         self.assertEqual(error.exception.code, 403)
+
+    def test_fixture_wifi_without_mega_preserves_motion_and_maintenance_guards(self):
+        client = self.client()
+        self.login(client)
+        self.post(client, '/mock/control', {'connected': False})
+        state = json.load(client.open(self.url + '/api/state', timeout=3))
+        self.assertTrue(state['networkEditable'])
+        self.post(client, '/api/network', {'ssid': 'First-Setup-WiFi', 'password': 'TestNetwork123'})
+        self.assertEqual(self.model.network['ssid'], 'First-Setup-WiFi')
+        with self.assertRaises(urllib.error.HTTPError):
+            self.post(client, '/api/command', dict(boot=state['boot'], request=state['nextRequest'], op='ARM', unit='ALL'))
+        self.assertFalse(any(u['armed'] for u in self.model.units))
+        self.post(client, '/mock/control', {'maintenance': True})
+        self.assertFalse(json.load(client.open(self.url + '/api/state', timeout=3))['networkEditable'])
+        with self.assertRaises(urllib.error.HTTPError):
+            self.post(client, '/api/network', {'ssid': 'Blocked-Network'})
+        self.assertEqual(self.model.network['ssid'], 'First-Setup-WiFi')
+        self.post(client, '/mock/control', {'connected': True, 'maintenance': False})
 
     def test_fixture_manual_glyphs_sparse_layout_and_atomic_validation(self):
         client = self.client()

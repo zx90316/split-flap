@@ -43,6 +43,7 @@ class Model:
         self.jobs = []
         self.pending = None
         self.connected = True
+        self.maintenance = False
         self.ticket = ''
         self.ota_ready = False
         self.network = dict(ssid='', apSsid='SplitFlap-MOCK', apIp='192.168.4.1', staIp='0.0.0.0', connected=False, rssi=-45)
@@ -68,8 +69,9 @@ class Model:
 
     def state(self):
         self.advance()
-        return dict(firmware='1.0.0-mock', protocol=1, boot=self.boot, nextRequest=self.next_request, csrf=self.csrf,
-                    connected=self.connected, protocolMismatch=False, uncertain=False, maintenance=False, storageOk=True,
+        return dict(firmware='1.0.1-mock', protocol=1, boot=self.boot, nextRequest=self.next_request, csrf=self.csrf,
+                    connected=self.connected, protocolMismatch=False, uncertain=False, maintenance=self.maintenance, storageOk=True,
+                    networkEditable=not self.pending and not self.maintenance,
                     ageMs=0, digits=len(self.schema['units']), selected=0, busy=bool(self.pending), saving=False,
                     watching=False, usbLocked=False, error='', mega=self.schema, units=self.units, jobs=self.jobs[-16:],
                     display=self.display, network=self.network, otaReady=self.ota_ready, otaError='')
@@ -285,7 +287,7 @@ def handler_for(model):
                         model.display['reason'] = '自動顯示執行中。' if body.get('run') else '自動顯示已暫停。'
                         self.send_json({})
                     elif path == '/api/network':
-                        if model.pending:
+                        if model.pending or model.maintenance:
                             raise ValueError('busy')
                         model.display['running'] = False
                         model.network.update(ssid=body['ssid'], connected=bool(body['ssid']), staIp='192.168.1.50')
@@ -298,6 +300,8 @@ def handler_for(model):
                         model.ota_ready = True
                         self.send_json({'id': job['id'], 'ticket': model.ticket}, 202)
                     elif path == '/mock/control':
+                        if 'maintenance' in body:
+                            model.maintenance = bool(body['maintenance'])
                         if 'connected' in body:
                             model.connected = body['connected']
                             if not model.connected:
@@ -320,7 +324,9 @@ def handler_for(model):
 
 def create_server(port=8765):
     model = Model()
-    return ThreadingHTTPServer(('127.0.0.1', port), handler_for(model)), model
+    class MockServer(ThreadingHTTPServer):
+        request_queue_size = 64
+    return MockServer(('127.0.0.1', port), handler_for(model)), model
 
 
 if __name__ == '__main__':

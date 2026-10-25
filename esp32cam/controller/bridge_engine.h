@@ -17,6 +17,12 @@ struct State {
   sf::Settings settings;
   Job jobs[16];
 };
+// Wi-Fi provisioning belongs to ESP32 and must work before Mega is connected.
+// A disconnected snapshot can retain old Mega busy flags; only local work still blocks it.
+inline bool canConfigureNetwork(const State& s, bool linkPending, bool settingsPending) {
+  return !linkPending && !settingsPending && !s.maintenance &&
+      (!s.connected || !s.valid || (!s.panel.busy && !s.panel.saving && !s.panel.watching));
+}
 class BridgeEngine {
  public:
   void begin(uint32_t seed) { state_.boot = seed ? seed : 1; rotateSession(); }

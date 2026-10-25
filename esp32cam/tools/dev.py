@@ -41,7 +41,7 @@ def package(image=None, destination=None):
     result.write_bytes(header + binary)
     shutil.copyfile(image, destination / 'splitflap-esp32cam.bin')
     metadata = {'device': 'splitflap-esp32cam', 'board': FQBN, 'core': CORE, 'protocol': 1,
-                'firmware': '1.0.0', 'size': len(binary), 'sha256': digest.hex()}
+                'firmware': '1.0.1', 'size': len(binary), 'sha256': digest.hex()}
     (destination / 'firmware.json').write_text(json.dumps(metadata, indent=2) + '\n', encoding='utf-8')
     print(f'ESP32-CAM：網頁更新檔 {result} ({len(binary)} bytes, SHA-256 {digest.hex()[:16]}…)')
     return result

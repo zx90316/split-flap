@@ -9,9 +9,9 @@
 | Arduino CLI | 1.5.1 |
 | Mega | `arduino:avr@1.8.8`；`arduino:avr:mega:cpu=atmega2560`；建置成功 |
 | Mega Flash／全域 RAM | 31,852／253,952 bytes；2,362／8,192 bytes |
-| ESP32-CAM | `esp32:esp32@3.3.12`；`esp32:esp32:esp32cam:PartitionScheme=min_spiffs`；建置成功 |
-| ESP32 Flash／全域 RAM | 1,072,373／1,966,080 bytes；53,984／327,680 bytes |
-| OTA 產物 | `esp32cam/dist/splitflap-esp32cam.sffw`；app 映像 1,072,528 bytes，封裝額外 64 bytes |
+| ESP32-CAM | 韌體 1.0.1；`esp32:esp32@3.3.12`；`esp32:esp32:esp32cam:PartitionScheme=min_spiffs`；建置成功 |
+| ESP32 Flash／全域 RAM | 1,072,617／1,966,080 bytes；53,984／327,680 bytes |
+| OTA 產物 | `esp32cam/dist/splitflap-esp32cam.sffw`；app 映像 1,072,768 bytes，封裝額外 64 bytes |
 | 網頁 | 所有 HTML／CSS／JavaScript 隨韌體 gzip 提供，無外部 CDN |
 | 診斷 | 本次建置無專案編譯警告；容量是編譯器統計，不含執行時的堆疊／動態記憶體峰值 |
 
@@ -27,24 +27,26 @@
 | 共用協定 | 4,000 組 COBS／CRC 封包；逐段輸入、雜訊、位元損壞、溢位、100ms 半包逾時、設定序列化與範圍驗證 |
 | Mega EEPROM | 每次寫入前後模擬斷電；有效舊槽保留、提交後選新槽、壞 CRC／錯版本／非法設定拒絕、雙槽恢復與重新開機不動 |
 | 遠端控制 | 接受／完成／拒絕／故障、重複與退役命令 ID、忙碌拒絕、STOP 優先、重新握手不重播、USB 接管、失聯解除 ARM／定位 |
-| ESP32 工具／HTTP fixture | 12 項 Python 測試：建置／燒錄失敗流程、封裝長度／晶片／雜湊／版本、嵌入網頁一致、VS Code 任務與 SVG、模擬登入／CSRF、整份配置驗證、OTA 停止票證與失敗後失效 |
+| ESP32 工具／HTTP fixture | 13 項 Python 測試：建置／燒錄失敗流程、封裝長度／晶片／雜湊／版本、嵌入網頁一致、VS Code 任務與 SVG、模擬登入／CSRF、整份配置驗證、OTA 停止票證與失敗後失效；未接 Mega 可保存 Wi-Fi，ARM 仍拒絕，維護期間拒絕網路更改 |
 | 正式 C++ 網頁資料處理 | 全 45 個 UTF-8 字元、ä／ö／ü、NFC 組合、空白／別名、左中右對齊、長度、閏日／時區與各種位數；實際 cJSON 解析器測試錯型別、範圍、尾隨內容、NUL、深度及整份設定 |
 | 兩板正式通訊核心 | `BridgeEngine` 直接連 `Remote`；模擬每毫秒 11 bytes 與 Mega 64-byte RX，所有 1～10 位每輪最多一顆通電；遺失 ACK／DONE／整個命令、快取退役、STOP、USB、OTA 維護鎖、斷線／重連、協定版本不符；Mega 保存後 ESP32 保存失敗能維持 job=fault／storage |
 | 單向失聯 | 只切斷 ESP32→Mega；Mega 兩秒後停止，ESP32 即使仍收到狀態也進入不確定狀態；需 STOP／Claim，遲到命令不能重新啟動 |
 | 慢速十位批次 | 十位各從空白到 !、SPEED 5000；模擬超過 186 秒仍維持正確待完成狀態，之後十位全部完成；不套用單顆三分鐘的錯誤總逾時 |
+| Wi-Fi 設定條件 | 正式 C++ 判斷函式測試初次無 Mega、斷線後殘留 busy 狀態均可設定網路；連線中運動／保存／監看、待完成本地工作與 OTA 維護仍拒絕 |
 | VS Code 主機偵錯 | `test_bridge_debug.exe`／PDB 成功建置並執行相同核心測試；未宣稱已互動操作中斷點，也不是 ESP32／Mega 實板硬體偵錯 |
 
 電腦上的 UART、EEPROM 與 Hall 都是理想替身。它們不能量測電壓、真實串列誤碼、GPIO 時序、馬達扭力、漏步、溫升、磁極或實際斷電的電氣行為。
 
 ## 手機網頁流程
 
-隔離 Chrome／Playwright 1.62.1，390×844 手機尺寸及 1100×900 桌面尺寸，正式 HTML 連本機模擬 Mega。五組流程通過，未捕捉到 JavaScript 例外：
+隔離 Chrome／Playwright 1.62.1，390×844 手機尺寸及 1100×900 桌面尺寸，正式 HTML 連本機模擬 Mega。六組流程通過，未捕捉到 JavaScript 例外：
 
 1. 未登入 API 拒絕；登入後手動記錄 Z、ARM、顯示 Ä；拒絕超長文字，未校時禁止啟動時鐘。
 2. 三位依序 U7→U0→U2、手動定位、äA 正規化及補空白；拒絕 ß／中文，1～3 位不提供時鐘格式。
 3. 五位 HELLO、手機校時、HH:MM、關閉／重開頁面保留已啟動工作、暫停及可用日期格式。
 4. Wi-Fi 表單、匯出不含密碼／CSRF、非法重複位置整份拒絕、有效匯入、離線重連與重啟後全部未 ARM。
 5. OTA 先 STOP；截斷檔、SHA-256 錯誤拒絕且不重啟；失敗訊息可重新準備；有效檔模擬更新／重啟，手機與桌面沒有頁面橫向溢出。
+6. 首次無 Mega 時可輸入／保存 Wi-Fi，重新載入保留；Mega 隨後連線不覆寫使用者正在輸入的 SSID。馬達控制保持停用；維護時按鈕與 API 均拒絕網路更改。
 
 [手機預覽](ui-preview.jpg) 使用模擬資料。詳細結果及失敗截圖放 `esp32cam/test/.build/`。模擬器使用測試登入頁、記憶體設定與模擬 OTA；正式韌體的 Digest 驗證、FreeRTOS／Wi-Fi／NVS、HTTP 串流 Flash 寫入與每分鐘排程仍須實板驗收。關閉頁面測試確認模擬設備工作狀態保留；不是實際馬達或跨分鐘運轉紀錄。
 
@@ -66,6 +68,8 @@ python esp32cam/tools/dev.py test-web
 使用者先前回報 U0 USB 單顆手動測試數輪無偏移：SPEED=800、ACCEL=800、REVSTEPS=4096、OFFSET=0、DIR=1、ORDER=1234、POLARITY=LOW，SHOW Z 後為 MANUAL／index 26／error=none。原始紀錄見 [Mega 驗證](../mega2560/validation.md)。這不代表本次 ESP32、其餘九位或 Hall 已通過。
 
 2026-10-25 後續 USB 排查：使用者確認 CP2102 已與 ESP32 完全分離、只接電腦 USB。Windows 顯示 `VID_10C4&PID_EA60`、錯誤碼 28，修復前無 COM。Silicon Labs 網站拒絕工具下載，改用 Microsoft Update Catalog 的 11.5.0.417 AMD64 套件；官方 SHA-256 與 Microsoft 硬體相容簽章驗證通過，安裝成功。裝置狀態 OK，專案查詢回 `COM4 serial Serial Port (USB) Unknown`。此結果只確認 CP2102 驅動／USB 列舉；未開啟 COM、驗 ESP32 UART、重新接線或燒錄。ESP32 的 VCC／5V 實際接腳仍待確認。
+
+之後使用者回報已成功燒錄 ESP32，並可進入手機網頁的「裝置設定」；家用 Wi-Fi 保存按鈕被停用。程式重現為舊版 1.0.0 將網路保存誤綁到 Mega 連線條件，1.0.1 已修正並通過上述離線首次設定測試；此修正版的現場更新與實際連入家用 Wi-Fi 仍待使用者驗收。
 
 ## 實機驗收順序
 

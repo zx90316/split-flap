@@ -191,4 +191,22 @@ void endToEnd() {
   puts("PASS ESP↔Mega at 115200/64-byte RX: all widths, sequential outputs, external dedup, lost ACK/DONE/command, cut/reconnect, USB and OTA lock");
   puts("PASS ten-unit default-speed batch exceeds 186 seconds and completes without false timeout");
 }
-int main() { display(); jsonApi(); endToEnd(); }
+void networkProvisioning() {
+  cam::State s;
+  assert(cam::canConfigureNetwork(s, false, false)); // Fresh ESP, no Mega attached.
+  s.panel.busy = s.panel.saving = s.panel.watching = true;
+  assert(cam::canConfigureNetwork(s, false, false)); // Stale state after link loss cannot lock provisioning.
+  s.connected = s.valid = true;
+  assert(!cam::canConfigureNetwork(s, false, false));
+  s.panel.busy = s.panel.saving = s.panel.watching = false;
+  assert(cam::canConfigureNetwork(s, false, false));
+  s.panel.watching = true; assert(!cam::canConfigureNetwork(s, false, false)); s.panel.watching = false;
+  s.panel.saving = true; assert(!cam::canConfigureNetwork(s, false, false)); s.panel.saving = false;
+  s.panel.busy = true; assert(!cam::canConfigureNetwork(s, false, false)); s.panel.busy = false;
+  s.connected = s.valid = false;
+  assert(!cam::canConfigureNetwork(s, true, false));
+  assert(!cam::canConfigureNetwork(s, false, true));
+  s.maintenance = true; assert(!cam::canConfigureNetwork(s, false, false));
+  puts("PASS Wi-Fi provisioning without Mega, stale link state, and busy/save/watch/OTA guards");
+}
+int main() { display(); jsonApi(); endToEnd(); networkProvisioning(); }
