@@ -72,7 +72,7 @@ class BridgeEngine {
       sf::Packet p; if (decoder_.feed(uint8_t(port.read()), now, p)) receive(p, now);
     }
     if (state_.connected && uint32_t(now - lastRx_) > 2000) disconnect(sf::Error::LinkLost);
-    // Mega allows 180 seconds per unit; a sequential ten-unit job may take 30 minutes.
+    // Keep the conservative job deadline; each concurrent rotor has its own 180-second limit.
     if (activeId_ && uint32_t(now - sentAt_) > 1805000) {
       mark(activeId_, sf::Stage::Fault, sf::Error::Unknown); activeId_ = 0; state_.uncertain = true; commandPending_ = false;
     }

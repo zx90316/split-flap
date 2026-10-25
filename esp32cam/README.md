@@ -1,5 +1,7 @@
 # ESP32-CAM 手機翻頁控制台
 
+雙主控 1.1.0 已整理為 [穩定基準](../docs/dual-controller-baseline.md)，保留於 `esp32-purchased-bom`；單主控在獨立分支開發。
+
 後續更新研究：[Mega＋ESP32 單一 USB／單包網頁更新可行性](dual-update-research.md)。這是設計研究，現行更新方式仍依本頁操作。
 
 另一候選：[ESP32-CAM＋MCP23017 單主控研究](single-controller-research.md)，使用現有六片中的四片、只需維護一份韌體；高速排程及實板驗收尚未完成，現版仍為下述雙板架構。
