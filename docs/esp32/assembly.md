@@ -1,5 +1,7 @@
 # 組裝、校準與驗證
 
+> 此文件為保留的 ESP32 方案；目前進度是 [Mega 2560 單顆調機](../../mega2560/README.md)。請勿混用接線與命令。
+
 本版完成文件及軟體層的規劃／檢查，尚未完成實物供電與運轉驗證。組裝時按下列順序逐項記錄，沒有證據的格子留空。
 
 機構依 JonnyBooker 固定參考版核對，其組裝 PDF 與本倉庫保留版 SHA-256 相同；[比對與模型來源](upstream-reference.md)。
@@ -8,7 +10,7 @@
 
 ## A. 元件與規格檢查
 
-1. 依 [project-bom.csv](../../hardware/project-bom.csv) 的 item_id 與標準數量準備元件，逐件核對型號、版本、焊接及完整性。
+1. 依 [project-bom.csv](../../hardware/esp32-project-bom.csv) 的 item_id 與標準數量準備元件，逐件核對型號、版本、焊接及完整性。
 2. `required_quantity` 是十字元基準的組建數量；空白表示須依佈線或實際固定方式確定，並非不需要。
 3. `quantity_basis` 區分電氣設計、上游機構參考與依佈局決定的需求。機構參考數量不可取代實際孔位／尺寸檢查。
 4. [optional-parts.csv](../../hardware/optional-parts.csv) 的零件不是基準必裝件。選用替代接頭或 PD/QC 輸入時須先驗證相容性。

@@ -1,4 +1,13 @@
-﻿item_id,item_name,specification,optional_quantity,unit,use_case,verification_needed
+item_id,item_name,specification,optional_quantity,unit,use_case,verification_needed
 P003,DC 插座轉接板,匹配 12V 電源插頭,1,片,作為 P006 的替代輸入接頭，二擇一,尺寸、極性、電流額定、板上走線與固定
 P010,雙面膠帶,依機構用途選擇,,卷,輔助固定，非必要電氣元件,不能作裸露板子的唯一支撐或唯一絕緣
 O001,PD/QC 觸發線與配套電源,明確支援穩定 12V；DC 接頭匹配,1,組,取代 P023 的 12V 輸入方式,12V 協商、斷電記憶、極性、連續及峰值電流；禁止誤輸入高電壓
+P007,5V 降壓電源板,MP2482／SY8205；12V→5V,1,片,獨立運作階段再規劃；目前USB供電,先設計USB隔離並驗證輸出及溫升
+P008,ESP32 開發板,ESP-WROOM-32 30pin,1,片,既有ESP32方案；目前不用,依docs/esp32及esp32-project-bom.csv
+P009,MCP23017,原ESP32版四片,4,片,目前Mega直接GPIO不使用,不可混用兩版接線表
+P011,電平轉換板,原ESP32版3.3V／5V MOS,1,片,本階段5V邏輯不用,未來UART依方向和訊號規格重選
+P030,USB Type-C資料線,依ESP32或Cardputer接頭,1,條,原ESP32或未來Cardputer,標準Mega使用USB-B；依實物確認
+O002,Cardputer ADV,已有設備,1,台,未來網路與本地輸入終端,與Mega的UART電平和獨立供電待驗證；未實作Wi-Fi
+O003,RTC模組,型號未確認,1,片,未來離線時鐘；目前不接,確認IC及工作電壓、位址與電池充電電路
+O004,LM2596,已有可調降壓板,1,片,備用；目前無3.3V域,不可並聯目前USB 5V；日後先量輸出及隔離
+O005,第二顆歸零磁鐵,2×1mm；位置極性需測,10,顆,僅確認鎖存並選擇雙磁鐵時使用,每圈需穩定解除及觸發邊緣；未修改CAD；不因3.39V直接加購

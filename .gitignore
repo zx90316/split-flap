@@ -5,3 +5,9 @@ firmware/esp32/include/secrets.h
 firmware/esp32/test/native/.build/
 __pycache__/
 *.pyc
+
+# Local Mega toolchains and generated firmware/test artifacts
+.tools/
+mega2560/.build/
+mega2560/.pio/
+mega2560/test/.build/

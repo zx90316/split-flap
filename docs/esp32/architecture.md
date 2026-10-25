@@ -1,6 +1,8 @@
 # ESP32 十字元架構
 
-更新：2026-10-20。本專案以單一 ESP32、四片 MCP23017 與十組驅動／感測模組組建。以下為設計基準，尚未完成實機驗證；標準需求見 [BOM](../../hardware/project-bom.csv)，替代配件見 [選配零件](../../hardware/optional-parts.csv)。
+> 此文件為保留的 ESP32 方案；目前進度是 [Mega 2560 單顆調機](../../mega2560/README.md)。請勿混用接線與命令。
+
+更新：2026-10-20。本專案以單一 ESP32、四片 MCP23017 與十組驅動／感測模組組建。以下為設計基準，尚未完成實機驗證；標準需求見 [BOM](../../hardware/esp32-project-bom.csv)，替代配件見 [選配零件](../../hardware/optional-parts.csv)。
 
 主要參考為 JonnyBooker/split-flap，固定版本與相容性結論見 [參考比對](upstream-reference.md)。本地舊版資料保留 David 版歷史，不代表 JonnyBooker 最新程式已移植。
 

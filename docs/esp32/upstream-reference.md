@@ -1,5 +1,7 @@
 # JonnyBooker 參考基準與 ESP32 移植界線
 
+> 此文件為保留的 ESP32 方案；目前進度是 [Mega 2560 單顆調機](../../mega2560/README.md)。請勿混用接線與命令。
+
 核對日期：2026-10-20。主要參考：[JonnyBooker/split-flap](https://github.com/JonnyBooker/split-flap)，固定 commit [`0c6ef692ac6a5d21a9bc858fa79ecbe816530d8d`](https://github.com/JonnyBooker/split-flap/tree/0c6ef692ac6a5d21a9bc858fa79ecbe816530d8d)（2026-03-29）。後續更新應重新比較，不以浮動 `main` 取代已驗證的基準。
 
 ## 維護狀態與來源
