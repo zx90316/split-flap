@@ -2,6 +2,7 @@
 #include "Arduino.h"
 #include "remote.h"
 #include "../../esp32cam/controller/bridge_engine.h"
+#include "../../esp32cam/controller/display_memory.h"
 #include "../../esp32cam/controller/json_helpers.h"
 #include <assert.h>
 #include <stdio.h>
@@ -46,7 +47,7 @@ struct System {
       down.pipe(megaUart, espUart, ms, cut, 1024);
       uint8_t energized = 0;
       for (uint8_t u = 0; u < 10; ++u) if (panel.unit(u).coils()) { assert(panel.enabled(u)); ++energized; }
-      assert(energized <= 1);
+      assert(energized <= panel.digits());
     }
   }
   uint32_t submit(sf::Op op, uint8_t unit, std::initializer_list<uint8_t> args = {}) {
@@ -173,23 +174,23 @@ void endToEnd() {
   assert(asymmetric.esp.state().connected && asymmetric.esp.state().uncertain);
   asymmetric.cutUp = false; asymmetric.run(700);
   asymmetric.done(asymmetric.submit(sf::Op::Claim, sf::kAll));
-  // At the default 5000 us speed, ten near-full rotations legitimately exceed three minutes.
+  // Deliberately slow speed: all ten move at once and finish within one rotor's time.
   h.done(h.submit(sf::Op::Speed, sf::kAll, {0x88, 0x13}));
   uint8_t slowText[13] = {uint8_t(sf::Op::SetText), sf::kAll, 10}; uint32_t slowJob = 0;
   assert(h.esp.submit(slowText, sizeof(slowText), h.esp.state().nextRequest, h.ms, slowJob) == sf::Error::None);
   h.done(slowJob); h.done(h.submit(sf::Op::Arm, sf::kAll));
   slowText[0] = uint8_t(sf::Op::Text); memset(slowText + 3, 44, 10);
   assert(h.esp.submit(slowText, sizeof(slowText), h.esp.state().nextRequest, h.ms, slowJob) == sf::Error::None);
-  h.run(186000); assert(h.esp.pending() && h.panel.busy() && !h.esp.state().uncertain);
-  h.done(slowJob, 60000);
+  h.run(1000); for (uint8_t u = 0; u < 10; ++u) assert(h.panel.unit(u).steps() > 0);
+  const uint32_t started = h.ms; h.done(slowJob, 30000); assert(h.ms - started < 30000);
   for (uint8_t u = 0; u < 10; ++u) assert(h.panel.unit(u).index() == 44);
   uint8_t importPayload[sf::kSettingsSize + 2] = {uint8_t(sf::Op::ApplyConfig), sf::kAll};
   sf::encodeSettings(h.esp.state().settings, importPayload + 2); uint32_t importJob = 0;
   assert(h.esp.submit(importPayload, sizeof(importPayload), h.esp.state().nextRequest, h.ms, importJob) == sf::Error::None);
   h.done(importJob); h.esp.configurationFailed(importJob); h.run(1200);
   assert(h.esp.job(importJob)->stage == uint8_t(sf::Stage::Fault) && h.esp.job(importJob)->error == sf::Error::Storage);
-  puts("PASS ESP↔Mega at 115200/64-byte RX: all widths, sequential outputs, external dedup, lost ACK/DONE/command, cut/reconnect, USB and OTA lock");
-  puts("PASS ten-unit default-speed batch exceeds 186 seconds and completes without false timeout");
+  puts("PASS ESP↔Mega at 115200/64-byte RX: all widths, parallel outputs, external dedup, lost ACK/DONE/command, cut/reconnect, USB and OTA lock");
+  puts("PASS ten-unit slow batch starts concurrently and completes within one rotor's duration");
 }
 void networkProvisioning() {
   cam::State s;
@@ -209,4 +210,21 @@ void networkProvisioning() {
   s.maintenance = true; assert(!cam::canConfigureNetwork(s, false, false));
   puts("PASS Wi-Fi provisioning without Mega, stale link state, and busy/save/watch/OTA guards");
 }
-int main() { display(); jsonApi(); endToEnd(); networkProvisioning(); }
+void persistentGlyphs() {
+  cam::DisplayMemory memory; sf::UnitState units[10];
+  assert(memory.glyph(0) == cam::DisplayMemory::kUnknown && !memory.observe(units));
+  for (uint8_t glyph = 0; glyph < 45; ++glyph) {
+    units[7].reference = 1; units[7].index = glyph;
+    assert(memory.observe(units)); uint8_t record[cam::DisplayMemory::kSize]; memory.encode(record);
+    cam::DisplayMemory reboot; assert(reboot.decode(record, sizeof(record)) && reboot.glyph(7) == glyph);
+    assert(reboot.glyph(0) == cam::DisplayMemory::kUnknown && !reboot.dirty());
+    memory.saved(); assert(!memory.observe(units));
+    record[3] ^= 1; assert(!reboot.decode(record, sizeof(record)) && reboot.glyph(7) == glyph);
+  }
+  units[7].mode = 7; units[7].index = 1; assert(!memory.observe(units));
+  units[7].mode = 0; units[7].reference = 0; assert(!memory.observe(units) && memory.glyph(7) == 44);
+  uint8_t record[cam::DisplayMemory::kSize]; memory.encode(record); record[1] = 45;
+  sf::put16(record + 11, sf::crc16(record, 11)); assert(!memory.decode(record, sizeof(record)));
+  puts("PASS durable glyph history: all 45 characters, physical mapping, CRC/range rejection, no mid-motion or unknown-position overwrite");
+}
+int main() { display(); jsonApi(); endToEnd(); networkProvisioning(); persistentGlyphs(); }

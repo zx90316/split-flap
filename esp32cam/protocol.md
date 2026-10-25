@@ -32,7 +32,7 @@ Mega 保留八筆命令結果，重複 ID／相同 payload 回既有結果，不
 
 ESP32 **只送一次動作封包**；需要補查結果時送 Query，id 指向該命令。Mega 回既有 Accepted／Done／Fault；不知道的 ID 回 Unknown，絕不從查詢開始動作。Unknown 會使 ESP32 禁止其他動作，直到使用者 STOP／Claim 確認恢復。
 
-STOP 優先於其他等待工作。UART 已送出一部分的 frame 先完成，再送 STOP，以免破壞 framing。沒有一般動作排隊；網頁及自動模式同時最多一項工作。STOP 取消待執行文字各位、解除全部 ARM、使位置失效。
+STOP 優先於其他等待工作。UART 已送出一部分的 frame 先完成，再送 STOP，以免破壞 framing。沒有一般動作排隊；網頁及自動模式同時最多一項工作。每項 TEXT／HOME ALL／CYCLE ALL 內的啟用位置並行起步，各自完成；與目標相同的位置不動。STOP 終止整批所有位、解除全部 ARM、使可信定位失效；ESP32 字元歷史保留供核對。
 
 ## 狀態、心跳與 USB
 
@@ -48,7 +48,7 @@ USB 轉動期間任何非換行字元仍依原行為停止並丟棄整行；USB 
 
 所有控制、設定與更新使用 Digest 驗證；POST 額外要求 `X-CSRF-Token`，有 Origin 時必須符合目前 Host。憑證／CSRF 在 upload START 即檢查，不能只在上傳完成 handler 才驗證。
 
-- `GET /api/state`：連線、軟體記錄、校準、工作、網路、顯示與 OTA 就緒狀態，含本次 ESP boot、nextRequest、csrf 與 networkEditable。不包含密碼。網路設定依 networkEditable 啟用，不要求 Mega 連線；其他馬達控制仍要求 Mega 就緒。
+- `GET /api/state`：連線、軟體記錄、校準、工作、網路、顯示與 OTA 就緒狀態，含本次 ESP boot、nextRequest、csrf、networkEditable、displayMemoryOk。每個 unit 的 rememberedIndex 為最後保存字元（0～44 或 null），獨立於目前 reference；歷史不會自動恢復定位或 ARM。不包含密碼。網路設定依 networkEditable 啟用，不要求 Mega 連線；其他馬達控制仍要求 Mega 就緒。
 - `POST /api/command`：`{boot, request, op, unit, value?, align?}`。op 使用既有命令名稱；例 `TEXT`／`SETTEXT` 的 value 是 Unicode 文字，送 Mega 前轉 0～44 索引。SHOW／SET 亦可用 glyph 或 index。
 - `GET /api/config`：schema1、device、mega、display 的備份。
 - `POST /api/config`：加上 boot／request，整份驗證後送 Mega ApplyConfig 並持久化；若含 display，等待 Mega 完成後保存 ESP32 NVS，兩者成功才回 job=done。NVS 失敗回 fault／storage，保留已保存的 Mega 設定，須重新匯入。

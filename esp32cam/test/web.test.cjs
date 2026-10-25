@@ -66,6 +66,26 @@ async function main() {
     assert.equal(await page.locator('#currentPreview').textContent(),'Ä');
     console.log('PASS browser login, manual reference, ARM, glyph, invalid width and uninitialized clock');
 
+    await page.getByRole('button',{name:'裝置設定',exact:true}).click();
+    await page.locator('#calSpeed').fill('1000');await page.locator('#calAccel').fill('1200');
+    await page.locator('#saveCalibration').click();await toast('校準已保存');
+    let retained=await api();assert.equal(retained.units[0].index,27);assert.equal(retained.units[0].reference,'MANUAL');assert.equal(retained.units[0].armed,true);
+    await page.reload();await page.getByRole('button',{name:'裝置設定',exact:true}).click();
+    for(const details of await page.locator('#wiring details').all())await details.evaluate(node=>node.open=true);
+    for(const img of await page.locator('#wiring img').all()){
+      await img.scrollIntoViewIfNeeded();await img.evaluate(node=>node.decode());
+      assert.equal(await img.evaluate(node=>node.naturalWidth>0),true);
+    }
+    for(const diagramPath of ['/wiring-runtime.svg','/wiring-flashing.svg','/wiring-mega.svg','/wiring-hall.svg']){
+      const diagram=await context.request.get(url+diagramPath);assert.equal(diagram.status(),200);assert.match(diagram.headers()['content-type'],/image\/svg\+xml/);
+    }
+    assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true);
+    await page.locator('#wiring').scrollIntoViewIfNeeded();
+    await page.screenshot({path:path.join(BUILD,'ui-settings-wiring.jpg'),type:'jpeg',quality:85,fullPage:true});
+    await page.getByRole('button',{name:'顯示',exact:true}).click();
+    assert.equal(await page.locator('#currentPreview').textContent(),'Ä');assert.equal(await page.locator('#manualCurrent select').inputValue(),'27');
+    console.log('PASS calibration speed/accel preserves glyph and ARM, page reload uses device history, four offline wiring SVGs render on mobile');
+
     async function layout(count, map=null) {
       await page.getByRole('button',{name:'裝置設定',exact:true}).click();
       await page.locator('#digits').fill(String(count));await page.locator('#customMap').setChecked(!!map);
@@ -116,6 +136,12 @@ async function main() {
     await control({connected:false});await page.locator('#connection').filter({hasText:'尚未連線'}).waitFor();assert.equal(await page.locator('#stop').isEnabled(),false);
     await control({connected:true});await page.locator('#connection').filter({hasText:'已連線'}).waitFor();
     await control({reboot:true});await toast('設備已重新啟動');assert.equal((await api()).units.some(u=>u.armed),false);
+    await page.getByRole('button',{name:'顯示',exact:true}).click();
+    assert.equal(await page.locator('#currentPreview').textContent(),'HELLO');
+    assert.equal(await page.locator('#currentPreview .remembered').count(),5);
+    assert.equal(await page.locator('#sendText').isEnabled(),false);
+    await page.locator('#armAll').click();await toast('全部已啟用');
+    assert.equal((await api()).units.filter(u=>u.enabled).every(u=>u.armed&&u.reference==='MANUAL'),true);
     console.log('PASS browser Wi-Fi form, export/import, invalid atomic config, link reconnect and reboot without ARM');
 
     await page.getByRole('button',{name:'韌體更新',exact:true}).click();
@@ -143,7 +169,7 @@ async function main() {
     await page.screenshot({path:path.join(BUILD,'ui-desktop.jpg'),type:'jpeg',quality:85});
     assert.deepEqual(errors,[]);
     console.log('PASS browser OTA prepare/STOP, truncated/wrong-SHA rejection, successful upload/reboot; mobile/desktop layout; no JS errors');
-    await fs.writeFile(path.join(BUILD,'browser-results.json'),JSON.stringify({passed:true,viewport:[390,844],groups:6,errors},null,2));
+    await fs.writeFile(path.join(BUILD,'browser-results.json'),JSON.stringify({passed:true,viewport:[390,844],groups:7,errors},null,2));
   } catch(error) {
     if(stderr)console.error('Mock server diagnostics:',stderr.slice(-6000));
     const current=browser?.contexts()[0]?.pages().find(p=>!p.isClosed());

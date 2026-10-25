@@ -32,12 +32,12 @@ def verify_package(data):
 class Model:
     def __init__(self):
         self.lock = threading.RLock()
-        self.schema = {'units': [0], 'calibration': [dict(revolution=4096, offset=0, speed=5000, accel=400,
+        self.schema = {'units': [0], 'calibration': [dict(revolution=4096, offset=0, speed=800, accel=800,
                        direction=1, order='1234', activeLow=True) for _ in range(10)]}
         self.display = dict(mode='text', clockFormat='HH:MM', dateFormat='YYYY-MM-DD', timezone=480,
                             align=0, running=False, reason='請先定位並啟用。', timeValid=False, timeSource='none', unix=0)
         self.units = [dict(unit=i, enabled=i == 0, armed=False, index=0, target=0, mode=0, reference='NONE',
-                          rawHigh=True, hall=False, steps=0, remaining=0, measured=[], error='') for i in range(10)]
+                          rawHigh=True, hall=False, steps=0, remaining=0, measured=[], error='', rememberedIndex=None) for i in range(10)]
         self.boot = 1234567
         self.next_request = 1
         self.jobs = []
@@ -58,6 +58,9 @@ class Model:
             callback()
             job['stage'] = 'done'
         self.display['unix'] = int(time.time()) if self.display['timeValid'] else 0
+        for unit in self.units:
+            if unit['reference'] != 'NONE' and not unit['mode']:
+                unit['rememberedIndex'] = unit['index']
 
     def stop(self):
         if self.pending:
@@ -69,7 +72,8 @@ class Model:
 
     def state(self):
         self.advance()
-        return dict(firmware='1.0.1-mock', protocol=1, boot=self.boot, nextRequest=self.next_request, csrf=self.csrf,
+        return dict(firmware='1.1.0-mock', protocol=1, boot=self.boot, nextRequest=self.next_request, csrf=self.csrf,
+                    displayMemoryOk=True,
                     connected=self.connected, protocolMismatch=False, uncertain=False, maintenance=self.maintenance, storageOk=True,
                     networkEditable=not self.pending and not self.maintenance,
                     ageMs=0, digits=len(self.schema['units']), selected=0, busy=bool(self.pending), saving=False,
@@ -139,7 +143,6 @@ class Model:
         elif op in {'SPEED', 'ACCEL'}:
             for u in targets:
                 self.schema['calibration'][u]['speed' if op == 'SPEED' else 'accel'] = body['value']
-                self.units[u].update(reference='NONE', armed=False)
             job['stage'] = 'done'
         else:
             needs_position = op in {'TEXT', 'SHOW', 'GOTO', 'FLAP', 'CYCLE'}
@@ -211,6 +214,15 @@ def handler_for(model):
                     self.send_header('Content-Length', str(len(page)))
                     self.end_headers()
                     self.wfile.write(page)
+                elif path in {'/wiring-runtime.svg', '/wiring-flashing.svg', '/wiring-mega.svg', '/wiring-hall.svg'}:
+                    files = {'/wiring-runtime.svg': 'esp32cam/wiring-runtime.svg', '/wiring-flashing.svg': 'esp32cam/wiring-flashing.svg',
+                             '/wiring-mega.svg': 'mega2560/wiring-ten.svg', '/wiring-hall.svg': 'mega2560/hall-board.svg'}
+                    image = (ROOT / files[path]).read_bytes()
+                    self.send_response(200)
+                    self.send_header('Content-Type', 'image/svg+xml; charset=utf-8')
+                    self.send_header('Content-Length', str(len(image)))
+                    self.end_headers()
+                    self.wfile.write(image)
                 else:
                     self.send_json({'error': 'not_found'}, 404)
 
@@ -265,7 +277,18 @@ def handler_for(model):
                                 raise ValueError('校準參數無效。')
                         job, repeated = model.new_job(body, 'CONFIG')
                         if not repeated:
-                            model.stop()
+                            previous = model.schema
+                            changed_map = previous['units'] != units
+                            geometry = ['revolution', 'offset', 'direction', 'order', 'activeLow']
+                            for u in model.units:
+                                physical = u['unit']
+                                if any(previous['calibration'][physical][key] != settings['calibration'][physical][key] for key in geometry):
+                                    u.update(reference='NONE', armed=False)
+                                if changed_map:
+                                    u['armed'] = False
+                                    if physical not in previous['units'] or physical not in units:
+                                        u['reference'] = 'NONE'
+                            model.display.update(running=False, reason='設定已保存，字元保留。')
                             model.schema = settings
                             for u in model.units:
                                 u['enabled'] = u['unit'] in units

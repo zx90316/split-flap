@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-only
 #include "bench.h"
+#include <string.h>
 
 namespace mega {
 namespace {
@@ -28,8 +29,9 @@ bool Bench::configure(const Config& c) {
     if (c.order[i] > 3 || (seen & (1 << c.order[i]))) return false;
     seen |= 1 << c.order[i];
   }
-  stop();
-  phaseKnown_ = false;
+  const bool geometryChanged = c.revolution != config_.revolution || c.offset != config_.offset ||
+      c.direction != config_.direction || memcmp(c.order, config_.order, 4);
+  if (geometryChanged) { stop(); phaseKnown_ = false; }
   config_ = c;
   return true;
 }
@@ -39,6 +41,12 @@ bool Bench::arm() {
   error_ = nullptr;
   armed_ = true;
   return true;
+}
+
+void Bench::disarm() {
+  if (busy()) { stop(); return; }
+  armed_ = false;
+  coils_ = 0;
 }
 
 void Bench::stop() {

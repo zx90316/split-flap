@@ -1,9 +1,9 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 1190" role="img" aria-labelledby="title desc">
-<title id="title">十字元接線規劃：40 路相位＋10 路 Hall</title><desc id="desc">一次只測一顆。十顆排程尚未實作；擴充前須量 USB 的 5V 負載、各 GPIO 輸入負載與 12V 峰值。</desc>
+<title id="title">十字元接線規劃：40 路相位＋10 路 Hall</title><desc id="desc">支援 1～10 位同時翻轉；只啟用已接組別。擴充前量控制 5V 負載、12V 總電流與壓降。</desc>
 <style>text{font-family:"Microsoft JhengHei","Noto Sans CJK TC",sans-serif;fill:#172b45} .wire{fill:none;stroke-linejoin:round;stroke-linecap:round}</style>
 <rect width="1440" height="1190" fill="#f5f7fb"/>
 <text x="45" y="55" font-size="30" font-weight="bold" text-anchor="start">十字元接線規劃：40 路相位＋10 路 Hall</text>
-<text x="45" y="88" font-size="17" font-weight="normal" text-anchor="start">一次只測一顆。十顆排程尚未實作；擴充前須量 USB 的 5V 負載、各 GPIO 輸入負載與 12V 峰值。</text>
+<text x="45" y="88" font-size="17" font-weight="normal" text-anchor="start">支援 1～10 位同時翻轉；只啟用已接組別。擴充前量控制 5V 負載、12V 總電流與壓降。</text>
 <text x="55" y="134" font-size="23" font-weight="bold" text-anchor="start">Mega 2560（標準母排）</text>
 <text x="580" y="134" font-size="23" font-weight="bold" text-anchor="start">ULN2003 ×10</text>
 <text x="865" y="134" font-size="23" font-weight="bold" text-anchor="start">12V 馬達 ×10</text>
@@ -267,7 +267,7 @@
 <rect x="875" y="985" width="500" height="106" rx="12" fill="#e8f7f1" stroke="#86cdb8" stroke-width="2"/>
 <text x="895" y="1017" font-size="19" font-weight="normal" text-anchor="start">Hall 分線板：+ 全接 Mega 5V，− 全接 GND</text>
 <text x="895" y="1049" font-size="17" font-weight="normal" text-anchor="start">8P：S0–S7 → A0–A7；2P：S8–S9 → A8–A9</text>
-<text x="895" y="1078" font-size="17" font-weight="normal" text-anchor="start">5V 為 USB 控制電源；正負線與信號分開標記</text>
+<text x="895" y="1078" font-size="17" font-weight="normal" text-anchor="start">控制 5V／USB 供電互斥；正負與訊號分開標記</text>
 <text x="45" y="1135" font-size="19" font-weight="normal" text-anchor="start">紅：12V 馬達分配；深灰：馬達地；綠：Hall 信號（經分線板）。交叉無圓點不代表相接。</text>
-<text x="45" y="1167" font-size="18" font-weight="normal" text-anchor="start">Mega 只由 USB 供電；Mega／Hall／ULN／12V 負極共地。U9 使用 D8–D11，避開 D7／D8 接頭間距。</text>
+<text x="45" y="1167" font-size="18" font-weight="normal" text-anchor="start">電腦調機：Mega 接 USB、外部 5V 拔除；獨立供電依 ESP32 圖。全部共地；U9 使用 D8–D11。</text>
 </svg>

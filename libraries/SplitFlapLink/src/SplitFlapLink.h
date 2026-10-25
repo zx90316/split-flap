@@ -86,7 +86,7 @@ class Decoder {
   uint8_t wire_[kWireSize]; uint16_t length_ = 0; uint32_t last_ = 0; bool discard_ = false;
 };
 struct Calibration {
-  uint16_t revolution = 4096, offset = 0, speed = 5000, accel = 400;
+  uint16_t revolution = 4096, offset = 0, speed = 800, accel = 800;
   int8_t direction = 1;
   uint8_t order[4] = {0, 1, 2, 3};
   bool activeLow = true;

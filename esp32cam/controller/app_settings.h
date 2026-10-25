@@ -3,6 +3,7 @@
 #include <Arduino.h>
 #include <Preferences.h>
 #include "display_model.h"
+#include "display_memory.h"
 
 namespace cam {
 struct AppSettings {
@@ -43,6 +44,15 @@ class AppStore {
     return prefs_.putBytes("settings", data, sizeof(data)) == sizeof(data);
   }
   bool fresh() const { return fresh_; }
+  void loadDisplayMemory(DisplayMemory& memory) {
+    uint8_t data[DisplayMemory::kSize];
+    if (prefs_.getBytesLength("last-glyphs") == sizeof(data) && prefs_.getBytes("last-glyphs", data, sizeof(data)) == sizeof(data))
+      memory.decode(data, sizeof(data));
+  }
+  bool saveDisplayMemory(const DisplayMemory& memory) {
+    uint8_t data[DisplayMemory::kSize]; memory.encode(data);
+    return prefs_.putBytes("last-glyphs", data, sizeof(data)) == sizeof(data);
+  }
  private:
   Preferences prefs_; bool fresh_ = false;
 };

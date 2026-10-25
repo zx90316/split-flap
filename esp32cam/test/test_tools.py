@@ -119,8 +119,12 @@ class ArtifactsTest(unittest.TestCase):
 
     def test_embedded_page_is_exact_current_source(self):
         header = (ROOT / 'esp32cam/controller/web_assets.h').read_text(encoding='utf-8')
-        compressed = bytes(int(n, 16) for n in re.findall(r'0x([0-9a-f]{2})', header))
-        self.assertEqual(gzip.decompress(compressed), (ROOT / 'esp32cam/web/index.html').read_bytes())
+        embed = module('embed_assets_test', 'esp32cam/tools/embed_web.py')
+        for name, path in embed.ASSETS.items():
+            array = re.search(r'\b' + name + r'\[\].*?\{(.*?)\};', header, re.S)
+            self.assertIsNotNone(array, name)
+            compressed = bytes(int(n, 16) for n in re.findall(r'0x([0-9a-f]{2})', array.group(1)))
+            self.assertEqual(gzip.decompress(compressed), path.read_bytes(), name)
 
     def test_vscode_references_and_both_wiring_files(self):
         tasks = json.loads((ROOT / '.vscode/tasks.json').read_text(encoding='utf-8'))

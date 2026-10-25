@@ -7,7 +7,7 @@ namespace mega {
 static const uint8_t kMaxUnits = 10;
 enum class Batch : uint8_t { None, Text, Home, Cycle };
 
-// Independent unit state, explicit installation map, one energized unit at a time.
+// Independent unit state, explicit installation map, concurrent batch start.
 class Panel {
  public:
   Panel();
@@ -44,7 +44,7 @@ class Panel {
 
  private:
   bool ready(bool needsPosition) const;
-  void startNext(uint32_t now);
+  void startBatch(uint32_t now);
   void fail(uint8_t unit, const char* reason);
   Bench units_[kMaxUnits];
   bool polarity_[kMaxUnits];

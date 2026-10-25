@@ -66,7 +66,23 @@ void storage() {
   mega::SettingsStore<Memory> recover(original); assert(recover.load(loaded) && loaded.count == 1);
   sf::Settings invalid = first; invalid.units[9].order[0] = 2;
   assert(!writer.begin(invalid));
+  Memory legacy; sf::Settings old;
+  for (auto& c : old.units) { c.speed = 5000; c.accel = 400; }
+  old.units[7].speed = 1500; old.units[7].accel = 600; old.units[7].revolution = 4076;
+  memcpy(legacy.bytes, "SFMC", 4); sf::put32(legacy.bytes + 4, 1); legacy.bytes[8] = 1;
+  sf::encodeSettings(old, legacy.bytes + 9); sf::put16(legacy.bytes + 130, sf::crc16(legacy.bytes, 130)); legacy.bytes[159] = 0xa5;
+  for (int cut = 0; cut <= 134; ++cut) {
+    Memory interrupted = legacy; mega::SettingsStore<Memory> migrate(interrupted);
+    assert(migrate.load(loaded) && migrate.needsMigration());
+    assert(loaded.units[0].speed == 800 && loaded.units[0].accel == 800);
+    assert(loaded.units[7].speed == 1500 && loaded.units[7].accel == 600 && loaded.units[7].revolution == 4076);
+    assert(migrate.begin(loaded)); for (int i = 0; i < cut && migrate.busy(); ++i) migrate.tick();
+    mega::SettingsStore<Memory> restart(interrupted); assert(restart.load(loaded));
+    assert(restart.needsMigration() == (cut < 134));
+    assert(loaded.units[0].speed == 800 && loaded.units[7].speed == 1500);
+  }
   puts("PASS EEPROM cuts at every write, corrupt-slot fallback and complete validation");
+  puts("PASS v1 default-speed migration to 800/800, custom calibration retained, power cuts at every migration write");
 }
 struct Harness {
   mega::Panel panel; Memory mem; mega::Remote<Memory> remote; FakeSerial uart;
@@ -89,7 +105,7 @@ struct Harness {
       panel.tick(us, 0x3ff); remote.poll(uart, us / 1000, us, 0x3ff);
       uint8_t on = 0;
       for (uint8_t u = 0; u < 10; ++u) if (panel.unit(u).coils()) { assert(panel.enabled(u)); ++on; }
-      assert(on <= 1);
+      assert(on <= panel.digits());
       for (char ch : uart.output) { sf::Packet p; if (response.feed(uint8_t(ch), us / 1000, p)) packets.push_back(p); }
       uart.output.clear();
     }

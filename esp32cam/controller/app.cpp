@@ -24,6 +24,7 @@ void App::begin() {
   // Enable the RF entropy source before generating per-device passwords and session nonces.
   WiFi.persistent(false); WiFi.setHostname("splitflap"); WiFi.mode(WIFI_AP_STA); WiFi.setAutoReconnect(true);
   storageOk_ = store_.begin(settings_);
+  if (storageOk_) store_.loadDisplayMemory(displayMemory_);
   if (!validAppSettings(settings_)) { randomPassword(settings_.apPassword, 12); randomPassword(settings_.adminPassword, 12); }
   csrf_ = token(); apSsid_ = "SplitFlap-" + String(uint32_t(ESP.getEfuseMac() >> 24) & 0xffffff, HEX);
   bridge_.begin();
@@ -35,13 +36,14 @@ void App::begin() {
   sntp_set_time_sync_notification_cb(ntpCallback); configTime(0, 0, "pool.ntp.org", "time.cloudflare.com");
   const char* headers[] = {"X-CSRF-Token", "Origin", "X-OTA-Ticket"}; server_.collectHeaders(headers, 3);
   routes(); server_.begin(); mbedtls_md_init(&hash_);
-  Serial.println("Split-Flap ESP32-CAM 1.0.1. UART2 RX=14 TX=13; Mega Serial1 115200.");
+  Serial.println("Split-Flap ESP32-CAM 1.1.0. UART2 RX=14 TX=13; Mega Serial1 115200.");
   Serial.println("ACCESS: show device Wi-Fi and admin credentials. STATUS | NETWORK RESET | HELP");
   if (store_.fresh() || !storageOk_) printAccess();
   if (!storageOk_) Serial.println("FAULT: NVS unavailable; settings are not durable.");
 }
 void App::pause(const char* reason) { running_ = false; automaticJob_ = 0; strncpy(pauseReason_, reason, sizeof(pauseReason_) - 1); pauseReason_[sizeof(pauseReason_) - 1] = 0; }
 void App::tick() {
+  rememberDisplay();
   server_.handleClient(); dns_.processNextRequest(); console();
   if (ntpReceived) { ntpReceived = false; timeSource_ = "ntp"; }
   if (networkAt_ && int32_t(millis() - networkAt_) >= 0) { networkAt_ = 0; connectNetwork(); }
@@ -65,6 +67,16 @@ void App::tick() {
     if (stopped || (!s.connected && uint32_t(millis() - resetAt_) > 2500)) { resetRequested_ = false; resetNetwork(); }
   }
   scheduler(); delay(1);
+}
+void App::rememberDisplay() {
+  const State s = bridge_.snapshot(); const uint32_t now = millis();
+  if (!s.connected || !s.valid || uint32_t(now - s.updatedAt) > 2000 ||
+      s.panel.busy || s.panel.saving || s.panel.watching || s.maintenance || bridge_.pending()) return;
+  if (!displayMemory_.observe(s.units)) return;
+  if (displayMemoryRetryAt_ && int32_t(now - displayMemoryRetryAt_) < 0) return;
+  displayMemoryOk_ = store_.saveDisplayMemory(displayMemory_);
+  if (displayMemoryOk_) { displayMemory_.saved(); displayMemoryRetryAt_ = 0; }
+  else displayMemoryRetryAt_ = now + 5000;
 }
 bool App::auth() {
   if (server_.authenticate("admin", settings_.adminPassword)) return true;
@@ -113,6 +125,16 @@ bool App::saveApp(const AppSettings& candidate) {
   settings_ = candidate; storageOk_ = true; return true;
 }
 void App::routes() {
+  const auto wiring = [this](const uint8_t* data, size_t size) {
+    if (!auth()) return;
+    server_.sendHeader("Content-Encoding", "gzip"); server_.sendHeader("Cache-Control", "no-cache");
+    server_.sendHeader("X-Content-Type-Options", "nosniff");
+    server_.send_P(200, "image/svg+xml; charset=utf-8", reinterpret_cast<const char*>(data), size);
+  };
+  server_.on("/wiring-runtime.svg", HTTP_GET, [wiring]() { wiring(kWiringRuntimeGzip, sizeof(kWiringRuntimeGzip)); });
+  server_.on("/wiring-flashing.svg", HTTP_GET, [wiring]() { wiring(kWiringFlashingGzip, sizeof(kWiringFlashingGzip)); });
+  server_.on("/wiring-mega.svg", HTTP_GET, [wiring]() { wiring(kWiringMegaGzip, sizeof(kWiringMegaGzip)); });
+  server_.on("/wiring-hall.svg", HTTP_GET, [wiring]() { wiring(kWiringHallGzip, sizeof(kWiringHallGzip)); });
   server_.on("/", HTTP_GET, [this]() {
     if (!auth()) return;
     server_.sendHeader("Content-Encoding", "gzip"); server_.sendHeader("Cache-Control", "no-cache");
@@ -168,7 +190,7 @@ void App::configuration() {
   cJSON_Delete(b);
   if (!ok || !prefsOk) { error(400, "整份設定驗證失敗；未套用。"); return; }
   if (!idle(s)) return;
-  pause("設定已變更，請重新定位與啟用。");
+  pause("設定已保存；速度調整保留目前字元與轉動許可。定位校準有變更時，請確認實際字元。");
   uint8_t bytes[sf::kSettingsSize + 2]; bytes[0] = uint8_t(sf::Op::ApplyConfig); bytes[1] = sf::kAll;
   sf::encodeSettings(config, bytes + 2); uint32_t id = 0;
   const sf::Error result = bridge_.submit(bytes, sizeof(bytes), request, id);
@@ -357,7 +379,8 @@ void App::finishOta() {
 }
 void App::state() {
   const State s = bridge_.snapshot(); cJSON* o = cJSON_CreateObject();
-  str(o, "firmware", "1.0.1"); num(o, "protocol", sf::kVersion); num(o, "boot", s.boot); num(o, "nextRequest", s.nextRequest); str(o, "csrf", csrf_.c_str());
+  str(o, "firmware", "1.1.0"); num(o, "protocol", sf::kVersion); num(o, "boot", s.boot); num(o, "nextRequest", s.nextRequest); str(o, "csrf", csrf_.c_str());
+  flag(o, "displayMemoryOk", displayMemoryOk_);
   flag(o, "connected", s.connected && s.valid && uint32_t(millis() - s.updatedAt) <= 2000);
   flag(o, "networkEditable", canConfigureNetwork(s, bridge_.pending(), pendingSettingsJob_ != 0));
   flag(o, "protocolMismatch", s.protocolMismatch); flag(o, "uncertain", s.uncertain); flag(o, "maintenance", s.maintenance); flag(o, "storageOk", storageOk_);
@@ -365,10 +388,14 @@ void App::state() {
   flag(o, "busy", s.panel.busy || bridge_.pending()); flag(o, "saving", s.panel.saving || pendingSettingsJob_); flag(o, "watching", s.panel.watching); flag(o, "usbLocked", s.panel.usbLocked);
   str(o, "error", s.panel.error); cJSON_AddItemToObject(o, "mega", settingsJson(s.settings));
   cJSON* units = cJSON_AddArrayToObject(o, "units");
-  for (const auto& u : s.units) {
-    cJSON* row = cJSON_CreateObject(); num(row, "unit", u.unit); flag(row, "enabled", u.enabled); flag(row, "armed", u.armed);
+  for (uint8_t physical = 0; physical < 10; ++physical) {
+    const auto& u = s.units[physical];
+    cJSON* row = cJSON_CreateObject(); num(row, "unit", physical); flag(row, "enabled", u.enabled); flag(row, "armed", u.armed);
     num(row, "index", u.index); num(row, "target", u.target); num(row, "mode", u.mode);
     str(row, "reference", u.reference == 2 ? "HALL" : u.reference == 1 ? "MANUAL" : "NONE");
+    const uint8_t remembered = displayMemory_.glyph(physical);
+    if (remembered < 45) num(row, "rememberedIndex", remembered);
+    else cJSON_AddNullToObject(row, "rememberedIndex");
     flag(row, "rawHigh", u.rawHigh); flag(row, "hall", u.hall); num(row, "steps", u.steps); num(row, "remaining", u.remaining); str(row, "error", u.error);
     cJSON* measures = cJSON_AddArrayToObject(row, "measured"); for (uint8_t i = 0; i < u.measuredCount; ++i) cJSON_AddItemToArray(measures, cJSON_CreateNumber(u.measured[i]));
     cJSON_AddItemToArray(units, row);

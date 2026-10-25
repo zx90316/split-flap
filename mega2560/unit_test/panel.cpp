@@ -23,12 +23,13 @@ void Panel::settings(sf::Settings& out) const {
 
 bool Panel::applySettings(const sf::Settings& settings) {
   if (busy() || !sf::validSettings(settings)) return false;
-  stopAll();
   for (uint8_t u = 0; u < 10; ++u) {
     const sf::Calibration& d = settings.units[u]; Config c;
     c.revolution = d.revolution; c.offset = d.offset; c.intervalUs = d.speed;
     c.acceleration = d.accel; c.direction = d.direction; memcpy(c.order, d.order, 4);
-    units_[u] = Bench(); units_[u].configure(c); polarity_[u] = d.activeLow;
+    units_[u].configure(c);
+    if (polarity_[u] != d.activeLow) units_[u].stop();
+    polarity_[u] = d.activeLow;
   }
   return setUnits(settings.mapping, settings.count);
 }
@@ -61,7 +62,12 @@ bool Panel::setUnits(const uint8_t* units, uint8_t count) {
     if (units[i] >= kMaxUnits || (seen & (1U << units[i]))) return false;
     seen |= 1U << units[i];
   }
-  stopAll();
+  if (count_ == count && !memcmp(mapping_, units, count)) return true;
+  for (uint8_t u = 0; u < kMaxUnits; ++u) {
+    if ((enabledMask_ & seen) & (1U << u)) units_[u].disarm();
+    else units_[u].stop();
+  }
+  batch_ = Batch::None; cursor_ = 0; error_ = nullptr; faultUnit_ = kMaxUnits;
   count_ = count;
   enabledMask_ = seen;
   for (uint8_t i = 0; i < count; ++i) mapping_[i] = units[i];
@@ -77,9 +83,7 @@ bool Panel::select(uint8_t unit) {
 
 bool Panel::setPolarity(bool activeLow) {
   if (busy()) return false;
-  const Config config = selected().config();
-  units_[selected_] = Bench();
-  selected().configure(config);
+  if (polarity_[selected_] != activeLow) selected().stop();
   polarity_[selected_] = activeLow;
   return true;
 }
@@ -138,7 +142,7 @@ bool Panel::text(const uint8_t* values, uint8_t count, uint32_t now) {
   faultUnit_ = kMaxUnits;
   batch_ = Batch::Text;
   cursor_ = 0;
-  startNext(now);
+  startBatch(now);
   return true;
 }
 
@@ -148,7 +152,7 @@ bool Panel::homeAll(uint32_t now) {
   faultUnit_ = kMaxUnits;
   batch_ = Batch::Home;
   cursor_ = 0;
-  startNext(now);
+  startBatch(now);
   return true;
 }
 
@@ -158,7 +162,7 @@ bool Panel::cycleAll(uint32_t now) {
   faultUnit_ = kMaxUnits;
   batch_ = Batch::Cycle;
   cursor_ = 0;
-  startNext(now);
+  startBatch(now);
   return true;
 }
 
@@ -168,17 +172,18 @@ void Panel::fail(uint8_t unit, const char* reason) {
   faultUnit_ = unit;
 }
 
-void Panel::startNext(uint32_t now) {
-  while (cursor_ < count_) {
-    const uint8_t u = mapping_[cursor_];
+void Panel::startBatch(uint32_t now) {
+  bool started = false;
+  for (uint8_t i = 0; i < count_; ++i) {
+    const uint8_t u = mapping_[i];
     Bench& b = units_[u];
-    if (batch_ == Batch::Text && b.index() == targets_[cursor_]) { ++cursor_; continue; }
-    const bool ok = batch_ == Batch::Text ? b.goTo(targets_[cursor_], now) :
+    if (batch_ == Batch::Text && b.index() == targets_[i]) continue;
+    const bool ok = batch_ == Batch::Text ? b.goTo(targets_[i], now) :
         batch_ == Batch::Home ? b.home(now) : b.cycle(now);
-    if (!ok) fail(u, "batch_start_failed");
-    return;
+    if (!ok) { fail(u, "batch_start_failed"); return; }
+    started = true;
   }
-  batch_ = Batch::None;
+  if (!started) batch_ = Batch::None;
 }
 
 void Panel::tick(uint32_t now, uint16_t rawHighMask) {
@@ -188,9 +193,9 @@ void Panel::tick(uint32_t now, uint16_t rawHighMask) {
     units_[u].tick(now, polarity_[u] ? !high : high);
     if (units_[u].error()) { fail(u, units_[u].error()); return; }
   }
-  if (batching() && !units_[mapping_[cursor_]].busy()) {
-    ++cursor_;
-    startNext(now);
+  if (batching()) {
+    for (uint8_t i = 0; i < count_; ++i) if (units_[mapping_[i]].busy()) return;
+    batch_ = Batch::None;
   }
 }
 }

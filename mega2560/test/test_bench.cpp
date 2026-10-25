@@ -276,7 +276,7 @@ void rampLimitsAndImmediateStops() {
   c.intervalUs = 1500; c.acceleration = 99; assert(!b.configure(c));
   c.acceleration = 6001; assert(!b.configure(c));
   c.acceleration = 100; assert(b.configure(c)); assert(b.arm());
-  c.acceleration = 6000; assert(b.configure(c)); assert(!b.armed());
+  c.acceleration = 6000; assert(b.configure(c)); assert(b.armed());
   for (uint16_t stopAt : {uint16_t(1), uint16_t(150), uint16_t(750), uint16_t(1400)}) {
     Rotor r; c = r.bench.config(); c.intervalUs = 1500;
     assert(r.bench.configure(c)); assert(r.bench.arm()); assert(r.bench.step(1500, r.now));
@@ -381,7 +381,7 @@ void manualCycleAndInvalidation() {
     while (b.busy()) b.tick(now += 5000, true);
     assert(b.setCurrent(0));
     c.intervalUs = 800; assert(b.configure(c));
-    assert(!b.positioned() && !b.armed());
+    assert(b.positioned() && !b.armed());
     assert(b.setCurrent(0)); assert(b.arm()); assert(b.led(now));
     assert(!b.positioned()); b.stop();
   }

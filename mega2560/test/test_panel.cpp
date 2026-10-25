@@ -9,7 +9,7 @@ void outputs(const mega::Panel& panel) {
   for (uint8_t u = 0; u < 10; ++u) {
     if (panel.unit(u).coils()) { assert(panel.enabled(u)); ++energized; }
   }
-  assert(energized <= 1);
+  assert(energized <= panel.digits());
 }
 
 void drain(mega::Panel& panel, uint32_t& now) {
@@ -82,9 +82,9 @@ void atomicValidationAndSettings() {
   assert(panel.speedAll(800) && panel.accelerationAll(800));
   for (uint8_t u = 0; u < 5; ++u) {
     assert(panel.unit(u).config().intervalUs == 800 && panel.unit(u).config().acceleration == 800);
-    assert(!panel.unit(u).positioned() && !panel.unit(u).armed());
+    assert(panel.unit(u).positioned() && panel.unit(u).armed());
   }
-  assert(panel.unit(5).config().intervalUs == 5000);
+  assert(panel.unit(5).config().intervalUs == 800);
   assert(panel.setCurrentText(current, 5) && panel.armAll());
   uint32_t now = 0; assert(panel.text(target, 5, now));
   assert(!panel.setDigits(3) && !panel.select(1) && !panel.speedAll(1000));
@@ -99,7 +99,7 @@ void stopAndFaultCancelQueue() {
   panel.tick(now += 10000, 0x3ff); assert(panel.unit(0).steps() == 1);
   panel.stopAll();
   for (uint16_t i = 0; i < 1000; ++i) panel.tick(now += 5000, 0x3ff);
-  assert(!panel.busy() && panel.unit(1).steps() == 0 && panel.unit(2).steps() == 0);
+  assert(!panel.busy() && panel.unit(1).steps() == 1 && panel.unit(2).steps() == 1);
   for (uint8_t u = 0; u < 3; ++u) assert(!panel.unit(u).positioned() && !panel.unit(u).armed());
   assert(panel.armAll());
   mega::Config c = panel.unit(0).config(); c.revolution = 1000;
@@ -107,7 +107,7 @@ void stopAndFaultCancelQueue() {
   assert(panel.homeAll(now));
   for (uint32_t i = 0; panel.busy() && i < 10000; ++i) panel.tick(now += 5000, 0x3ff);
   assert(!panel.busy() && panel.error() && !strcmp(panel.error(), "hall_edge_missing"));
-  assert(panel.faultUnit() == 0 && panel.unit(1).steps() == 0);
+  assert(panel.faultUnit() == 0 && panel.unit(1).steps() > 0);
   outputs(panel);
   assert(panel.setCurrentText(current, 3) && panel.armAll());
   assert(panel.text(target, 3, now)); panel.tick(now += 100001, 0x3ff);
@@ -127,7 +127,7 @@ void batchCyclesAndHoming() {
   assert(panel.setCurrentText(current, 3) && panel.armAll());
   uint32_t now = 0; assert(panel.cycleAll(now)); drain(panel, now);
   for (uint8_t u = 0; u < 3; ++u) assert(panel.unit(u).index() == current[u] && panel.unit(u).steps() == 4096);
-  // Simulate one ideal marker for each motor while homing all sequentially.
+  // Simulate an independent marker for each concurrently homing motor.
   assert(panel.homeAll(now));
   uint16_t physical[3] = {120, 5, 3300};
   for (uint32_t guard = 0; panel.busy() && guard < 100000; ++guard) {
@@ -165,8 +165,25 @@ void bulkGlyphs() {
   assert(!mega::parseText("A", 0, false, values) && !mega::parseText("A", 11, false, values));
 }
 
+void concurrentTimingAndConfiguration() {
+  for (uint8_t count = 1; count <= 10; ++count) {
+    mega::Panel panel; assert(panel.setDigits(count));
+    uint8_t values[10] = {}, target[10]; memset(target, 10, sizeof(target));
+    assert(panel.setCurrentText(values, count) && panel.armAll());
+    assert(panel.text(target, count, 0)); panel.tick(10000, 0x3ff);
+    for (uint8_t u = 0; u < count; ++u) assert(panel.unit(u).steps() == 1 && panel.unit(u).coils());
+    uint32_t now = 10000; drain(panel, now);
+    assert(now < 7000000);  // Width ten takes one rotor's time, not ten rotations in sequence.
+    sf::Settings config; panel.settings(config); config.units[count - 1].speed = 1500;
+    assert(panel.applySettings(config));
+    for (uint8_t u = 0; u < count; ++u) assert(panel.unit(u).index() == 10 && panel.unit(u).positioned() && panel.unit(u).armed());
+    config.units[count - 1].revolution = 4076; assert(panel.applySettings(config));
+    assert(!panel.unit(count - 1).positioned() && !panel.unit(count - 1).armed());
+    for (uint8_t u = 0; u + 1 < count; ++u) assert(panel.unit(u).positioned() && panel.unit(u).armed());
+  }
+}
 int main() {
   widthsAndText(); installationMapsAndState(); atomicValidationAndSettings();
-  stopAndFaultCancelQueue(); batchCyclesAndHoming(); bulkGlyphs();
-  puts("PASS panel: 6 suites (all widths 1..10, sparse maps/state, atomic readiness, stop/fault, sequential cycle/home, text parsing)");
+  stopAndFaultCancelQueue(); batchCyclesAndHoming(); bulkGlyphs(); concurrentTimingAndConfiguration();
+  puts("PASS panel: 7 suites; parallel widths 1..10, unchanged digits, sparse maps, simultaneous stop/fault, configuration preserves unaffected positions");
 }

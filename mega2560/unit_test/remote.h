@@ -10,7 +10,10 @@ template <typename Backend> class Remote {
   Remote(Panel& panel, Backend& backend) : panel_(panel), store_(backend) {}
   void begin() {
     sf::Settings saved;
-    if (store_.load(saved)) panel_.applySettings(saved);
+    if (store_.load(saved)) {
+      panel_.applySettings(saved);
+      if (store_.needsMigration()) store_.begin(saved);
+    }
     boot_ = true;
   }
   bool saving() const { return store_.busy(); }

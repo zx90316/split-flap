@@ -37,6 +37,7 @@ class App {
   void finishOta();
   bool otaReady(const State& state) const;
   void state();
+  void rememberDisplay();
   void getConfiguration();
   bool idle(const State& state);
   void pause(const char* reason);
@@ -49,6 +50,9 @@ class App {
   Bridge bridge_;
   AppSettings pendingSettings_;
   WebServer server_{80}; DNSServer dns_; AppStore store_; AppSettings settings_;
+  DisplayMemory displayMemory_;
+  bool displayMemoryOk_ = true;
+  uint32_t displayMemoryRetryAt_ = 0;
   String apSsid_, csrf_, otaTicket_, otaError_;
   char consoleLine_[64] = {}, pauseReason_[96] = "請先定位、啟用馬達，再開始顯示。";
   uint8_t consoleLength_ = 0;

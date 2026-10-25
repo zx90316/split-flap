@@ -7,8 +7,8 @@ namespace mega {
 struct Config {
   uint16_t revolution = 4096;  // Initial HALF-step estimate, not calibration.
   uint16_t offset = 0;
-  uint16_t intervalUs = 5000;  // Cruise interval; smaller is faster.
-  uint16_t acceleration = 400;  // Half-steps/s^2, shared by acceleration/braking.
+  uint16_t intervalUs = 800;  // Cruise interval; smaller is faster.
+  uint16_t acceleration = 800;  // Half-steps/s^2, shared by acceleration/braking.
   int8_t direction = 1;
   uint8_t order[4] = {0, 1, 2, 3};
 };
@@ -32,6 +32,7 @@ class Bench {
   bool configure(const Config& config);
   const Config& config() const { return config_; }
   bool arm();
+  void disarm();  // Idle permission change; preserves the known position and phase.
   void stop();
   bool setCurrent(uint8_t index);
   bool step(uint16_t count, uint32_t now);

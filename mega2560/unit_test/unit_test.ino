@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-only
-// Mega 2560, explicitly enabled units; batch moves run one motor at a time.
+// Mega 2560, explicitly enabled units; changed digits begin moving together.
 #include <Arduino.h>
 #include <ctype.h>
 #include <string.h>
@@ -88,7 +88,7 @@ void panelStatus() {
     Serial.print(panel.physicalUnit(i));
   }
   Serial.print(F(" SELECTED=U")); Serial.print(panel.selectedUnit());
-  Serial.println(F(" UPDATE=SEQUENTIAL"));
+  Serial.println(F(" UPDATE=PARALLEL"));
 }
 
 void statusUnit(uint8_t unit) {
@@ -126,8 +126,8 @@ void help() {
   Serial.println(F("DIGITS 1..10 (U0 onward) | UNITS 0,2,4 (explicit ordered installation map)"));
   Serial.println(F("UNIT 0..9 (enabled only; keeps settings/position) | STATUS [ALL]"));
   Serial.println(F("ARM [ALL] | STOP | OFF | WATCH | HELP"));
-  Serial.println(F("SETTEXT exact-current-text | TEXT target-text (pads blanks, sequential)"));
-  Serial.println(F("Bulk text: one ASCII glyph per digit; _ or space=blank, $/&/#=AE/OE/UE"));
+  Serial.println(F("SETTEXT exact-current-text | TEXT target-text (pads blanks, parallel)"));
+  Serial.println(F("Bulk text: changed digits start together; _=blank, $/&/#=AE/OE/UE"));
   Serial.println(F("SET value | SHOW value | SETINDEX 0..44 (selected unit)"));
   Serial.println(F("Values: BLANK, A..Z, AE/OE/UE ($/&/#), 0..9, : . - ? !"));
   Serial.println(F("LED (UNPLUG MOTOR) | STEP 1..20000 | REV | HOME [ALL] | MEASURE"));
@@ -135,7 +135,7 @@ void help() {
   Serial.println(F("ORDER 1234 | DIR 1/-1 | REVSTEPS 1000..20000 | OFFSET 0..rev-1"));
   Serial.println(F("SPEED [ALL] 800..30000 (cruise us/half-step) | ACCEL [ALL] 100..6000 (half-steps/s^2)"));
   Serial.println(F("Ramped moves start/end at 10000us or slower; HOME/MEASURE use 5000us or slower."));
-  Serial.println(F("POLARITY LOW/HIGH | Settings invalidate position; SET current and ARM again."));
+  Serial.println(F("POLARITY LOW/HIGH | SPEED/ACCEL preserve position/ARM; geometry changes need SET/ARM."));
   Serial.println(F("No automatic plug detection. Only explicitly enabled units may move."));
   Serial.println(F("Any non-newline byte during motion/WATCH stops ALL and discards the line."));
   Serial.println(F("STOP cannot cut 12V or protect against controller/power failure."));

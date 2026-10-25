@@ -6,6 +6,7 @@ uint32_t fakeNow = 0;
 uint8_t fakePins[70] = {}, fakeModes[70] = {};
 FakeSerial Serial;
 FakeSerial Serial1;
+uint8_t peakEnergized = 0;
 #include "../unit_test/unit_test.ino"
 
 void poll() {
@@ -16,7 +17,8 @@ void poll() {
     for (uint8_t p = 0; p < 4; ++p) high |= fakePins[mega::kMotorPins[u][p]] == HIGH;
     if (high) { assert(panel.enabled(u)); ++energized; }
   }
-  assert(energized <= 1);  // Check the actual 40 simulated GPIO outputs on every loop.
+  assert(energized <= panel.digits());  // Disabled GPIO outputs must stay LOW on every loop.
+  if (energized > peakEnergized) peakEnergized = energized;
 }
 void send(const std::string& text) {
   Serial.feed(text);
@@ -58,9 +60,9 @@ int main() {
   assert(panel.selected().config().order[1] == 2 && panel.selected().config().direction == -1);
   assert(panel.selected().config().offset == 12 && panel.selected().config().revolution == 4076);
   assert(!panel.selected().armed());
-  send("ARM\nACCEL 400\n"); off(); assert(!panel.selected().armed() && !panel.selected().homed());
+  send("ARM\nACCEL 400\n"); off(); assert(panel.selected().armed() && !panel.selected().homed());
   send("DIGITS 10\nUNIT 9\nARM\nSTEP 10\n");
-  assert(panel.selected().config().intervalUs == 5000 && panel.selected().config().acceleration == 400);
+  assert(panel.selected().config().intervalUs == 800 && panel.selected().config().acceleration == 800);
   for (int i = 0; i < 1000 && panel.selected().busy(); ++i) {
     poll();
     for (int u = 0; u < 9; ++u)
@@ -81,7 +83,7 @@ int main() {
   for (int i = 0; i < 400; ++i) poll();
   assert(panel.selected().busy() && panel.selected().coils());
   send("ACCEL 2000\n"); off();
-  assert(!panel.selected().busy() && !panel.selected().armed() && panel.selected().config().acceleration == 400);
+  assert(!panel.selected().busy() && !panel.selected().armed() && panel.selected().config().acceleration == 800);
   send("UNIT 0\nREVSTEPS 4096\nOFFSET 0\nDIR 1\nORDER 1234\nPOLARITY LOW\nSPEED 800\nACCEL 6000\nSET A\n"); off();
   assert(panel.selected().manual() && !panel.selected().homed() && !panel.selected().armed() && panel.selected().index() == 1);
   assert(Serial.output.find("reference=MANUAL value=A index=1") != std::string::npos);
@@ -108,7 +110,7 @@ int main() {
   send("SET 9\n"); off();  // Busy SET is discarded after immediate stop.
   assert(!panel.selected().positioned() && !panel.selected().armed() && panel.selected().index() == 44);
   send("STATUS\n"); assert(Serial.output.find("reference=NONE value=UNKNOWN") != std::string::npos);
-  send("SET BLANK\nSPEED 1000\n"); assert(!panel.selected().positioned() && !panel.selected().armed());
+  send("SET BLANK\nSPEED 1000\n"); assert(panel.selected().positioned() && !panel.selected().armed());
   send("SET BLANK\nUNIT 1\n"); assert(!panel.selected().positioned() && !panel.selected().armed());
   for (uint8_t width = 1; width <= 10; ++width) {
     send("DIGITS " + std::to_string(width) + "\n"); off();
@@ -153,7 +155,8 @@ int main() {
   assert(panel.unit(0).steps() == stopped);
   for (uint8_t u = 0; u < 3; ++u) assert(!panel.unit(u).positioned() && !panel.unit(u).armed());
   send("ARM ALL\nTEXT ABC\n"); assert(!panel.busy()); off();
-  send("SETTEXT ___\nARM ALL\nTEXT ABC\n"); finish();
+  peakEnergized = 0;
+  send("SETTEXT ___\nARM ALL\nTEXT ABC\n"); finish(); assert(peakEnergized == 3);
   for (uint8_t u = 0; u < 3; ++u) assert(panel.unit(u).index() == u + 1);
   fakePins[mega::kHallPins[0]] = HIGH;  // No magnet / disconnected input with pull-up.
   send("UNIT 0\nREVSTEPS 1000\nARM ALL\nHOME ALL\n");
@@ -162,7 +165,7 @@ int main() {
   assert(Serial.output.find("FAULT U0 hall_edge_missing") != std::string::npos);
   send("SETTEXT ABC\nARM ALL\nCYCLE ALL\n"); finish();
   for (uint8_t u = 0; u < 3; ++u) assert(panel.unit(u).index() == u + 1);
-  send("STATUS ALL\n"); assert(Serial.output.find("UPDATE=SEQUENTIAL") != std::string::npos);
+  send("STATUS ALL\n"); assert(Serial.output.find("UPDATE=PARALLEL") != std::string::npos);
   auto machine = [](sf::Kind kind, uint32_t id, std::initializer_list<uint8_t> bytes = {}) {
     sf::Packet p; p.kind = kind; p.session = 42; p.id = id; p.length = uint8_t(bytes.size());
     uint8_t i = 0; for (uint8_t value : bytes) p.data[i++] = value;
@@ -181,5 +184,5 @@ int main() {
   send("SAVE\n"); for (uint16_t i = 0; i < 200; ++i) poll(); assert(!remote.saving());
   send("DIGITS 1\nLOAD\n"); assert(panel.digits() == 3 && !panel.unit(0).armed() && !panel.unit(0).positioned());
   puts("PASS actual .ino: Serial1 status during motion; remote STOP exits USB WATCH; EEPROM SAVE/LOAD stays disarmed");
-  puts("PASS adapter: single-unit compatibility; DIGITS 1..10; sparse UNITS; SETTEXT/TEXT spaces, padding, glyphs and lengths; independent state; batch readiness, stop and fault; GPIO isolation/sequential output");
+  puts("PASS adapter: single-unit compatibility, DIGITS 1..10, sparse UNITS, atomic text, parallel GPIO output, stop/fault isolation");
 }
