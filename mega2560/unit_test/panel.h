@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-only
 #pragma once
 #include "bench.h"
+#include <SplitFlapLink.h>
 
 namespace mega {
 static const uint8_t kMaxUnits = 10;
@@ -28,6 +29,8 @@ class Panel {
   bool armAll();
   void stopAll();
   bool setCurrentText(const uint8_t* values, uint8_t count);
+  void settings(sf::Settings& out) const;
+  bool applySettings(const sf::Settings& settings);
   bool text(const uint8_t* values, uint8_t count, uint32_t now);
   bool homeAll(uint32_t now);
   bool cycleAll(uint32_t now);

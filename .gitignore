@@ -11,3 +11,7 @@ __pycache__/
 mega2560/.build/
 mega2560/.pio/
 mega2560/test/.build/
+esp32cam/.build/
+esp32cam/test/.build/
+esp32cam/dist/
+esp32cam/test/node_modules/

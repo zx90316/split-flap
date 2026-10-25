@@ -12,7 +12,7 @@
 
 若原本已開著串列監控，先 Ctrl+C 或停止原工作階段，釋放 COM3 再燒錄。其他程式也可能占用 COM 埠。F5 的 COM 提示只會選埠，不會替你確認裝置身分；可先選「查詢連接埠」。
 
-多位版上傳後，HELP應列出 `DIGITS 1..10`、`UNITS`、`SETTEXT`／`TEXT`、`SPEED [ALL] 800..30000`。STATUS預設包含 `DIGITS=1 UNITS=0`、`reference=NONE value=UNKNOWN`、`SPEED=5000 ACCEL=400`。單顆依[手動定位](README.md#無磁鐵手動定位與指定字元)操作；多顆依[1～10位操作](multi-unit.md)，先DIGITS選位數、SETTEXT目前實際文字、ARM ALL、TEXT目標。校準設定使對應位置失效；改配置使全部位置失效。UNIT切換保留各位設定與位置。
+上傳後 HELP 列出 `DIGITS 1..10`、`UNITS`、`SETTEXT`／`TEXT`、`SPEED [ALL] 800..30000` 及 `SAVE`／`LOAD`。開機載入有效 EEPROM 配置；無紀錄才是 `DIGITS=1 UNITS=0`、`SPEED=5000 ACCEL=400`，所有位置均未知、未 ARM。單顆依[手動定位](README.md#無磁鐵手動定位與指定字元)操作；多顆依[1～10 位操作](multi-unit.md)。USB 修改後以 SAVE 保存；LOAD 或重啟不會恢復位置／ARM。ESP32-CAM 的獨立建置與燒錄選項見[手機控制指南](../esp32cam/README.md)。
 
 ## F5 選單
 

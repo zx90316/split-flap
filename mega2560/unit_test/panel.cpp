@@ -10,6 +10,29 @@ bool Panel::enabled(uint8_t unit) const {
   return unit < kMaxUnits && (enabledMask_ & (1U << unit));
 }
 
+void Panel::settings(sf::Settings& out) const {
+  out.count = count_;
+  for (uint8_t i = 0; i < 10; ++i) {
+    out.mapping[i] = i < count_ ? mapping_[i] : 0;
+    const Config& c = units_[i].config(); sf::Calibration& d = out.units[i];
+    d.revolution = c.revolution; d.offset = c.offset; d.speed = c.intervalUs;
+    d.accel = c.acceleration; d.direction = c.direction; d.activeLow = polarity_[i];
+    memcpy(d.order, c.order, 4);
+  }
+}
+
+bool Panel::applySettings(const sf::Settings& settings) {
+  if (busy() || !sf::validSettings(settings)) return false;
+  stopAll();
+  for (uint8_t u = 0; u < 10; ++u) {
+    const sf::Calibration& d = settings.units[u]; Config c;
+    c.revolution = d.revolution; c.offset = d.offset; c.intervalUs = d.speed;
+    c.acceleration = d.accel; c.direction = d.direction; memcpy(c.order, d.order, 4);
+    units_[u] = Bench(); units_[u].configure(c); polarity_[u] = d.activeLow;
+  }
+  return setUnits(settings.mapping, settings.count);
+}
+
 bool Panel::busy() const {
   if (batching()) return true;
   for (uint8_t u = 0; u < kMaxUnits; ++u) if (units_[u].busy()) return true;

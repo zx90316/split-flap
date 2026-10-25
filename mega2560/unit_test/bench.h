@@ -50,6 +50,8 @@ class Bench {
   uint8_t coils() const { return coils_; }
   uint8_t index() const { return index_; }
   uint32_t steps() const { return totalSteps_; }
+  uint8_t target() const { return target_; }
+  uint16_t remaining() const { return remaining_; }
   uint8_t measuredCount() const { return measuredCount_; }
   uint16_t measured(uint8_t i) const { return i < 3 ? measured_[i] : 0; }
   const char* error() const { return error_; }

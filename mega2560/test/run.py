@@ -11,7 +11,7 @@ parser = argparse.ArgumentParser(description=__doc__)
 parser.add_argument('--zig', type=Path)
 parser.add_argument('--debug', action='store_true', help='Build with symbols and no optimization.')
 parser.add_argument('--build-only', action='store_true', help='Build without running the test binary.')
-parser.add_argument('--suite', choices=['bench', 'adapter', 'panel'], help='Build only one suite.')
+parser.add_argument('--suite', choices=['bench', 'adapter', 'panel', 'link'], help='Build only one suite.')
 args = parser.parse_args()
 root = Path(__file__).resolve().parents[1]
 build = root / 'test' / '.build'
@@ -33,12 +33,13 @@ env.setdefault('ZIG_GLOBAL_CACHE_DIR', str(build / 'zig-global'))
 debug_flags = ['-g', '-O0'] if args.debug else []
 if args.debug and os.name == 'nt':
     debug_flags += ['-gcodeview']
-suites = ['test_' + args.suite] if args.suite else ['test_bench', 'test_panel', 'test_adapter']
+suites = ['test_' + args.suite] if args.suite else ['test_bench', 'test_panel', 'test_adapter', 'test_link']
 for suite in suites:
     suffix = '_debug' if args.debug else ''
     binary = build / (suite + suffix + ('.exe' if os.name == 'nt' else ''))
     subprocess.run(compiler + ['-std=c++11', '-Wall', '-Wextra', '-Werror',
         '-I' + str(root / 'unit_test'), '-I' + str(root / 'test' / 'stubs'),
+        '-I' + str(root.parent / 'libraries/SplitFlapLink/src'),
         str(root / 'test' / (suite + '.cpp')), str(root / 'unit_test' / 'bench.cpp'),
         str(root / 'unit_test' / 'panel.cpp'),
         '-o', str(binary)] + debug_flags, check=True, env=env)

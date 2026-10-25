@@ -1,0 +1,6 @@
+{
+  "name": "splitflap-browser-tests",
+  "private": true,
+  "scripts": {"test": "node web.test.cjs"},
+  "devDependencies": {"playwright": "1.62.1"}
+}

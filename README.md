@@ -1,6 +1,8 @@
-# Split-Flap · Mega 2560 調機（1～10 位可選）
+# Split-Flap · ESP32-CAM 手機控制＋Mega 2560（1～10 位可選）
 
-目前以 **Arduino Mega 2560 直接控制 ULN2003、讀取 KY-003**，透過USB操作1～10個字元。先接一個字元確認馬達與機構，再擴充指定啟用的位置；文字依序逐顆更新。Mega與Hall由USB供電，獨立12V只供馬達；兩者共地。本階段不需MCP23017、電平轉換板或降壓板。
+**ESP32-CAM 提供手機網頁、Wi-Fi 直連／家用網路、文字與時鐘／日期、設定備份及 OTA；Mega 2560 直接控制 ULN2003、讀取 KY-003。** 支援 1～10 任意位數與非連續位置，逐顆翻頁。兩板韌體、供電與 UART 需配合更新，從 [ESP32-CAM 指南](esp32cam/README.md)開始；只做 USB 單顆調機可沿用下方 Mega 接線。
+
+**[正常供電與板間接線圖](esp32cam/wiring-runtime.svg) · [CP2102 燒錄接線圖](esp32cam/wiring-flashing.svg) · [軟體驗證與實機驗收](esp32cam/validation.md)**
 
 1. **[從單顆測試開始：接線、硬體清單、燒錄與操作](mega2560/README.md)**
 2. [單顆接線圖](mega2560/wiring-single.svg)／[十字元接線規劃](mega2560/wiring-ten.svg)／[Hall 洞洞板逐孔配置](mega2560/hall-board.svg)
@@ -13,7 +15,7 @@
 
 ![單顆測試接線](mega2560/wiring-single.svg)
 
-`mega2560/unit_test/unit_test.ino` 開機只啟用U0、不轉動。`DIGITS 1..10`啟用前N位，`UNITS 0,2,7`可指定非連續位置；未啟用的馬達輸出保持LOW。每位獨立保存RAM設定與位置，UNIT切換會保留狀態。無磁鐵時可SET／SHOW單位字元，或SETTEXT宣告目前整串、ARM ALL後TEXT指定目標；跨圈按步數前進。文字與HOME ALL／CYCLE ALL依序逐顆執行。定距移動自動加減速，SPEED巡航間隔800–30000µs。重開機恢復預設；EEPROM、多顆同時步進、Cardputer／網路／UART協定／RTC仍待整合。現有接線無法自動偵測插拔，請只啟用實際接上的組別。
+`mega2560/unit_test/unit_test.ino` 開機不轉動，有效 EEPROM 會載入安裝／校準，否則只啟用 U0。`DIGITS 1..10` 啟用前 N 位，`UNITS 0,2,7` 指定順序；未啟用輸出保持 LOW。各位保留獨立設定，USB `SAVE`／`LOAD` 或網頁可持久化；位置與 ARM 永遠不保存。無磁鐵可 SET／SHOW，或 SETTEXT／ARM ALL／TEXT；跨圈按步數前進。文字、HOME ALL／CYCLE ALL 逐顆執行，定距移動自動加減速，SPEED 800–30000µs。網頁 UART 使用獨立的 Serial1 封包／心跳，查狀態不會停止馬達。多顆同時步進、Cardputer 與外接 RTC 尚未整合；現有接線無法自動偵測插拔，僅啟用實際接上的組別。
 
 **U0手動定位已回報數輪無偏移：SPEED 800、ACCEL 800、REVSTEPS 4096。** [實機紀錄](mega2560/validation.md#使用者回報的實機進度)保留使用者STATUS與驗證範圍；霍爾歸零與完整系統驗收仍待完成。先只接 U0；馬達電源須有實體切斷開關。移動中送任何非換行字元會停止並釋放線圈，不能取代切斷 12V 或保證硬體故障時關閉。
 

@@ -5,6 +5,7 @@
 uint32_t fakeNow = 0;
 uint8_t fakePins[70] = {}, fakeModes[70] = {};
 FakeSerial Serial;
+FakeSerial Serial1;
 #include "../unit_test/unit_test.ino"
 
 void poll() {
@@ -162,5 +163,23 @@ int main() {
   send("SETTEXT ABC\nARM ALL\nCYCLE ALL\n"); finish();
   for (uint8_t u = 0; u < 3; ++u) assert(panel.unit(u).index() == u + 1);
   send("STATUS ALL\n"); assert(Serial.output.find("UPDATE=SEQUENTIAL") != std::string::npos);
+  auto machine = [](sf::Kind kind, uint32_t id, std::initializer_list<uint8_t> bytes = {}) {
+    sf::Packet p; p.kind = kind; p.session = 42; p.id = id; p.length = uint8_t(bytes.size());
+    uint8_t i = 0; for (uint8_t value : bytes) p.data[i++] = value;
+    uint8_t wire[sf::kWireSize]; size_t size = sf::encode(p, wire);
+    Serial1.feed(std::string(reinterpret_cast<char*>(wire), size));
+    for (uint16_t tick = 0; tick < 100; ++tick) poll();
+  };
+  send("WATCH\n"); assert(watching);
+  machine(sf::Kind::Hello, 0);
+  machine(sf::Kind::Command, 1, {uint8_t(sf::Op::Stop), sf::kAll}); assert(!watching); off();
+  machine(sf::Kind::Command, 2, {uint8_t(sf::Op::Claim), sf::kAll});
+  machine(sf::Kind::Command, 3, {uint8_t(sf::Op::Arm), 0});
+  machine(sf::Kind::Command, 4, {uint8_t(sf::Op::Step), 0, 0x20, 0x4e}); assert(panel.busy());
+  machine(sf::Kind::Query, 4); assert(panel.busy()); // Querying the actual .ino cannot abort a motor.
+  machine(sf::Kind::Command, 5, {uint8_t(sf::Op::Stop), sf::kAll}); assert(!panel.busy()); off();
+  send("SAVE\n"); for (uint16_t i = 0; i < 200; ++i) poll(); assert(!remote.saving());
+  send("DIGITS 1\nLOAD\n"); assert(panel.digits() == 3 && !panel.unit(0).armed() && !panel.unit(0).positioned());
+  puts("PASS actual .ino: Serial1 status during motion; remote STOP exits USB WATCH; EEPROM SAVE/LOAD stays disarmed");
   puts("PASS adapter: single-unit compatibility; DIGITS 1..10; sparse UNITS; SETTEXT/TEXT spaces, padding, glyphs and lengths; independent state; batch readiness, stop and fault; GPIO isolation/sequential output");
 }

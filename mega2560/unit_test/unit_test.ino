@@ -5,6 +5,8 @@
 #include <string.h>
 #include "panel.h"
 #include "pins.h"
+#include <EEPROM.h>
+#include "remote.h"
 
 #if defined(ARDUINO) && !defined(__AVR_ATmega2560__)
 #error Select Arduino Mega or Mega 2560 (ATmega2560).
@@ -16,6 +18,11 @@ void disableBootWatchdog() { MCUSR = 0; wdt_disable(); }
 #endif
 
 mega::Panel panel;
+struct EepromBackend {
+  uint8_t read(uint16_t address) { return EEPROM.read(address); }
+  void update(uint16_t address, uint8_t value) { EEPROM.update(address, value); }
+} eepromBackend;
+mega::Remote<EepromBackend> remote(panel, eepromBackend);
 uint8_t lastOutput[mega::kMaxUnits] = {}, reportedMeasures[mega::kMaxUnits] = {};
 bool watching = false, discardLine = false;
 char inputLine[64];
@@ -114,7 +121,8 @@ void statusAll() {
 }
 
 void help() {
-  Serial.println(F("Mega panel: 115200, newline. Default: U0 only, motors OFF. Settings in RAM."));
+  Serial.println(F("Mega panel + ESP32 link v1: 115200. Motors OFF; saved settings load at boot."));
+  Serial.println(F("SAVE | LOAD (EEPROM layout/calibration only; never position or ARM)"));
   Serial.println(F("DIGITS 1..10 (U0 onward) | UNITS 0,2,4 (explicit ordered installation map)"));
   Serial.println(F("UNIT 0..9 (enabled only; keeps settings/position) | STATUS [ALL]"));
   Serial.println(F("ARM [ALL] | STOP | OFF | WATCH | HELP"));
@@ -148,6 +156,12 @@ void command(char* line) {
   char* cmd = line;
   while (*cmd == ' ' || *cmd == '\t') ++cmd;
   if (!*cmd) return;
+  const bool readOnly = !strncmp(cmd, "STATUS", 6) || !strncmp(cmd, "HELP", 4);
+  const bool stopping = !strcmp(cmd, "STOP") || !strcmp(cmd, "OFF");
+  if (remote.saving() && !readOnly && !stopping) { Serial.println(F("ERR EEPROM saving; wait")); return; }
+  if (!readOnly) remote.usbActivity();
+  if (!strcmp(cmd, "SAVE")) { Serial.println(remote.saveLocal() ? F("OK saving EEPROM") : F("ERR save busy")); return; }
+  if (!strcmp(cmd, "LOAD")) { Serial.println(remote.loadLocal() ? F("OK loaded; disarmed, positions invalid") : F("ERR no valid saved config/busy")); return; }
   char* payload = cmd;
   while (*payload && *payload != ' ' && *payload != '\t') ++payload;
   if (*payload) *payload++ = 0;
@@ -282,7 +296,7 @@ void setup() {
     }
     pinMode(mega::kHallPins[u], INPUT_PULLUP);
   }
-  allOutputsLow(); Serial.begin(115200); help(); panelStatus();
+  allOutputsLow(); Serial.begin(115200); Serial1.begin(115200); remote.begin(); help(); panelStatus();
 #ifdef __AVR__
   wdt_enable(WDTO_1S);
 #endif
@@ -299,6 +313,7 @@ void loop() {
     if (panel.busy() || watching) {
       if (eol) continue;
       panel.stopAll(); watching = false; allOutputsLow();
+      remote.usbActivity();
       inputLength = 0; discardLine = true;
       Serial.println(F("STOPPED ALL; line discarded, disarmed, positions invalid")); continue;
     }
@@ -315,15 +330,18 @@ void loop() {
     if (digitalRead(mega::kHallPins[u]) == HIGH) highMask |= 1U << u;
   }
   const bool wasBusy = panel.busy(), wasBatch = panel.batching();
-  panel.tick(now, highMask); writeOutputs();
+  panel.tick(now, highMask);
+  remote.poll(Serial1, millis(), micros(), highMask, watching);
+  if (remote.consumeStopWatch()) watching = false;
+  writeOutputs();
   const uint8_t u = panel.selectedUnit();
   mega::Bench& bench = panel.selected();
-  if (bench.measuredCount() > reportedMeasures[u]) {
+  if (!remote.owned() && bench.measuredCount() > reportedMeasures[u]) {
     Serial.print(F("MEASURE U")); Serial.print(u);
     Serial.print(' '); Serial.print(reportedMeasures[u] + 1);
     Serial.print(F(" halfsteps=")); Serial.println(bench.measured(reportedMeasures[u]++));
   }
-  if (wasBusy && !panel.busy()) {
+  if (wasBusy && !panel.busy() && !remote.owned()) {
     if (panel.error()) {
       Serial.print(F("FAULT U")); Serial.print(panel.faultUnit()); Serial.print(' '); Serial.println(panel.error());
     } else Serial.println(F("DONE coils off"));

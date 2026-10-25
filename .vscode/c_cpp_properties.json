@@ -4,11 +4,15 @@
     {
       "name": "Mega 2560 AVR",
       "compilerPath": "${workspaceFolder}/.tools/arduino-data/packages/arduino/tools/avr-gcc/7.3.0-atmel3.6.1-arduino7/bin/avr-g++.exe",
-      "compilerArgs": ["-mmcu=atmega2560"],
+      "compilerArgs": [
+        "-mmcu=atmega2560"
+      ],
       "includePath": [
         "${workspaceFolder}/mega2560/unit_test",
         "${workspaceFolder}/.tools/arduino-data/packages/arduino/hardware/avr/1.8.8/cores/arduino",
-        "${workspaceFolder}/.tools/arduino-data/packages/arduino/hardware/avr/1.8.8/variants/mega"
+        "${workspaceFolder}/.tools/arduino-data/packages/arduino/hardware/avr/1.8.8/variants/mega",
+        "${workspaceFolder}/libraries/SplitFlapLink/src",
+        "${workspaceFolder}/.tools/arduino-data/packages/arduino/hardware/avr/1.8.8/libraries/EEPROM/src"
       ],
       "defines": [
         "ARDUINO=10607",
@@ -23,14 +27,36 @@
     {
       "name": "Host test Windows",
       "compilerPath": "${workspaceFolder}/.tools/host-compiler/ziglang/zig.exe",
-      "compilerArgs": ["c++"],
+      "compilerArgs": [
+        "c++"
+      ],
       "includePath": [
         "${workspaceFolder}/mega2560/unit_test",
-        "${workspaceFolder}/mega2560/test/stubs"
+        "${workspaceFolder}/mega2560/test/stubs",
+        "${workspaceFolder}/libraries/SplitFlapLink/src"
       ],
       "intelliSenseMode": "windows-clang-x64",
       "cStandard": "c11",
       "cppStandard": "c++11"
+    },
+    {
+      "name": "ESP32-CAM",
+      "compilerPath": "${workspaceFolder}/.tools/arduino-data/packages/esp32/tools/esp-x32/2601/bin/xtensa-esp32-elf-g++.exe",
+      "compileCommands": "${workspaceFolder}/esp32cam/.build/compile_commands.json",
+      "includePath": [
+        "${workspaceFolder}/esp32cam/controller",
+        "${workspaceFolder}/libraries/SplitFlapLink/src",
+        "${workspaceFolder}/.tools/arduino-data/packages/esp32/hardware/esp32/3.3.12/cores/esp32"
+      ],
+      "defines": [
+        "ARDUINO=10819",
+        "ARDUINO_ARCH_ESP32",
+        "ESP32",
+        "BOARD_HAS_PSRAM",
+        "F_CPU=240000000L"
+      ],
+      "cStandard": "c11",
+      "cppStandard": "c++17"
     }
   ]
 }

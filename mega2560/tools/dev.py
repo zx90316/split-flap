@@ -104,6 +104,7 @@ def run(arguments):
 def compile_firmware(clean=False):
     print('MEGA：建置正式韌體；不開啟 COM 埠。', flush=True)
     args = [arduino_cli(), 'compile', '--fqbn', FQBN, '--warnings', 'all',
+            '--libraries', ROOT / 'libraries',
             '--build-path', project_path('mega2560/.build'), '--no-color']
     if clean:
         args.append('--clean')

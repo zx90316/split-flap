@@ -1,6 +1,6 @@
 # Mega 2560：先把一個字元接好、轉好
 
-使用已有的 **Mega 2560＋ULN2003＋12V 28BYJ-48＋KY-003**，以電腦USB下指令。軟體支援1～10任意位數及逐顆文字更新，實機目前已回報U0通過；先只接U0，再擴充其餘位置。[多位設定與功能完成度](multi-unit.md)說明DIGITS／UNITS、獨立校準及SETTEXT／TEXT。Cardputer／Wi-Fi／RTC留待後續整合。
+使用已有的 **Mega 2560＋ULN2003＋12V 28BYJ-48＋KY-003**，以電腦 USB 下指令。軟體支援 1～10 任意位數、逐顆文字更新與 EEPROM 保存，實機目前已回報 U0 通過；先只接 U0，再擴充其餘位置。[多位設定](multi-unit.md)說明 DIGITS／UNITS。新增的 [ESP32-CAM 手機控制台](../esp32cam/README.md)使用 Serial1；網頁版供電／電平轉換另依該接線圖。
 
 磁鐵尚未到貨時，可先用[手動定位與指定字元](#無磁鐵手動定位與指定字元)；這個模式不需要霍爾回饋。
 
@@ -70,7 +70,7 @@ IN1–IN4 是線束位置名稱，實際相序由板子走線與馬達決定。*
 
 D22–D53 是雙排，同排編號跳 2，**不要跨兩排插 4P**。U9 避開 D7／D8 間非 2.54mm 間距，使用 D8–D11。以 [Arduino 官方腳位圖](https://docs.arduino.cc/resources/pinouts/A000067-full-pinout.pdf)對照實物；本目錄示意圖不是等比例外觀。
 
-D0／D1 留給 USB，D18 TX1／D19 RX1 預留未來 UART，D20 SDA／D21 SCL 預留 RTC，目前不使用。沒有 MCP 的 SDA/SCL/RESET 接線；Mega 的 RESET 鍵仍存在。
+D0／D1 留給 USB，D18 TX1／D19 RX1 已用於 [ESP32-CAM 封包通訊](../esp32cam/protocol.md)，需經 5V／3.3V 電平轉換。D20 SDA／D21 SCL 預留 RTC，目前不使用。沒有 MCP 的 SDA/SCL/RESET 接線；Mega 的 RESET 鍵仍存在。
 
 ## Hall 分線洞洞板逐孔配置
 
@@ -150,7 +150,7 @@ arduino-cli compile --fqbn arduino:avr:mega:cpu=atmega2560 mega2560/unit_test
 | `SPEED ALL n`／`ACCEL ALL n` | 套用所有啟用U，解除這些U的ARM與位置；單獨SPEED／ACCEL只改選中U |
 | `POLARITY LOW`／`POLARITY HIGH` | 有效電位，不會把鎖存改成非鎖存 |
 
-校準設定命令解除對應U的ARM、讓位置失效；只存RAM，重開機恢復預設，請抄錄。UNIT切換保留每U狀態；DIGITS／UNITS改配置會使全部位置失效但保留校準。這是**八狀態半步序列**，不能直接填原Nano `STEPS=2038`的全步數；若全步實測為n，先以約2n半步再重測。45片位置以絕對比例取整，避免逐片截斷累積誤差。
+校準命令解除對應 U 的 ARM、使位置失效。USB 修改先作用於 RAM；閒置時 `SAVE` 保存整份安裝／十組校準，`LOAD` 載入並使全部位置失效。網頁「套用並保存」直接保存。重開機載入有效 EEPROM，否則使用預設；位置與 ARM 永不保存。UNIT 切換保留各 U 狀態；DIGITS／UNITS 改配置使全部位置失效但保留校準。這是**八狀態半步序列**，不能直接填原 Nano `STEPS=2038` 全步數；每片位置按絕對比例取整，避免累積誤差。
 
 索引沿原版：0空白，1–26 A–Z，27 Ä，28 Ö，29 Ü，30–39 數字0–9，40 `:`、41 `.`、42 `-`、43 `?`、44 `!`；使用者已確認實際安裝此45片順序。SET／SHOW以ASCII輸入 `AE`／`OE`／`UE`，也接受同格位的 `$`／`&`／`#`；空白用BLANK或SPACE。整串TEXT每位用一個ASCII字元，空白可用 `_`，三個特殊格用 `$`／`&`／`#`，詳見多位操作。
 
@@ -210,7 +210,7 @@ STEP 4096
 
 以4096半步/圈估算，SPEED 1500／1200／1000／800 的**理論巡航**分別約9.8／12.2／14.6／18.3 RPM；起停會增加時間，短距離可能完全達不到巡航速度。800是軟體接受的最快設定；U0在SPEED 800、ACCEL 800下已有使用者回報多輪無偏移，最高可用極限尚未系統量測。調整參數或機構負載後，須逐個核對SHOW／GOTO的實際頁面、重複翻頁及跨圈停點，不能只用BUSY／DONE判定無漏步。
 
-`STOP`／任何非換行輸入、迴圈停滯、逾時及Hall故障都會**立即關閉輸出**，不等待減速；停止後手動模式重新SET當前字元、ARM，霍爾模式重新ARM、HOME。設定與速度只存RAM。STATUS會顯示SPEED與ACCEL，方便記錄每顆的調機值。
+`STOP`／USB 轉動中任何非換行輸入、迴圈停滯、逾時及 Hall 故障都會**關閉輸出**，不等待減速；停止後重新 SET／ARM 或 ARM／HOME。Serial1 的查詢／心跳不會中斷動作，遠端控制心跳失去兩秒則停止。設定與速度可 `SAVE` 至 EEPROM，STATUS 顯示 SPEED／ACCEL。
 
 動作後保持相位約100ms再釋放。Hall穩定5ms才使用，離開／找邊緣各最多圈步數的1.5倍；每個動作總逾時180秒，太慢或圈步數過大可能先逾時。排程每輪最多一步、不補暴衝；運動中迴圈延遲超100ms會失效停止，AVR watchdog約1秒重設。實際reset／斷電關閉仍依外部電路，須實測。
 
@@ -219,4 +219,4 @@ STEP 4096
 | U0 | 1234 | 1 | 4096（設定值） | 0 | 800 | 800 | LOW（設定）；釋放待磁鐵驗證 | 2026-10-25 使用者回報手動定位數輪無偏移 |
 | U1–U9 | 各顆記錄 |  |  |  |  |  |  |  |
 
-軟體與實機邊界見[驗證紀錄](validation.md)。多位文字已採逐顆排程；EEPROM、並行轉動與外部通訊待整合。保留的[ESP32韌體／模擬](../docs/esp32/README.md)不代表Mega已做同等驗收。
+軟體與實機邊界見[既有紀錄](validation.md)及[新增通訊驗證](../esp32cam/validation.md)。多位文字採逐顆排程；EEPROM 與 ESP32-CAM 通訊已實作，並行轉動、Cardputer／外接 RTC 尚未整合。保留的[舊 ESP32／MCP 模擬](../docs/esp32/README.md)是不同架構。

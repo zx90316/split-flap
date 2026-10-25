@@ -1,0 +1,133 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 1320" role="img" aria-labelledby="title desc">
+<title id="title">正常運作：12V 系統供電＋ESP32-CAM ↔ Mega</title><desc id="desc">依針腳名稱接線；方塊為功能示意，不代表模組外觀、排針順序或實際尺寸。</desc>
+<defs><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="context-stroke"/></marker></defs>
+<style>text{font-family:"Microsoft JhengHei","Noto Sans CJK TC",sans-serif;fill:#183f36}.wire{fill:none;stroke-linejoin:round;stroke-linecap:round}</style>
+<rect width="1440" height="1320" fill="#f3f6ef"/>
+<text x="45" y="62" font-size="30" font-weight="bold" text-anchor="start" style="fill:#183f36">正常運作：12V 系統供電＋ESP32-CAM ↔ Mega</text>
+<text x="45" y="96" font-size="17" font-weight="normal" text-anchor="start" style="fill:#183f36">依針腳名稱接線；方塊為功能示意，不代表模組外觀、排針順序或實際尺寸。</text>
+<rect x="45" y="145" width="290" height="160" rx="13" fill="#fff" stroke="#bfd0c5" stroke-width="2"/>
+<text x="63" y="179" font-size="22" font-weight="bold" text-anchor="start" style="fill:#183f36">隔離式 12V 電源</text>
+<text x="65" y="218" font-size="17" font-weight="normal" text-anchor="start" style="fill:#183f36">正端經保險絲／主開關</text>
+<text x="65" y="247" font-size="17" font-weight="normal" text-anchor="start" style="fill:#183f36">負端接共地分配點</text>
+<circle cx="335" cy="185" r="5" fill="#d27915"/>
+<text x="321" y="191" font-size="17" font-weight="normal" text-anchor="end" style="fill:#d27915">+12V</text>
+<circle cx="335" cy="280" r="5" fill="#384b47"/>
+<text x="321" y="286" font-size="17" font-weight="normal" text-anchor="end" style="fill:#384b47">GND</text>
+<rect x="565" y="165" width="320" height="150" rx="13" fill="#fff" stroke="#bfd0c5" stroke-width="2"/>
+<text x="583" y="199" font-size="22" font-weight="bold" text-anchor="start" style="fill:#183f36">現有 LM2596 → 5.0V</text>
+<circle cx="565" cy="220" r="5" fill="#d27915"/>
+<text x="579" y="226" font-size="17" font-weight="normal" text-anchor="start" style="fill:#d27915">IN+</text>
+<circle cx="885" cy="225" r="5" fill="#cc3746"/>
+<text x="871" y="231" font-size="17" font-weight="normal" text-anchor="end" style="fill:#cc3746">OUT+ 5V</text>
+<text x="585" y="275" font-size="17" font-weight="normal" text-anchor="start" style="fill:#384b47">IN−／OUT− 接共地</text>
+<rect x="1080" y="145" width="310" height="160" rx="13" fill="#fff" stroke="#bfd0c5" stroke-width="2"/>
+<text x="1098" y="179" font-size="22" font-weight="bold" text-anchor="start" style="fill:#183f36">馬達 12V 分支</text>
+<text x="1100" y="214" font-size="17" font-weight="normal" text-anchor="start" style="fill:#183f36">獨立開關 → 各 ULN + / COM</text>
+<text x="1100" y="243" font-size="17" font-weight="normal" text-anchor="start" style="fill:#183f36">各 ULN GND 回共地分配點</text>
+<text x="1100" y="272" font-size="17" font-weight="normal" text-anchor="start" style="fill:#183f36">馬達／Hall 接線沿用 Mega 圖</text>
+<polyline class="wire" points="335,185 440,185 440,130 1055,130 1055,185 1080,185" stroke="#d27915" stroke-width="4" marker-end="url(#arrow)"/>
+<polyline class="wire" points="440,185 440,220 565,220" stroke="#d27915" stroke-width="4" marker-end="url(#arrow)"/>
+<circle cx="440" cy="185" r="5" fill="#d27915"/>
+<rect x="1035" y="355" width="355" height="70" rx="13" fill="#fff0f1" stroke="#bfd0c5" stroke-width="2"/>
+<text x="1053" y="389" font-size="22" font-weight="bold" text-anchor="start" style="fill:#183f36">5V USB-A 母座電源小板</text>
+<text x="1055" y="412" font-size="16" font-weight="normal" text-anchor="start" style="fill:#183f36">原 USB 線 → Mega USB-B</text>
+<circle cx="1390" cy="412" r="5" fill="#384b47"/>
+<text x="1376" y="418" font-size="17" font-weight="normal" text-anchor="end" style="fill:#384b47">GND</text>
+<polyline class="wire" points="1390,412 1420,412 1420,960 1340,960" stroke="#384b47" stroke-width="3"/>
+<polyline class="wire" points="885,225 945,225 945,390 1035,390" stroke="#cc3746" stroke-width="4" marker-end="url(#arrow)"/>
+<polyline class="wire" points="945,335 30,335 30,505 65,505" stroke="#cc3746" stroke-width="4" marker-end="url(#arrow)"/>
+<circle cx="945" cy="335" r="5" fill="#cc3746"/>
+<text x="55" y="369" font-size="18" font-weight="normal" text-anchor="start" style="fill:#cc3746">控制 5V 分支：關閉馬達分支時保持供電</text>
+<rect x="65" y="455" width="395" height="465" rx="13" fill="#edf3ff" stroke="#bfd0c5" stroke-width="2"/>
+<text x="83" y="489" font-size="22" font-weight="bold" text-anchor="start" style="fill:#183f36">AI-Thinker ESP32-CAM</text>
+<text x="85" y="540" font-size="17" font-weight="normal" text-anchor="start" style="fill:#183f36">相機／SD 卡／閃光燈不啟用</text>
+<circle cx="65" cy="505" r="5" fill="#cc3746"/>
+<text x="79" y="511" font-size="17" font-weight="normal" text-anchor="start" style="fill:#cc3746">5V 輸入</text>
+<circle cx="460" cy="590" r="5" fill="#2b65c8"/>
+<text x="446" y="596" font-size="17" font-weight="normal" text-anchor="end" style="fill:#2b65c8">GPIO13 / TX2</text>
+<circle cx="460" cy="660" r="5" fill="#00866b"/>
+<text x="446" y="666" font-size="17" font-weight="normal" text-anchor="end" style="fill:#00866b">GPIO14 / RX2</text>
+<circle cx="460" cy="760" r="5" fill="#8357b0"/>
+<text x="446" y="766" font-size="17" font-weight="normal" text-anchor="end" style="fill:#8357b0">3V3 輸出</text>
+<text x="85" y="835" font-size="18" font-weight="normal" text-anchor="start" style="fill:#183f36">GPIO0：正常運作不接 GND</text>
+<text x="85" y="870" font-size="18" font-weight="normal" text-anchor="start" style="fill:#183f36">U0R / U0T 留給 CP2102</text>
+<circle cx="260" cy="920" r="5" fill="#384b47"/>
+<text x="246" y="926" font-size="17" font-weight="normal" text-anchor="end" style="fill:#384b47">GND</text>
+<rect x="585" y="485" width="300" height="405" rx="13" fill="#f5effa" stroke="#bfd0c5" stroke-width="2"/>
+<text x="603" y="519" font-size="22" font-weight="bold" text-anchor="start" style="fill:#183f36">TXU0202 電平轉換</text>
+<text x="602" y="548" font-size="18" font-weight="normal" text-anchor="start" style="fill:#183f36">A 側 3.3V ／ B 側 5V</text>
+<circle cx="585" cy="590" r="5" fill="#2b65c8"/>
+<text x="599" y="596" font-size="17" font-weight="normal" text-anchor="start" style="fill:#2b65c8">A1 (5)</text>
+<circle cx="885" cy="590" r="5" fill="#2b65c8"/>
+<text x="871" y="596" font-size="17" font-weight="normal" text-anchor="end" style="fill:#2b65c8">B1Y (8)</text>
+<circle cx="585" cy="660" r="5" fill="#00866b"/>
+<text x="599" y="666" font-size="17" font-weight="normal" text-anchor="start" style="fill:#00866b">A2Y (4)</text>
+<circle cx="885" cy="660" r="5" fill="#00866b"/>
+<text x="871" y="666" font-size="17" font-weight="normal" text-anchor="end" style="fill:#00866b">B2 (1)</text>
+<circle cx="585" cy="760" r="5" fill="#8357b0"/>
+<text x="599" y="766" font-size="17" font-weight="normal" text-anchor="start" style="fill:#8357b0">VCCA (3)</text>
+<circle cx="585" cy="815" r="5" fill="#8357b0"/>
+<text x="599" y="821" font-size="17" font-weight="normal" text-anchor="start" style="fill:#8357b0">OE (6)</text>
+<circle cx="885" cy="760" r="5" fill="#cc3746"/>
+<text x="871" y="766" font-size="17" font-weight="normal" text-anchor="end" style="fill:#cc3746">VCCB (7)</text>
+<circle cx="735" cy="890" r="5" fill="#384b47"/>
+<text x="721" y="896" font-size="17" font-weight="normal" text-anchor="end" style="fill:#384b47">GND (2)</text>
+<rect x="1035" y="455" width="355" height="465" rx="13" fill="#e7f3ec" stroke="#bfd0c5" stroke-width="2"/>
+<text x="1053" y="489" font-size="22" font-weight="bold" text-anchor="start" style="fill:#183f36">Arduino Mega 2560</text>
+<polyline class="wire" points="1210,425 1210,455" stroke="#cc3746" stroke-width="4" marker-end="url(#arrow)"/>
+<text x="1060" y="510" font-size="18" font-weight="normal" text-anchor="start" style="fill:#183f36">USB-B：供電／電腦燒錄</text>
+<circle cx="1035" cy="590" r="5" fill="#2b65c8"/>
+<text x="1049" y="596" font-size="17" font-weight="normal" text-anchor="start" style="fill:#2b65c8">D19 / RX1</text>
+<circle cx="1035" cy="660" r="5" fill="#00866b"/>
+<text x="1049" y="666" font-size="17" font-weight="normal" text-anchor="start" style="fill:#00866b">D18 / TX1</text>
+<circle cx="1035" cy="760" r="5" fill="#cc3746"/>
+<text x="1049" y="766" font-size="17" font-weight="normal" text-anchor="start" style="fill:#cc3746">5V 輸出（只供轉換板）</text>
+<text x="1055" y="835" font-size="17" font-weight="normal" text-anchor="start" style="fill:#183f36">馬達腳位／Hall 腳位維持原表</text>
+<text x="1055" y="870" font-size="17" font-weight="normal" text-anchor="start" style="fill:#183f36">VIN／DC 圓孔／外部 5V 不接</text>
+<circle cx="1210" cy="920" r="5" fill="#384b47"/>
+<text x="1196" y="926" font-size="17" font-weight="normal" text-anchor="end" style="fill:#384b47">GND</text>
+<polyline class="wire" points="460,590 585,590" stroke="#2b65c8" stroke-width="3" marker-end="url(#arrow)"/>
+<polyline class="wire" points="885,590 1035,590" stroke="#2b65c8" stroke-width="3" marker-end="url(#arrow)"/>
+<polyline class="wire" points="1035,660 885,660" stroke="#00866b" stroke-width="3" marker-end="url(#arrow)"/>
+<polyline class="wire" points="585,660 460,660" stroke="#00866b" stroke-width="3" marker-end="url(#arrow)"/>
+<polyline class="wire" points="460,760 585,760" stroke="#8357b0" stroke-width="3" marker-end="url(#arrow)"/>
+<polyline class="wire" points="525,760 525,815 585,815" stroke="#8357b0" stroke-width="3" marker-end="url(#arrow)"/>
+<circle cx="525" cy="760" r="5" fill="#8357b0"/>
+<polyline class="wire" points="1035,760 885,760" stroke="#cc3746" stroke-width="3" marker-end="url(#arrow)"/>
+<polyline class="wire" points="335,280 370,280 370,320 15,320 15,960" stroke="#384b47" stroke-width="4"/>
+<polyline class="wire" points="15,960 1340,960" stroke="#384b47" stroke-width="4"/>
+<polyline class="wire" points="700,315 700,352" stroke="#384b47" stroke-width="3"/>
+<polyline class="wire" points="370,320 700,320" stroke="#384b47" stroke-width="3"/>
+<circle cx="370" cy="320" r="5" fill="#384b47"/>
+<circle cx="700" cy="320" r="5" fill="#384b47"/>
+<polyline class="wire" points="780,315 780,340 700,340" stroke="#384b47" stroke-width="3"/>
+<circle cx="700" cy="340" r="5" fill="#384b47"/>
+<polyline class="wire" points="687.0,352 713.0,352" stroke="#384b47" stroke-width="2"/>
+<polyline class="wire" points="691.0,360 709.0,360" stroke="#384b47" stroke-width="2"/>
+<polyline class="wire" points="695.0,368 705.0,368" stroke="#384b47" stroke-width="2"/>
+<text x="715" y="365" font-size="15" font-weight="normal" text-anchor="start" style="fill:#384b47">GND 分配點</text>
+<polyline class="wire" points="670,590 785,590" stroke="#2b65c8" stroke-width="2" marker-end="url(#arrow)"/>
+<polyline class="wire" points="785,660 670,660" stroke="#00866b" stroke-width="2" marker-end="url(#arrow)"/>
+<polyline class="wire" points="260,920 260,960" stroke="#384b47" stroke-width="3"/>
+<circle cx="260" cy="960" r="5" fill="#384b47"/>
+<polyline class="wire" points="735,890 735,960" stroke="#384b47" stroke-width="3"/>
+<circle cx="735" cy="960" r="5" fill="#384b47"/>
+<polyline class="wire" points="1210,920 1210,960" stroke="#384b47" stroke-width="3"/>
+<circle cx="1210" cy="960" r="5" fill="#384b47"/>
+<text x="55" y="1003" font-size="18" font-weight="normal" text-anchor="start" style="fill:#384b47">共地：12V−、LM2596 IN−／OUT−、Mega、ESP32、ULN、Hall、CP2102 GND</text>
+<rect x="45" y="1030" width="665" height="225" rx="13" fill="#fff" stroke="#bfd0c5" stroke-width="2"/>
+<text x="63" y="1064" font-size="22" font-weight="bold" text-anchor="start" style="fill:#183f36">電平轉換板補充</text>
+<text x="65" y="1090" font-size="17" font-weight="normal" text-anchor="start" style="fill:#183f36">腳號依 TXU0202DCU（8-pin VSSOP）資料表。</text>
+<text x="65" y="1119" font-size="17" font-weight="normal" text-anchor="start" style="fill:#183f36">C1 100nF：VCCA (3) ↔ GND (2)，靠近晶片。</text>
+<text x="65" y="1148" font-size="17" font-weight="normal" text-anchor="start" style="fill:#183f36">C2 100nF：VCCB (7) ↔ GND (2)，靠近晶片。</text>
+<text x="65" y="1177" font-size="17" font-weight="normal" text-anchor="start" style="fill:#183f36">使用已焊接轉接板／模組；不能直接把裸 IC 插杜邦線。</text>
+<text x="65" y="1206" font-size="17" font-weight="normal" text-anchor="start" style="fill:#183f36">兩板 UART 都經轉換；不要把 Mega 5V TX 接 ESP32。</text>
+<rect x="735" y="1030" width="655" height="225" rx="13" fill="#fff" stroke="#bfd0c5" stroke-width="2"/>
+<text x="753" y="1064" font-size="22" font-weight="bold" text-anchor="start" style="fill:#183f36">Mega 改接電腦燒錄</text>
+<text x="755" y="1090" font-size="17" font-weight="normal" text-anchor="start" style="fill:#183f36">① 關閉馬達 12V 分支，保留控制 5V。</text>
+<text x="755" y="1119" font-size="17" font-weight="normal" text-anchor="start" style="fill:#183f36">② 同一條 USB 線的 A 端從 5V 母座拔下，改插電腦。</text>
+<text x="755" y="1148" font-size="17" font-weight="normal" text-anchor="start" style="fill:#183f36">③ Mega 不同時接外部 5V 輸入；不要使用 Y 型電源線。</text>
+<text x="755" y="1177" font-size="17" font-weight="normal" text-anchor="start" style="fill:#183f36">④ ESP32 仍由 LM2596 供電；CP2102 接法見另一張圖。</text>
+<text x="755" y="1206" font-size="17" font-weight="normal" text-anchor="start" style="fill:#183f36">LM2596 先空載調至 5.0V，再量兩板 Wi-Fi 負載時的壓降。</text>
+<text x="45" y="1293" font-size="17" font-weight="normal" text-anchor="start" style="fill:#183f36">線色：橘=12V　紅=5V　紫=3.3V　藍=ESP→Mega　綠=Mega→ESP　灰黑=共地；無圓點的交叉線不相接。</text>
+</svg>
