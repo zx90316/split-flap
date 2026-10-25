@@ -61,6 +61,7 @@ void status() {
   Serial.print(F(" REVSTEPS=")); Serial.print(c.revolution);
   Serial.print(F(" OFFSET=")); Serial.print(c.offset);
   Serial.print(F(" SPEED=")); Serial.print(c.intervalUs);
+  Serial.print(F(" ACCEL=")); Serial.print(c.acceleration);
   Serial.print(F(" DIR=")); Serial.print(c.direction);
   Serial.print(F(" ORDER="));
   for (uint8_t i = 0; i < 4; ++i) Serial.print(c.order[i] + 1);
@@ -74,7 +75,9 @@ void help() {
   Serial.println(F("LED (UNPLUG MOTOR) | STEP 1..20000 | REV | HOME | MEASURE"));
   Serial.println(F("FLAP | GOTO 0..44 | CYCLE (HOME required for these three)"));
   Serial.println(F("ORDER 1234 | DIR 1/-1 | REVSTEPS 1000..20000 | OFFSET 0..rev-1"));
-  Serial.println(F("SPEED 3000..30000 (us/half-step) | POLARITY LOW/HIGH"));
+  Serial.println(F("SPEED 1500..30000 (cruise us/half-step) | ACCEL 100..2000 (half-steps/s^2)"));
+  Serial.println(F("Ramped moves start/end at 10000us or slower; HOME/MEASURE use 5000us or slower."));
+  Serial.println(F("POLARITY LOW/HIGH"));
   Serial.println(F("Settings disarm and invalidate position. ARM again before motion."));
   Serial.println(F("Any non-newline byte during motion/WATCH aborts the ENTIRE line."));
   Serial.println(F("STOP cannot cut 12V or protect against controller/power failure."));
@@ -104,6 +107,7 @@ void command(char* line) {
   } else if (!strcmp(cmd, "REVSTEPS") && numeric) c.revolution = n;
   else if (!strcmp(cmd, "OFFSET") && numeric) c.offset = n;
   else if (!strcmp(cmd, "SPEED") && numeric) c.intervalUs = n;
+  else if (!strcmp(cmd, "ACCEL") && numeric) c.acceleration = n;
   else if (!strcmp(cmd, "POLARITY") && arg && (!strcmp(arg, "LOW") || !strcmp(arg, "HIGH"))) {
     bench.stop(); allOutputsLow(); activeLow = !strcmp(arg, "LOW");
     // Reset the debouncer when the electrical interpretation changes.

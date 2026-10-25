@@ -2,9 +2,26 @@
 #include "bench.h"
 
 namespace mega {
+namespace {
+// Floor(sqrt(value)), using integers only on the 8-bit AVR.
+uint16_t integerRoot(uint32_t value) {
+  uint32_t root = 0, bit = 1UL << 30;
+  while (bit > value) bit >>= 2;
+  while (bit) {
+    if (value >= root + bit) {
+      value -= root + bit;
+      root = (root >> 1) + bit;
+    } else root >>= 1;
+    bit >>= 2;
+  }
+  return static_cast<uint16_t>(root);
+}
+}
+
 bool Bench::configure(const Config& c) {
   if (busy() || c.revolution < 1000 || c.revolution > 20000 ||
-      c.offset >= c.revolution || c.intervalUs < 3000 || c.intervalUs > 30000 ||
+      c.offset >= c.revolution || c.intervalUs < kMinIntervalUs ||
+      c.intervalUs > kMaxIntervalUs || c.acceleration < 100 || c.acceleration > 2000 ||
       (c.direction != 1 && c.direction != -1)) return false;
   uint8_t seen = 0;
   for (uint8_t i = 0; i < 4; ++i) {
@@ -28,6 +45,7 @@ void Bench::stop() {
   mode_ = Mode::Idle;
   armed_ = homed_ = false;
   coils_ = 0;
+  remaining_ = rampSteps_ = 0;
   error_ = nullptr;
 }
 
@@ -54,8 +72,8 @@ bool Bench::begin(Job job, uint32_t now) {
 bool Bench::step(uint16_t count, uint32_t now) {
   if (count == 0 || count > 20000 || !begin(Job::Raw, now)) return false;
   homed_ = false;
-  remaining_ = count;
   mode_ = Mode::Raw;
+  startRamp(count, now);
   return true;
 }
 
@@ -118,13 +136,39 @@ void Bench::settle(uint32_t now) {
   stageAt_ = now;
 }
 
+uint16_t Bench::referenceInterval() const {
+  // Unknown Hall endpoints must stay slow; cruise tuning must not alter calibration.
+  return config_.intervalUs > kReferenceIntervalUs ? config_.intervalUs : kReferenceIntervalUs;
+}
+
+void Bench::startRamp(uint16_t count, uint32_t now) {
+  remaining_ = rampSteps_ = count;
+  lastStepAt_ = now;
+  updateRampInterval();
+}
+
+void Bench::updateRampInterval() {
+  const uint16_t cruise = mode_ == Mode::Offset ? referenceInterval() : config_.intervalUs;
+  if (cruise >= kStartIntervalUs) { rampIntervalUs_ = cruise; return; }
+  // Mirror the acceleration distance about the move midpoint. Short moves form a
+  // triangle; longer moves reach SPEED, cruise, then brake to the starting speed.
+  const uint16_t completed = rampSteps_ - remaining_;
+  const uint16_t braking = remaining_ - 1;
+  const uint16_t distance = completed < braking ? completed : braking;
+  const uint32_t startSpeed = 1000000UL / kStartIntervalUs;
+  // v^2 = v_start^2 + 2*a*distance. The validated bounds keep this in uint32_t.
+  const uint16_t speed = integerRoot(startSpeed * startSpeed +
+      2UL * config_.acceleration * distance);
+  const uint16_t interval = static_cast<uint16_t>((1000000UL + speed - 1) / speed);
+  rampIntervalUs_ = interval > cruise ? interval : cruise;
+}
+
 void Bench::startMove(uint8_t target, uint32_t now) {
   target_ = target;
   const uint16_t destination = positionFor(config_.revolution, target);
-  remaining_ = destination - position_;
-  lastStepAt_ = now;
   mode_ = Mode::Moving;
-  if (!remaining_) { index_ = target; settle(now); }
+  if (destination == position_) { index_ = target; settle(now); }
+  else startRamp(destination - position_, now);
 }
 
 void Bench::homeDone(uint32_t now) {
@@ -141,9 +185,8 @@ void Bench::markerFound(uint32_t now) {
     stageSteps_ = 0;
     mode_ = Mode::Measure;
   } else if (config_.offset) {
-    remaining_ = config_.offset;
-    lastStepAt_ = now;
     mode_ = Mode::Offset;
+    startRamp(config_.offset, now);
   } else homeDone(now);
 }
 
@@ -226,9 +269,11 @@ void Bench::tick(uint32_t now, bool activeHall) {
     fail(mode_ == Mode::Clear ? "hall_did_not_release" : "hall_edge_missing");
     return;
   }
-  if (static_cast<uint32_t>(now - lastStepAt_) < config_.intervalUs) return;
+  const bool ramped = mode_ == Mode::Raw || mode_ == Mode::Offset || mode_ == Mode::Moving;
+  const uint16_t interval = ramped ? rampIntervalUs_ : referenceInterval();
+  if (static_cast<uint32_t>(now - lastStepAt_) < interval) return;
   advance(now);
-  if (mode_ == Mode::Raw || mode_ == Mode::Offset || mode_ == Mode::Moving) {
+  if (ramped) {
     if (mode_ == Mode::Moving) ++position_;
     if (--remaining_ == 0) {
       if (mode_ == Mode::Offset) homeDone(now);
@@ -236,7 +281,7 @@ void Bench::tick(uint32_t now, bool activeHall) {
         if (mode_ == Mode::Moving) index_ = target_;
         settle(now);
       }
-    }
+    } else updateRampInterval();
   }
 }
 }

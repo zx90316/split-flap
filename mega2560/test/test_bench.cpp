@@ -4,6 +4,7 @@
 #include <assert.h>
 #include <stdio.h>
 #include <string.h>
+#include <vector>
 
 struct Rotor {
   mega::Bench bench;
@@ -146,22 +147,147 @@ void schedulingAndLimits() {
 void phaseConfigurationAndLeds() {
   mega::Bench b;
   mega::Config c;
-  c.intervalUs = 3000; c.order[1] = 2; c.order[2] = 1;
+  c.intervalUs = 10000; c.order[1] = 2; c.order[2] = 1;
   assert(b.configure(c)); assert(b.arm()); assert(b.step(8, 0));
   const uint8_t expected[8] = {1, 5, 4, 6, 2, 10, 8, 9};
-  for (int i = 0; i < 8; ++i) { b.tick((i + 1) * 3000, false); assert(b.coils() == expected[i]); }
+  for (int i = 0; i < 8; ++i) { b.tick((i + 1) * 10000, false); assert(b.coils() == expected[i]); }
   b.stop(); c.order[0] = 2;
   assert(!b.configure(c));
   c = mega::Config(); c.offset = c.revolution; assert(!b.configure(c));
-  c = mega::Config(); c.direction = -1; assert(b.configure(c)); assert(b.arm());
-  assert(b.step(2, 0)); b.tick(5000, false); assert(b.coils() == 1);
-  b.tick(10000, false); assert(b.coils() == 9);
+  c = mega::Config(); c.direction = -1; c.intervalUs = 10000;
+  assert(b.configure(c)); assert(b.arm());
+  assert(b.step(2, 0)); b.tick(10000, false); assert(b.coils() == 1);
+  b.tick(20000, false); assert(b.coils() == 9);
   b.stop(); assert(b.arm()); assert(b.led(0));
   for (uint32_t t = 1000; t <= 4000000; t += 1000) {
     b.tick(t, false);
     if (t % 1000000 == 0 && t < 4000000) assert(b.coils() == (1 << (t / 1000000)));
   }
   assert(!b.busy() && !b.coils() && !b.homed());
+}
+
+// Observe actual scheduled output times, without reading the planner's internals.
+std::vector<uint32_t> intervals(Rotor& r) {
+  std::vector<uint32_t> result;
+  uint32_t last = r.now;
+  for (uint32_t ticks = 0; r.bench.busy() && ticks < 4000000; ++ticks) {
+    const uint32_t before = r.bench.steps();
+    r.tick(50);
+    if (r.bench.steps() != before) {
+      assert(r.bench.steps() == before + 1);  // At most one step per tick.
+      result.push_back(static_cast<uint32_t>(r.now - last));
+      last = r.now;
+    }
+  }
+  assert(!r.bench.busy() && !r.bench.error() && !r.bench.coils());
+  return result;
+}
+
+void assertRamp(const std::vector<uint32_t>& times, uint16_t cruise) {
+  assert(!times.empty() && times.front() == 10000 && times.back() == 10000);
+  for (size_t i = 0; i < times.size(); ++i) {
+    assert(times[i] >= cruise && times[i] <= 10000);
+    assert(times[i] == times[times.size() - 1 - i]);
+    if (i && i <= (times.size() - 1) / 2) assert(times[i] <= times[i - 1]);
+    if (i > times.size() / 2) assert(times[i] >= times[i - 1]);
+  }
+}
+
+void accelerationProfiles() {
+  const uint16_t counts[] = {1, 2, 3, 8, 91, 500, 1500, 20000};
+  for (uint16_t count : counts) {
+    Rotor r;
+    mega::Config c = r.bench.config(); c.intervalUs = 1500;
+    if (count == 20000) c.acceleration = 2000;  // Largest distance/rate product.
+    assert(r.bench.configure(c)); assert(r.bench.arm());
+    assert(r.bench.step(count, r.now));
+    const std::vector<uint32_t> times = intervals(r);
+    assert(times.size() == count && r.bench.steps() == count);
+    assertRamp(times, 1500);
+    if (count >= 3) assert(times[count / 2] < times.front());
+    if (count == 500) assert(times[count / 2] > 1500);  // Triangle, no cruise.
+    if (count >= 1500) assert(times[count / 2] == 1500);  // Trapezoid, cruises.
+    if (count == 1500) {
+      uint32_t duration = 0;
+      for (uint32_t interval : times) duration += interval;
+      assert(duration > 2250000 && duration < 5000000);
+    }
+  }
+  for (uint16_t cruise : {uint16_t(10000), uint16_t(12000), uint16_t(30000)}) {
+    Rotor r; mega::Config c = r.bench.config(); c.intervalUs = cruise;
+    assert(r.bench.configure(c)); assert(r.bench.arm()); assert(r.bench.step(8, r.now));
+    for (uint32_t interval : intervals(r)) assert(interval == cruise);
+  }
+  Rotor slow, fast;
+  mega::Config c = slow.bench.config(); c.intervalUs = 1500; c.acceleration = 100;
+  assert(slow.bench.configure(c)); assert(slow.bench.arm()); assert(slow.bench.step(91, slow.now));
+  c.acceleration = 2000;
+  assert(fast.bench.configure(c)); assert(fast.bench.arm()); assert(fast.bench.step(91, fast.now));
+  const std::vector<uint32_t> gentle = intervals(slow), rapid = intervals(fast);
+  assertRamp(gentle, 1500); assertRamp(rapid, 1500);
+  assert(rapid[45] < gentle[45]);
+}
+
+void rampedDisplayAndSlowReference() {
+  Rotor r;
+  r.home();
+  assert(r.bench.goTo(1, r.now));
+  const std::vector<uint32_t> shortMove = intervals(r);
+  assert(shortMove.size() == mega::Bench::positionFor(1000, 1));
+  assertRamp(shortMove, 3000);
+  assert(r.bench.homed() && r.bench.index() == 1);
+  assert(r.bench.goTo(44, r.now));
+  const std::vector<uint32_t> longMove = intervals(r);
+  assert(longMove.size() == mega::Bench::positionFor(1000, 44) - shortMove.size());
+  assertRamp(longMove, 3000);
+  assert(longMove[longMove.size() / 2] == 3000);
+  assert(r.bench.goTo(44, r.now));
+  assert(intervals(r).empty() && r.bench.index() == 44);  // No zero-length underflow.
+  // Cruise changes below the reference cap must leave homing/offset identical.
+  Rotor baseline, tuned;
+  mega::Config c = baseline.bench.config(); c.intervalUs = 5000;
+  assert(baseline.bench.configure(c));
+  c.intervalUs = 1500;
+  assert(tuned.bench.configure(c));
+  baseline.home(); tuned.home();
+  assert(baseline.bench.steps() == tuned.bench.steps());
+  assert(baseline.physical == tuned.physical && baseline.now == tuned.now);
+  assert(baseline.bench.measure(baseline.now)); assert(tuned.bench.measure(tuned.now));
+  uint32_t previousStep = tuned.now;
+  while (tuned.bench.busy()) {
+    const uint32_t before = tuned.bench.steps();
+    tuned.tick(50);
+    if (before != tuned.bench.steps()) {
+      assert(static_cast<uint32_t>(tuned.now - previousStep) >= 5000);
+      previousStep = tuned.now;
+    }
+  }
+  baseline.run();
+  assert(tuned.bench.measuredCount() == 3 && !tuned.bench.homed() && !tuned.bench.error());
+  for (int i = 0; i < 3; ++i)
+    assert(tuned.bench.measured(i) == 1000 && tuned.bench.measured(i) == baseline.bench.measured(i));
+}
+
+void rampLimitsAndImmediateStops() {
+  mega::Bench b;
+  mega::Config c;
+  c.intervalUs = 1499; assert(!b.configure(c));
+  c.intervalUs = 30001; assert(!b.configure(c));
+  c.intervalUs = 1500; c.acceleration = 99; assert(!b.configure(c));
+  c.acceleration = 2001; assert(!b.configure(c));
+  c.acceleration = 100; assert(b.configure(c)); assert(b.arm());
+  c.acceleration = 2000; assert(b.configure(c)); assert(!b.armed());
+  for (uint16_t stopAt : {uint16_t(1), uint16_t(150), uint16_t(750), uint16_t(1400)}) {
+    Rotor r; c = r.bench.config(); c.intervalUs = 1500;
+    assert(r.bench.configure(c)); assert(r.bench.arm()); assert(r.bench.step(1500, r.now));
+    while (r.bench.steps() < stopAt) r.tick(50);
+    r.bench.stop();
+    assert(!r.bench.coils() && !r.bench.busy() && !r.bench.armed() && !r.bench.homed());
+    for (int i = 0; i < 100; ++i) r.tick();
+    assert(r.bench.steps() == stopAt);
+    assert(r.bench.arm()); assert(r.bench.step(8, r.now));
+    assertRamp(intervals(r), 1500);  // Restart from slow speed, no stale ramp.
+  }
 }
 
 void pinAllocation() {
@@ -181,5 +307,6 @@ void pinAllocation() {
 int main() {
   bootAndStop(); homingAndForwardWrap(); hallFaultsAndDebounce(); measureAndLatch();
   fullCycleAndRounding(); schedulingAndLimits(); phaseConfigurationAndLeds(); pinAllocation();
-  puts("PASS bench: 8 suites (motion, homing, faults, latch, cycle, timing, phases, pins)");
+  accelerationProfiles(); rampedDisplayAndSlowReference(); rampLimitsAndImmediateStops();
+  puts("PASS bench: 11 suites (motion, homing, faults, latch, cycle, timing, phases, pins, ramps, reference, ramp stops)");
 }

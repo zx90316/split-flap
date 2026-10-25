@@ -19,6 +19,13 @@ void off() {
 
 int main() {
   setup(); off(); assert(!bench.armed());
+  assert(Serial.output.find("SPEED 1500..30000") != std::string::npos);
+  assert(Serial.output.find("ACCEL 100..2000") != std::string::npos);
+  send("SPEED 1500\nACCEL 600\nSTATUS\n"); off();
+  assert(bench.config().intervalUs == 1500 && bench.config().acceleration == 600);
+  assert(Serial.output.find("SPEED=1500 ACCEL=600") != std::string::npos);
+  send("SPEED 1499\nSPEED 30001\nACCEL 0\nACCEL 99\nACCEL 2001\nACCEL -1\nACCEL 65536\n");
+  assert(bench.config().intervalUs == 1500 && bench.config().acceleration == 600);
   send("STEP 10\n"); off(); assert(!bench.busy());
   send("ARM\r\nSTEP 100\r\n");
   assert(bench.busy());  // Trailing CRLF must not abort a valid command.
@@ -34,7 +41,9 @@ int main() {
   assert(bench.config().order[1] == 2 && bench.config().direction == -1);
   assert(bench.config().offset == 12 && bench.config().revolution == 4076);
   assert(!bench.armed());
+  send("ARM\nACCEL 400\n"); off(); assert(!bench.armed() && !bench.homed());
   send("UNIT 9\nARM\nSTEP 10\n");
+  assert(bench.config().intervalUs == 5000 && bench.config().acceleration == 400);
   for (int i = 0; i < 1000 && bench.busy(); ++i) {
     poll();
     for (int u = 0; u < 9; ++u)
@@ -51,5 +60,10 @@ int main() {
   for (int i = 0; i < 20; ++i) poll();
   send("UNIT 0\n");  // Busy input aborts and discards, never changes selection.
   assert(selectedUnit == 9 && !bench.busy() && !bench.armed()); off();
-  puts("PASS adapter: boot, CRLF, abort, parser limits, configuration, isolation, WATCH");
+  send("SPEED 1500\nARM\nSTEP 1500\n");
+  for (int i = 0; i < 400; ++i) poll();
+  assert(bench.busy() && bench.coils());
+  send("ACCEL 2000\n"); off();
+  assert(!bench.busy() && !bench.armed() && bench.config().acceleration == 400);
+  puts("PASS adapter: boot, CRLF, abort, parser limits, SPEED/ACCEL, configuration, isolation, WATCH");
 }

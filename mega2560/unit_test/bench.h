@@ -6,7 +6,8 @@ namespace mega {
 struct Config {
   uint16_t revolution = 4096;  // Initial HALF-step estimate, not calibration.
   uint16_t offset = 0;
-  uint16_t intervalUs = 5000;
+  uint16_t intervalUs = 5000;  // Cruise interval; smaller is faster.
+  uint16_t acceleration = 400;  // Half-steps/s^2, shared by acceleration/braking.
   int8_t direction = 1;
   uint8_t order[4] = {0, 1, 2, 3};
 };
@@ -19,6 +20,10 @@ enum class Job : uint8_t { Raw, Led, Home, Move, Measure, Cycle };
 // Pure, non-blocking single-unit state machine. All timestamps are micros().
 class Bench {
  public:
+  static const uint16_t kMinIntervalUs = 1500;
+  static const uint16_t kMaxIntervalUs = 30000;
+  static const uint16_t kStartIntervalUs = 10000;
+  static const uint16_t kReferenceIntervalUs = 5000;
   static const uint32_t kDebounceUs = 5000;
   static const uint32_t kStallUs = 100000;
   static const uint32_t kTimeoutUs = 180000000;
@@ -54,6 +59,9 @@ class Bench {
   void markerFound(uint32_t now);
   void homeDone(uint32_t now);
   void startMove(uint8_t target, uint32_t now);
+  void startRamp(uint16_t count, uint32_t now);
+  void updateRampInterval();
+  uint16_t referenceInterval() const;
   void settle(uint32_t now);
   void advance(uint32_t now);
   void fail(const char* reason);
@@ -67,6 +75,7 @@ class Bench {
   uint8_t measuredCount_ = 0;
   uint16_t measured_[3] = {0, 0, 0};
   uint16_t remaining_ = 0, position_ = 0;
+  uint16_t rampSteps_ = 0, rampIntervalUs_ = kStartIntervalUs;
   uint32_t startedAt_ = 0, lastStepAt_ = 0, stageAt_ = 0;
   uint32_t hallChangedAt_ = 0, lastTickAt_ = 0;
   uint32_t totalSteps_ = 0, stageSteps_ = 0, markerStep_ = 0;
