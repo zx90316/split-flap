@@ -42,6 +42,14 @@ python esp32cam/tools/dev.py upload-monitor --port COM4
 
 編譯不開啟 COM 埠。每次燒錄都先重新建置，失敗不會上傳舊檔；監看只在成功上傳後開啟。ESP32 上傳速率 115200，板型為 `esp32:esp32:esp32cam:PartitionScheme=min_spiffs`。
 
+### Windows 找不到 COM
+
+COM 來自 **CP2102 的 USB**；ESP32-CAM 只有外接 5V，不會自行出現 COM。先關閉外部電源、拔掉 CP2102 到 ESP32 的全部跳線，只讓 CP2102 接電腦 USB。裝置管理員若有「CP2102 USB to UART Bridge Controller」黃色驚嘆號／錯誤碼 28，需安裝 [Silicon Labs CP210x VCP 驅動](https://www.silabs.com/software-and-tools/usb-to-uart-bridge-vcp-drivers)。安裝需 Windows 管理員權限；只使用原廠或 Microsoft 官方簽章套件。
+
+成功後重新執行「查詢連接埠」，看到 `COMx ... Serial Port (USB) Unknown` 即可；`Unknown` 是未辨識 Arduino 板型，不是驅動失敗。ESP32 RESET、GPIO0 或是否已燒韌體都不影響 CP2102 本身的 COM 列舉。
+
+重新接線前確認 ESP32 上明確標示的 **5V** 腳與 GND，**不要把 5V 接另一個 VCC 或 3V3 腳**。不同相容板的 VCC 用途可能不同；沒有清楚 5V 標示時先核對正反面照片／原理圖。閃光 LED 的亮度不能當作供電電壓量測。
+
 ## 手機第一次連線
 
 1. 手機加入串列 `ACCESS` 顯示的 **SplitFlap-xxxxxx** Wi-Fi，輸入該設備的隨機直連密碼。手機若提醒「沒有網際網路」，選擇保持連線。

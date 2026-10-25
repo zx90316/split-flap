@@ -65,6 +65,8 @@ python esp32cam/tools/dev.py test-web
 
 使用者先前回報 U0 USB 單顆手動測試數輪無偏移：SPEED=800、ACCEL=800、REVSTEPS=4096、OFFSET=0、DIR=1、ORDER=1234、POLARITY=LOW，SHOW Z 後為 MANUAL／index 26／error=none。原始紀錄見 [Mega 驗證](../mega2560/validation.md)。這不代表本次 ESP32、其餘九位或 Hall 已通過。
 
+2026-10-25 後續 USB 排查：使用者確認 CP2102 已與 ESP32 完全分離、只接電腦 USB。Windows 顯示 `VID_10C4&PID_EA60`、錯誤碼 28，修復前無 COM。Silicon Labs 網站拒絕工具下載，改用 Microsoft Update Catalog 的 11.5.0.417 AMD64 套件；官方 SHA-256 與 Microsoft 硬體相容簽章驗證通過，安裝成功。裝置狀態 OK，專案查詢回 `COM4 serial Serial Port (USB) Unknown`。此結果只確認 CP2102 驅動／USB 列舉；未開啟 COM、驗 ESP32 UART、重新接線或燒錄。ESP32 的 VCC／5V 實際接腳仍待確認。
+
 ## 實機驗收順序
 
 所有未勾選項目仍待現場執行，完成時記錄板號、參數、日期與結果。
