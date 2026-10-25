@@ -194,6 +194,23 @@
         "group": "2-主機C++偵錯",
         "order": 2
       }
+    },
+    {
+      "name": "主機中斷點: 多位顯示排程",
+      "type": "cppvsdbg",
+      "request": "launch",
+      "program": "${workspaceFolder}/mega2560/test/.build/test_panel_debug.exe",
+      "args": [],
+      "cwd": "${workspaceFolder}",
+      "console": "internalConsole",
+      "stopAtEntry": true,
+      "preLaunchTask": "MEGA: 建置主機偵錯 panel",
+      "symbolSearchPath": "${workspaceFolder}/mega2560/test/.build",
+      "requireExactSource": true,
+      "presentation": {
+        "group": "2-主機C++偵錯",
+        "order": 3
+      }
     }
   ],
   "inputs": [

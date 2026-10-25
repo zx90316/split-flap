@@ -366,6 +366,35 @@
       "runOptions": {
         "instanceLimit": 1
       }
+    },
+    {
+      "label": "MEGA: 建置主機偵錯 panel",
+      "type": "process",
+      "command": "${command:python.interpreterPath}",
+      "args": [
+        "${workspaceFolder}/mega2560/tools/dev.py",
+        "native-debug",
+        "--suite",
+        "panel"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}",
+        "env": {
+          "PYTHONUTF8": "1",
+          "PYTHONUNBUFFERED": "1"
+        }
+      },
+      "problemMatcher": [
+        "$gcc"
+      ],
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated",
+        "clear": true
+      },
+      "runOptions": {
+        "instanceLimit": 1
+      }
     }
   ],
   "inputs": [

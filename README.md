@@ -1,6 +1,6 @@
-# Split-Flap · Mega 2560 調機（10 字元機構）
+# Split-Flap · Mega 2560 調機（1～10 位可選）
 
-目前以 **Arduino Mega 2560 直接控制 ULN2003、讀取 KY-003**，先接一個字元，透過 USB 確認接線、馬達、歸零與翻頁機構。Mega 與 Hall 由 USB 供電，獨立的 12V 只供馬達；兩者共地。本階段不需 MCP23017、電平轉換板或降壓板。
+目前以 **Arduino Mega 2560 直接控制 ULN2003、讀取 KY-003**，透過USB操作1～10個字元。先接一個字元確認馬達與機構，再擴充指定啟用的位置；文字依序逐顆更新。Mega與Hall由USB供電，獨立12V只供馬達；兩者共地。本階段不需MCP23017、電平轉換板或降壓板。
 
 1. **[從單顆測試開始：接線、硬體清單、燒錄與操作](mega2560/README.md)**
 2. [單顆接線圖](mega2560/wiring-single.svg)／[十字元接線規劃](mega2560/wiring-ten.svg)／[Hall 洞洞板逐孔配置](mega2560/hall-board.svg)
@@ -9,10 +9,11 @@
 5. [軟體驗證與實機紀錄](mega2560/validation.md)
 6. [VS Code F5 建置、燒錄、串列除錯與主機中斷點](mega2560/vscode.md)
 7. [磁鐵尚未到貨：手動定位目前字元，再指定目標](mega2560/README.md#無磁鐵手動定位與指定字元)
+8. **[1～10位安裝配置、整串文字控制與功能完成度](mega2560/multi-unit.md)**
 
 ![單顆測試接線](mega2560/wiring-single.svg)
 
-`mega2560/unit_test/unit_test.ino` 一次只操作選定的一顆。沒有磁鐵時用 `SET A` 記錄目前顯示 A、`ARM` 後用 `SHOW 5` 前進到數字5，後續目標會依更新後的位置計算；手動模式跨圈也不使用霍爾。另提供 WATCH、LED、STEP、REV、HOME、MEASURE、FLAP、GOTO、CYCLE 與校準命令。定距移動自動加減速；SPEED 設巡航間隔（800–30000µs）、ACCEL 設加減速，詳見[調速操作](mega2560/README.md#加減速與調速)。開機不動作，先 ARM 才能輸出；設定只在 RAM，重開機恢復預設。十顆排程、多字元 TEXT、EEPROM、Cardputer 網路／本地輸入及 RTC 留待後續重構。
+`mega2560/unit_test/unit_test.ino` 開機只啟用U0、不轉動。`DIGITS 1..10`啟用前N位，`UNITS 0,2,7`可指定非連續位置；未啟用的馬達輸出保持LOW。每位獨立保存RAM設定與位置，UNIT切換會保留狀態。無磁鐵時可SET／SHOW單位字元，或SETTEXT宣告目前整串、ARM ALL後TEXT指定目標；跨圈按步數前進。文字與HOME ALL／CYCLE ALL依序逐顆執行。定距移動自動加減速，SPEED巡航間隔800–30000µs。重開機恢復預設；EEPROM、多顆同時步進、Cardputer／網路／UART協定／RTC仍待整合。現有接線無法自動偵測插拔，請只啟用實際接上的組別。
 
 **U0手動定位已回報數輪無偏移：SPEED 800、ACCEL 800、REVSTEPS 4096。** [實機紀錄](mega2560/validation.md#使用者回報的實機進度)保留使用者STATUS與驗證範圍；霍爾歸零與完整系統驗收仍待完成。先只接 U0；馬達電源須有實體切斷開關。移動中送任何非換行字元會停止並釋放線圈，不能取代切斷 12V 或保證硬體故障時關閉。
 

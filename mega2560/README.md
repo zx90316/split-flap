@@ -1,6 +1,6 @@
 # Mega 2560：先把一個字元接好、轉好
 
-使用已有的 **Mega 2560＋ULN2003＋12V 28BYJ-48＋KY-003**，以電腦 USB 下指令。先只接 U0，一次測一顆；十字元表是佈線規劃，並非十馬達正式韌體。Cardputer／Wi-Fi／RTC 留待後續重構。
+使用已有的 **Mega 2560＋ULN2003＋12V 28BYJ-48＋KY-003**，以電腦USB下指令。軟體支援1～10任意位數及逐顆文字更新，實機目前已回報U0通過；先只接U0，再擴充其餘位置。[多位設定與功能完成度](multi-unit.md)說明DIGITS／UNITS、獨立校準及SETTEXT／TEXT。Cardputer／Wi-Fi／RTC留待後續整合。
 
 磁鐵尚未到貨時，可先用[手動定位與指定字元](#無磁鐵手動定位與指定字元)；這個模式不需要霍爾回饋。
 
@@ -127,7 +127,10 @@ arduino-cli compile --fqbn arduino:avr:mega:cpu=atmega2560 mega2560/unit_test
 | 指令 | 用途 |
 | --- | --- |
 | `HELP`／`STATUS` | 指令、U編號、armed、homed、reference、value、index、校準、錯誤 |
-| `UNIT 0..9` | 選一顆，全部輸出低、設定恢復預設、解除ARM；預設U0 |
+| `DIGITS 1..10`／`UNITS 0,2,7` | 啟用前N位／明確指定安裝順序；解除全部ARM與位置，保留各U校準；開機只有U0 |
+| `UNIT 0..9` | 選已啟用的一顆；保留各U設定、位置、ARM與極性，預設U0 |
+| `SETTEXT`／`TEXT` | 宣告目前整串／指定目標文字；TEXT依序逐顆更新，詳見[多位操作](multi-unit.md) |
+| `ARM ALL`／`STATUS ALL`／`HOME ALL`／`CYCLE ALL` | 全部啟用位置的授權／狀態／依序霍爾歸零／依序循環 |
 | `WATCH` | 預設LOW有效，raw=LOW時Ux=1；HIGH時Ux=0。斷線也可能HIGH，不能證明連線完整 |
 | `ARM`／`OFF`／`STOP` | 允許輸出／全部低且位置無效；無馬達電壓感測，ARM不會驗證電源 |
 | `LED` | **拔馬達**；IN1→IN4各1秒，結束全低 |
@@ -144,11 +147,12 @@ arduino-cli compile --fqbn arduino:avr:mega:cpu=atmega2560 mega2560/unit_test
 | `OFFSET 0` | 邊緣到空白頁的半步數，0≤OFFSET<REVSTEPS |
 | `SPEED 5000` | 巡航每半步間隔µs；800–30000；越小越快，預設5000 |
 | `ACCEL 400` | 加速／減速規劃值，單位半步/s²；100–6000；越小越柔和，預設400 |
+| `SPEED ALL n`／`ACCEL ALL n` | 套用所有啟用U，解除這些U的ARM與位置；單獨SPEED／ACCEL只改選中U |
 | `POLARITY LOW`／`POLARITY HIGH` | 有效電位，不會把鎖存改成非鎖存 |
 
-設定命令解除 ARM、讓位置失效；只存 RAM，切換 UNIT／重開機恢復預設，請抄錄。這是**八狀態半步序列**，不能直接填原 Nano `STEPS=2038` 的全步數；若全步實測為n，先以約2n半步再重測。45片位置以絕對比例取整，避免逐片截斷累積誤差。
+校準設定命令解除對應U的ARM、讓位置失效；只存RAM，重開機恢復預設，請抄錄。UNIT切換保留每U狀態；DIGITS／UNITS改配置會使全部位置失效但保留校準。這是**八狀態半步序列**，不能直接填原Nano `STEPS=2038`的全步數；若全步實測為n，先以約2n半步再重測。45片位置以絕對比例取整，避免逐片截斷累積誤差。
 
-索引沿原版：0空白，1–26 A–Z，27 Ä，28 Ö，29 Ü，30–39 數字0–9，40 `:`、41 `.`、42 `-`、43 `?`、44 `!`；使用者已確認實際安裝此45片順序。SET／SHOW以ASCII輸入 `AE`／`OE`／`UE`，也接受相同格位的 `$`／`&`／`#`；空白用 `BLANK` 或 `SPACE`。目前接收單字元或數字索引，尚未提供多字元TEXT。
+索引沿原版：0空白，1–26 A–Z，27 Ä，28 Ö，29 Ü，30–39 數字0–9，40 `:`、41 `.`、42 `-`、43 `?`、44 `!`；使用者已確認實際安裝此45片順序。SET／SHOW以ASCII輸入 `AE`／`OE`／`UE`，也接受同格位的 `$`／`&`／`#`；空白用BLANK或SPACE。整串TEXT每位用一個ASCII字元，空白可用 `_`，三個特殊格用 `$`／`&`／`#`，詳見多位操作。
 
 ## 無磁鐵手動定位與指定字元
 
@@ -179,7 +183,7 @@ SET後STATUS應顯示 `reference=MANUAL value=A index=1`，而 `homed=0` 是正�
 
 沒有磁鐵時先用SET／SHOW，不執行HOME／MEASURE；這兩個命令仍保留為磁鐵到貨後的霍爾操作。要微調落頁，可ARM後用很短的 `STEP n`，等DONE再對實際看到的字元重新SET、ARM。
 
-SPEED／ACCEL等設定、STOP／OFF、STEP／REV、LED、切換UNIT及重開機都會讓位置失效，STATUS顯示 `reference=NONE value=UNKNOWN`；重新SET當前字元、ARM後才能SHOW。外部馬達斷電或手動挪動機構無法自動被韌體偵測，之後也應重新SET。
+SPEED／ACCEL等設定、STEP／REV、LED會讓對應U的位置失效；STOP／OFF、DIGITS／UNITS改配置及重開機會使全部位置失效。STATUS顯示 `reference=NONE value=UNKNOWN`時，重新SET當前字元、ARM後才能SHOW；UNIT切換本身保留位置。外部馬達斷電或手動挪動機構無法自動被韌體偵測，之後也應重新SET。
 
 4096半步/圈仍是初始估值。先以低速CYCLE確認整圈回到同一頁；若一整圈逐漸偏移，須排除漏步、落頁與相序問題，再調整REVSTEPS並重新SET。手動模式不能量出真實圈步數或偵測高速漏步，DONE只表示預定步數已輸出。
 
@@ -215,4 +219,4 @@ STEP 4096
 | U0 | 1234 | 1 | 4096（設定值） | 0 | 800 | 800 | LOW（設定）；釋放待磁鐵驗證 | 2026-10-25 使用者回報手動定位數輪無偏移 |
 | U1–U9 | 各顆記錄 |  |  |  |  |  |  |  |
 
-軟體與實機邊界見[驗證紀錄](validation.md)。取得單顆量測後再做十顆排程、EEPROM與通訊；保留的[ESP32韌體／模擬](../docs/esp32/README.md)不代表Mega已做同等驗收。
+軟體與實機邊界見[驗證紀錄](validation.md)。多位文字已採逐顆排程；EEPROM、並行轉動與外部通訊待整合。保留的[ESP32韌體／模擬](../docs/esp32/README.md)不代表Mega已做同等驗收。

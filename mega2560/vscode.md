@@ -12,7 +12,7 @@
 
 若原本已開著串列監控，先 Ctrl+C 或停止原工作階段，釋放 COM3 再燒錄。其他程式也可能占用 COM 埠。F5 的 COM 提示只會選埠，不會替你確認裝置身分；可先選「查詢連接埠」。
 
-手動定位版上傳後，HELP應列出 `SET value`／`SHOW value`、`SPEED 800..30000`、`ACCEL 100..6000`；STATUS預設包含 `reference=NONE value=UNKNOWN`、`SPEED=5000 ACCEL=400`。沒有磁鐵時依[手動定位](README.md#無磁鐵手動定位與指定字元)，先SET目前字元、ARM，再SHOW目標。SPEED／ACCEL會解除ARM並讓位置失效，修改後重新SET、ARM。定距移動仍自動加減速；更快速度見[調速操作](README.md#加減速與調速)。
+多位版上傳後，HELP應列出 `DIGITS 1..10`、`UNITS`、`SETTEXT`／`TEXT`、`SPEED [ALL] 800..30000`。STATUS預設包含 `DIGITS=1 UNITS=0`、`reference=NONE value=UNKNOWN`、`SPEED=5000 ACCEL=400`。單顆依[手動定位](README.md#無磁鐵手動定位與指定字元)操作；多顆依[1～10位操作](multi-unit.md)，先DIGITS選位數、SETTEXT目前實際文字、ARM ALL、TEXT目標。校準設定使對應位置失效；改配置使全部位置失效。UNIT切換保留各位設定與位置。
 
 ## F5 選單
 
@@ -27,8 +27,9 @@
 | MEGA: 工具檢查 | 檢查 Python、Arduino CLI、AVR 核心、主機編譯器 |
 | 主機中斷點: 歸零與運動核心 | 建置帶 PDB 的 C++ 測試，開啟 Windows 原生偵錯器 |
 | 主機中斷點: Arduino介面模擬 | 對真正的 .ino 程式搭配模擬 Arduino I/O 做中斷點偵錯 |
+| 主機中斷點: 多位顯示排程 | 檢查1～10位、非連續映射、逐顆TEXT與全組停止／故障取消 |
 
-F5 的建置／燒錄／串列選項由 Python 啟動 Arduino CLI，偵錯器的變數是操作腳本。要檢查 C++ 歸零邏輯，請明確選「主機中斷點」兩個選項。
+F5 的建置／燒錄／串列選項由 Python 啟動 Arduino CLI，偵錯器的變數是操作腳本。要檢查C++歸零或多位排程邏輯，請選對應的「主機中斷點」選項。
 
 ## 中斷點與單步執行
 
@@ -36,6 +37,7 @@ F5 的建置／燒錄／串列選項由 Python 啟動 Arduino CLI，偵錯器的
 2. 選 **主機中斷點: 歸零與運動核心**，按 F5；會先編譯並在程式進入時暫停。
 3. 按 F5 繼續到中斷點，F10 逐步執行，F11 進入函式。在變數／監看視窗檢查 `mode_`、`stableHall_`、`stageSteps_`、`remaining_` 與 `coils_`。
 4. 要查串列命令剖析，可選 **主機中斷點: Arduino介面模擬**，在 [unit_test.ino](unit_test/unit_test.ino) 的 `command` 或 `loop` 設中斷點。
+5. 要查多位狀態，選 **主機中斷點: 多位顯示排程**，在 [panel.cpp](unit_test/panel.cpp) 的 `Panel::startNext`、`tick`、`setUnits` 設中斷點，查看 `mapping_`、`enabledMask_`、`cursor_` 與 `units_`。
 
 這些程式在電腦上執行，使用理想轉子與 Arduino stub，**不連接或驅動實板**。USB 對實板提供的是燒錄與串列通訊；[ATmega2560 的 JTAG 晶片偵錯](https://www.microchip.com/en-us/product/ATmega2560)另需相容的硬體、接線與工具，本配置未新增實板 JTAG 工作階段。
 
@@ -67,5 +69,7 @@ Ctrl+Shift+P → **Tasks: Run Task／工作: 執行工作** 可找到：重新�
 | Settings disarm／位置失效 | 手動模式重新SET眼前字元、ARM；霍爾模式重新ARM、HOME |
 | homed=0但reference=MANUAL | 正常，表示位置由SET宣告；可ARM後SHOW，不需霍爾 |
 | SHOW 0與GOTO 0結果不同 | SHOW 0指定數字0；GOTO 0指定索引0空白頁，空白可用SHOW BLANK |
+| UNIT disabled | 先用DIGITS 1～10或UNITS指定實際接上的位置；預設只有U0，無自動插拔偵測 |
+| TEXT readiness／length錯誤 | 所有啟用位置須已定位並ARM；SETTEXT恰好DIGITS字元，TEXT最多DIGITS字元 |
 
 VS Code 的[工作任務](https://code.visualstudio.com/docs/debugtest/tasks)與[偵錯配置](https://code.visualstudio.com/docs/debugtest/debugging-configuration)是本整合使用的標準入口。

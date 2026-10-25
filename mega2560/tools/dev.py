@@ -170,7 +170,7 @@ def main(argv=None):
     parser.add_argument('action', choices=['doctor', 'setup', 'setup-host', 'ports', 'build',
         'rebuild', 'upload', 'monitor', 'upload-monitor', 'test', 'native-debug', 'diagrams'])
     parser.add_argument('--port')
-    parser.add_argument('--suite', choices=['bench', 'adapter'], default='bench')
+    parser.add_argument('--suite', choices=['bench', 'adapter', 'panel'], default='bench')
     args = parser.parse_args(argv)
     try:
         port = validate_port(args.port) if args.action in {'upload', 'monitor', 'upload-monitor'} else None
