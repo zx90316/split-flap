@@ -2,6 +2,8 @@
 
 兩端共用 `libraries/SplitFlapLink/src/SplitFlapLink.h`，115200 baud、8N1。Mega Serial1=D19 RX／D18 TX；ESP32 UART2=GPIO14 RX／GPIO13 TX。USB 人工指令仍是原本的 Serial 115200。
 
+實體電平轉換使用現有 P011 8 路 MOS 板的兩路：ESP GPIO13→A0／B0→Mega D19、Mega D18→B1／A1→ESP GPIO14；VCCA=ESP3V3、VCCB=Mega5V，全部共地。兩板皆供電才接訊號，單板斷電／切換供電前先拔四條訊號線；這片板不假設具斷電隔離。詳見 [接線與供電切換](wiring.md)。協定速率未改，電腦測試不能證明實板的上升時間或串列穩定性。
+
 ## 封包
 
 先組 raw bytes，再 COBS 編碼，以 `0x00` 結尾。多 byte 整數均 little-endian。

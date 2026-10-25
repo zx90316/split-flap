@@ -13,8 +13,9 @@ AI-Thinker ESP32-CAM 提供繁體中文手機網頁，Mega 2560 負責 1～10 �
 12V 電源在主開關後分兩路：一路經馬達分支開關供 ULN，另一路經 LM2596 調至 **5.0V** 供控制板。先空載調整、量極性，再接板並量 Wi-Fi 負載下的 5V。馬達支路關閉時，控制板仍有電。
 
 - ESP32-CAM 的 **5V** 腳接降壓器；不是 3V3，也不是標示可能可切換的 VCC。
-- Mega 透過 5V USB-A 母座電源小板＋原 USB-A→USB-B 線供電。燒錄 Mega 時，把同一條線的 A 端改插電腦；不要把兩個 5V 電源並接，也不接 Mega 的外部 5V／VIN／DC 圓孔。
-- 兩板 UART 經 **TXU0202** 轉換並共地。ESP32 TX=GPIO13、RX=GPIO14；Mega RX1=D19、TX1=D18。轉換板兩側電源來自對應板的 3V3、5V，具斷電高阻保護。
+- Mega 的 **5V 腳**接同一顆 LM2596 已量測的穩壓 5.0V，正常運作時拔除 Mega USB；不接 VIN／DC 圓孔。接電腦 USB 燒錄前，先關電源、拔 Mega 外部 5V 與板間四條 UART 訊號線；完整切換順序見 [接線表](wiring.md#mega-改接電腦燒錄)。沿用現有電源與跳線，不需要 USB 電源小板。
+- 兩板 UART 改用現有 **P011：8 路分立 MOS 電平轉換板**，只用 A0／B0、A1／B1。VCCA 接 ESP32 3V3、VCCB 接 Mega 5V，全部共地；GPIO13→A0／B0→D19，D18→B1／A1→GPIO14。其餘六路不接，沒有 OE，也不新增電平模組或去耦電容採購。
+- 現有板的 MOS 型號／上拉尚未實測，不假設單側斷電隔離。兩板都供電才接 UART；切換供電或單板測試前，先拔 A0、A1、B0、B1 四條訊號線。韌體維持 115200，先短線確認兩板連線穩定，再開馬達支路；這次接線修訂不需要重刷韌體。
 - CP2102 只接 TXD→U0R、RXD←U0T、GND，**5V／3V3／VCC 不接**。需為 3.3V UART 邏輯；部分轉接板的供電跳帽不會改變訊號電壓，依實板量測。
 
 ## VS Code：第一次安裝與燒錄
@@ -22,7 +23,7 @@ AI-Thinker ESP32-CAM 提供繁體中文手機網頁，Mega 2560 負責 1～10 �
 在 repo 根目錄開啟 VS Code；既有 Mega 的 F5 選項保留。
 
 1. F5 選 **ESP32-CAM: 準備環境**。下載固定 Arduino-ESP32 3.3.12、支援 OTA 的板型設定及主機測試用 cJSON。Mega 工具尚未安裝時，先依 [Mega VS Code 指南](../mega2560/vscode.md)準備 Arduino CLI／AVR／主機偵錯工具。
-2. 先關馬達 12V 分支，Mega USB 改接電腦，F5 選 **MEGA: 建置＋燒錄＋串列除錯**，確認埠是 Mega，更新本版 Mega 韌體。上傳後預設關閉馬達，會載入有效的 EEPROM 配置。
+2. 依 [Mega 電源切換順序](wiring.md#mega-改接電腦燒錄)，先關馬達與控制電源、拔板間四條 UART 訊號線及 Mega 外部 5V，才接電腦 USB。F5 選 **MEGA: 建置＋燒錄＋串列除錯**，確認埠是 Mega，更新本版 Mega 韌體。上傳後預設關閉馬達，會載入有效的 EEPROM 配置；完成後依接線表復原供電。
 3. CP2102 USB 接電腦。F5 選 **ESP32-CAM: 查詢連接埠**，記下 CP2102 的 COM；它和 Mega 的 COM 不同，不能照抄預設 COM4。
 4. ESP32-CAM 仍由 LM2596 供電。**GPIO0 接 GND，按 RESET**，F5 選 **ESP32-CAM: 建置＋燒錄＋串列監看**，輸入 CP2102 的埠。
 5. 上傳成功後 **移除 GPIO0→GND 跳線，再按 RESET**。監看視窗選 115200、換行；輸入 `ACCESS` 查看設備 Wi-Fi 與登入資料。`STATUS` 查看兩板連線。CP2102 未接自動重設線，這些手動步驟不可省略。
