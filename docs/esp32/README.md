@@ -1,4 +1,4 @@
-> 此文件保留前一階段 ESP32 架構；目前進度請看 [Mega 2560 調機](../../mega2560/README.md)。本頁的 BOM 僅適用 ESP32。
+> 此文件保留 ESP-WROOM-32 歷史原型；本分支正式方案為 [ESP32-CAM＋MCP23017 單主控](../../esp32cam/README.md)。本頁的 GPIO、BOM、指令與時序不適用新版。
 
 # Split-Flap · ESP32 模組版（10 字元）
 

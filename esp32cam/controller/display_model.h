@@ -60,8 +60,8 @@ inline bool formatTime(int64_t unixTime, int16_t offsetMinutes, const char* mode
 }
 static const size_t kOtaHeaderSize = 64;
 inline bool otaHeader(const uint8_t* header, uint32_t maxSize, uint32_t& imageSize) {
-  if (memcmp(header, "SFCAM01", 8) || sf::get32(header + 12) != sf::kVersion ||
-      memcmp(header + 48, "splitflap-cam-v1", 16)) return false;
+  if (memcmp(header, "SFCAM02", 8) || sf::get32(header + 12) != 2 ||
+      memcmp(header + 48, "splitflap-mcp-v2", 16)) return false;
   imageSize = sf::get32(header + 8); return imageSize >= 256 && imageSize <= maxSize;
 }
 }

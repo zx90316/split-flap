@@ -1,75 +1,116 @@
-# ESP32-CAM、CP2102、Mega 接線表
+# 單主控逐線接法
 
-圖為功能接線，**依板上印字與量測接線，不依方塊內的上下排列猜排針順序**。目標板為兩側各八針的 AI-Thinker ESP32-CAM；相機與 SD 卡未使用。
+適用 `codex/esp32cam-single-controller`／韌體 2.0.0。使用現有 ESP32-CAM、P011 8 路轉換板與四片 MCP23017；其餘兩片 MCP 備用。原 Mega 的 UART、馬達與 Hall 線全部移除，不能並聯兩個輸出來源。
 
-本版沿用現有 **P011：8 路分立 MOS 電平轉換板**（照片標示 VCCA／A0～A7、VCCB／B0～B7）、LM2596、CP2102 及跳線，不新增模組。Mega 改從已調整的穩壓 5V 腳供電；接電腦 USB 前須先拔外部 5V，不能並接。
+[正常總圖](wiring-runtime.svg) · [CP2102](wiring-flashing.svg) · [十組馬達](wiring-motors.svg) · [十路 Hall](wiring-hall.svg)
 
-## 正常運作
+## 電源
 
-![正常接線](wiring-runtime.svg)
+改線前關閉控制電源、馬達分支並拔除 USB。以下是電氣端點對應，排針順序依實板印字。
 
-| 從 | 接到 | 說明 |
-| --- | --- | --- |
-| 12V 正端 | 主保險絲／主開關後分兩支路 | 電源額定、保險絲及線規依實測選定 |
-| 控制支路 12V | LM2596 IN+ | 控制支路在馬達分支開關之前 |
-| 12V 負端 | LM2596 IN−／OUT−及共地分配點 | 確認模組為非隔離降壓；正負不能接反 |
-| LM2596 OUT+（先調 5.0V） | ESP32-CAM **5V** | 不接 3V3 或未確認用途的 VCC |
-| LM2596 OUT+（穩壓 5.0V） | Mega **5V** | 此接法直接進入 5V 電源軌；Mega USB 必須拔除，不接 VIN／DC 圓孔 |
-| LM2596 OUT− | ESP32 GND、Mega GND | 共地；Mega 外部 5V 線須能在燒錄前拔除 |
-| 馬達分支 12V | 獨立分支開關 → 各 ULN 正端／COM | 不接 Mega、Hall、CP2102、ESP32 GPIO |
-| 各 ULN GND | 共地分配點 | 馬達回流不穿過控制板、USB 或 Hall 細線 |
-| ESP32 GPIO13 TX2 | P011 **A0** | 第一條訊號的 3.3V 端 |
-| P011 **B0** | Mega D19 RX1 | A0↔B0，同一路轉為 5V |
-| Mega D18 TX1 | P011 **B1** | 第二條訊號的 5V 端 |
-| P011 **A1** | ESP32 GPIO14 RX2 | B1↔A1，同一路轉為 3.3V |
-| ESP32 **3V3** | P011 **VCCA** | A 側參考電源；不能接 5V |
-| Mega **5V** 電源節點 | P011 **VCCB** | B 側參考電源；與 Mega 使用同一電源域 |
-| P011 **GND** | 共地 | ESP32 GND、Mega GND 均接此共地 |
-| P011 A2～A7、B2～B7 | **不接** | 剩餘六路保留，不串接、不接地 |
+| 來源 | 目的 |
+| --- | --- |
+| 12V 正端經保險絲與主開關 | LM2596 IN+；另一路經獨立馬達開關到各 ULN 正端／COM |
+| 12V 負端 | 共地分配點、LM2596 IN− |
+| LM2596 OUT+，已量測 5.0V | ESP32-CAM **5V**、四片 MCP **VCC**、Hall VCC、P011 **VCCB** |
+| LM2596 OUT− | 共地分配點 |
+| ESP32-CAM **3V3 輸出** | P011 **VCCA** |
+| 全部板子 GND、ULN GND、CP2102 GND | 共地分配點 |
 
-**A0／B0 是一組，A1／B1 是另一組。**A／B 表示電壓側，不表示固定發送／接收方向。板上沒有 OE，不需要找 OE 或另外接使能線；每側重複的 VCCA／VCCB／GND 選一組接線。使用板上既有元件，不新增電容採購。
+先空載調 LM2596，再接板量 Wi-Fi 負載下的 5V。馬達不能由 MCP／ESP 供電；MCP／ESP 不能接 12V。ESP 使用明確印「5V」的腳，3V3 和用途未確認的 VCC 不接外部 5V。CP2102 的供電腳一律不接。
 
-此類 MOS＋上拉的轉換電路可用於 TTL UART，但上升時間受上拉與線長影響；同類電路的製造商說明見 [Adafruit BSS138 轉換板](https://www.adafruit.com/product/757)。這是電路類型的參考，**不是這片 8 路板的型號或速率認證**；照片不足以確認 MOS 型號、上拉阻值或斷電隔離。板間韌體維持 **115200、8N1**，USB 監看也是 115200，不因改接本板而重刷韌體。
+開關只切馬達 12V 分支時，ESP 與 MCP 控制電源仍在。正常運作不需要 Mega、其 USB 或外部 5V。沿用現有電源與配線；本方案未加入 TXU0202 或其他新模組。
 
-首次接線先關馬達支路、拔 Mega USB：
+## ESP、P011 與四片 MCP 的共用線
 
-1. 所有電源關閉，只接兩板供電、P011 VCCA／VCCB／GND；先不接 A0／A1／B0／B1 的四條訊號線。
-2. 兩板同時供電，量 VCCA 與 A0／A1 待機電壓約 3.3V、VCCB 與 B0／B1 約 5V。電壓側不符時先排查，不能把 5V 側接進 ESP32 GPIO。
-3. 關閉控制電源，再接上四條訊號線；從短跳線開始，遠離馬達配線。重新供電後以網頁狀態或 ESP32 `STATUS` 確認 Mega 連線持續穩定，再測 U0。
+| ESP32-CAM | P011 低壓側 | P011 高壓側 | 四片 MCP 並接端點 |
+| --- | --- | --- | --- |
+| GPIO13 | A0 | B0 | SDA |
+| GPIO14 | A1 | B1 | SCL |
+| GPIO15，開漏輸出 | A2 | B2 | **RST**，低有效 |
+| 3V3 | VCCA | — | 不接 MCP VCC |
+| — | — | VCCB＝控制 5V | VCC＝控制 5V |
+| GND | GND | GND | GND |
 
-**兩板都供電時才保留板間訊號線。**現有板不假設有單側斷電高阻保護；切換任一板電源或單板測試前，先關電源並拔 A0／A1／B0／B1 四條訊號線，避免經轉換板或 GPIO 回灌。GND 保持共地。此限制不能由通訊協定或失聯停止取代。
+P011 A3～A7、B3～B7 不接，沒有 OE 腳。MCP 的 ITA／ITB 中斷輸出不接，本版以輪詢取樣。四片 RST 並在一起，由 GPIO15 經轉換板控制；不能把這條 RST 固定短接 GND。韌體開機先拉低 RST、設好低輸出後才開放操作；I²C 故障也會拉低 RST。RST 只重設 MCP，不能切斷 12V 或涵蓋所有硬體故障。
 
-現有 LM2596 與配線需能連續承受兩板、Wi-Fi 峰值及 Hall 負載。不能把 LM2596 IC 標稱 3A 視為任意小模組的實際連續能力；先量各板 5V 壓降、電流與模組溫升。控制線保持短，遠離馬達主幹。
+MCP 在 5V 時的保證輸入門檻不適合直接接 ESP 3.3V 高電位；SDA／SCL／RST 均經現有轉換板。不要讓高壓側上拉直接接到 ESP。關電改線，訊號不對單側未供電的板熱插拔；全部控制板供電後才測試。
 
-Mega 原馬達／Hall 腳位與配置見 [Mega 接線表](../mega2560/README.md#十字元腳位與-4p-方向)。GPIO13／14 與 microSD 腳位共用，因此本韌體不初始化 SD 卡。UART0 U0R／U0T 留給燒錄和紀錄；沒有使用 GPIO16／17 這組可能與 PSRAM 衝突的預設 UART 腳位。
+匯流排使用短線、共地，速率 **400 kHz**。現有 P011 及四片板子的上拉阻值、總電容與上升時間尚未實測；先驗收一片再擴充，先前 UART 成功不能當作 I²C 已驗收。線交叉但沒有接點圓點時不相接。
 
-## Mega 改接電腦燒錄
+ESP32-CAM 的 GPIO13／14／15 與 SD 插槽共用，**不插 SD 卡**。相機、閃光燈不啟用；U0R／U0T 留給 CP2102，不能拿來接 MCP。
 
-1. 關閉馬達分支及 LM2596 控制電源；拔掉 P011 A0／A1／B0／B1 的四條訊號線。
-2. **拔除 LM2596 OUT+ → Mega 5V 的外部供電線**，確認沒有其他外部 5V 接入 Mega，再接電腦 USB。Mega 改由電腦 USB 供電；控制電源此時保持關閉。
-3. 執行 Mega 燒錄／串列調機。Mega 的外部 5V 與 UART 訊號維持拔除，避免透過 P011 把電送到未供電的 ESP32。不使用 USB Y 型電源線。
-4. 完成後先拔電腦 USB，確認控制電源仍關閉，再復原 Mega 外部 5V 與四條 UART 訊號線。重新開啟控制電源，確認兩板連線；重新定位、ARM 後才開馬達分支測試。
+## MCP 地址與板上名稱
 
-正常運作使用既有 LM2596 與跳線，不需要 USB-A 電源小板。**Mega 5V 腳接的是穩壓後的 5.0V，絕不能接 12V；接電腦 USB 時外部 5V 必須實際拔除，不能只關馬達開關。**
+地址採 **7-bit 0x20～0x23**。先斷電依板上 A0／A1／A2 跳線設定，不浮接；表中的 0＝GND、1＝MCP VCC 5V，實際焊橋位置依板上標示。
 
-從 Mega 5V 腳直供會略過板上穩壓與 USB 入口保護，電壓及極性由外部電源負責；[Arduino 官方電源說明](https://store.arduino.cc/products/arduino-mega-2560-rev3)也提醒這個限制。因此本接法以 LM2596 空載、負載均確認為穩壓 5.0V 及上述供電互斥為前提。
+| 地址 | A2 | A1 | A0 | 用途 |
+| --- | --- | --- | --- | --- |
+| 0x20 | 0 | 0 | 0 | U0～U3 馬達 |
+| 0x21 | 0 | 0 | 1 | U4～U7 馬達 |
+| 0x22 | 0 | 1 | 0 | U8～U9 馬達 |
+| 0x23 | 0 | 1 | 1 | U0～U9 Hall |
 
-## CP2102 燒錄 ESP32-CAM
+MCP 地址 A0／A1／A2、MCP 的 GPA/GPB 輸出、P011 的 A0/B0 是不同名稱，勿互相混用。以「GPA0」或板上同義的「A0 輸出」辨認相位腳，不把地址跳線接到 ULN。
 
-![燒錄接線](wiring-flashing.svg)
+使用者提供的 [IMD-008087 模組頁面](https://www.taiwansensor.com.tw/product/mcp23017-e-ss-arduino-i2c%E4%BB%8B%E9%9D%A216%E8%B7%AFio%E6%93%B4%E5%B1%95%E6%A8%A1%E7%B5%84-iic-%E8%BC%B8%E5%85%A5%E8%BC%B8%E5%87%BA%E6%93%B4%E5%B1%95%E6%9D%BF/)列出 VCC、GND、SDA、SCL、RST、ITA、ITB；實板仍需核對印字及地址設定。
 
-| CP2102／操作 | ESP32-CAM | 說明 |
-| --- | --- | --- |
-| TXD | U0R／GPIO3 | 3.3V UART 訊號，TX→RX |
-| RXD | U0T／GPIO1 | RX←TX |
-| GND | GND | 與 LM2596、Mega 共地 |
-| 5V／3V3／VCC | **不接** | ESP32 由 LM2596 5V 供電 |
-| DTR／RTS／RST | 不接 | 本流程以板上 RESET 鍵手動切換 |
-| 燒錄跳線 | GPIO0→GND | 接好後按 RESET，才進入 ROM 燒錄模式 |
-| 上傳完成 | 移除 GPIO0→GND，再按 RESET | 開始正式程式；不會自動轉動 |
+## MCP 到十組 ULN
 
-CP2102 USB 插電腦。確認轉接板 TXD 邏輯為 3.3V；「5V 輸出腳」不代表 TXD 可設為 5V，也不能把 CP2102 的 3V3 腳當 ESP32-CAM 電源。[Silicon Labs CP2102/9 資料表](https://www.silabs.com/documents/public/data-sheets/CP2102-9.pdf)
+每列四腳**依序**接對應 ULN 的 **IN1、IN2、IN3、IN4**；馬達五線插頭維持接該 ULN 的原插座。這些是控制訊號，不直接驅動線圈。
 
-GPIO0 只在重設時決定啟動模式；上傳後不拔跳線、直接再重設會再次進入燒錄模式。GPIO2 保持原板狀態，不另加跳線。[Espressif Boot Mode Selection](https://docs.espressif.com/projects/esptool/en/latest/esp32/advanced-topics/boot-mode-selection.html)
+| 顯示位置 | MCP 地址 | IN1 | IN2 | IN3 | IN4 |
+| --- | --- | --- | --- | --- | --- |
+| U0 | 0x20 | GPA0 | GPA1 | GPA2 | GPA3 |
+| U1 | 0x20 | GPA4 | GPA5 | GPA6 | GPA7 |
+| U2 | 0x20 | GPB0 | GPB1 | GPB2 | GPB3 |
+| U3 | 0x20 | GPB4 | GPB5 | GPB6 | GPB7 |
+| U4 | 0x21 | GPA0 | GPA1 | GPA2 | GPA3 |
+| U5 | 0x21 | GPA4 | GPA5 | GPA6 | GPA7 |
+| U6 | 0x21 | GPB0 | GPB1 | GPB2 | GPB3 |
+| U7 | 0x21 | GPB4 | GPB5 | GPB6 | GPB7 |
+| U8 | 0x22 | GPA0 | GPA1 | GPA2 | GPA3 |
+| U9 | 0x22 | GPA4 | GPA5 | GPA6 | GPA7 |
 
-CP2102 與 Mega 使用兩組獨立 UART。燒錄 ESP32 時，兩板都由 LM2596 供電、Mega USB 拔除，P011 板間接線可以保留；如果只供電 ESP32，先拔 P011 四條訊號線。燒錄／重啟前仍先關實體馬達支路。成功後移除跳線並 RESET，115200 串列輸入 `ACCESS` 取得 Wi-Fi 與 admin 密碼。
+0x22 的 GPB 全部保持低；其他未啟用 U 的四路也保持低。每片 ULN 的正端／COM＝12V_MOTOR，GND＝共地。COM 用於線圈回掃，不接控制 5V。機構方向／線序若不同，以 ORDER／DIR 校準；先關馬達電源再改線。
+
+## Hall 到 0x23
+
+Hall 預設關閉，手動定位不需要 0x23。完整接好、裝上磁鐵並確認訊號後，才在設定頁啟用 Hall。
+
+| 位置 | KY-003 S／OUT 接 0x23 |
+| --- | --- |
+| U0 | GPA0 |
+| U1 | GPA1 |
+| U2 | GPA2 |
+| U3 | GPA3 |
+| U4 | GPA4 |
+| U5 | GPA5 |
+| U6 | GPA6 |
+| U7 | GPB0 |
+| U8 | GPB1 |
+| U9 | GPB2 |
+
+各 KY-003 的 +／VCC＝控制 5V，−／GND＝共地；每路訊號獨立。針序以實物 S／+／− 印字為準。**GPA7、GPB7 不接 Hall**；依 [Microchip DS20001952](https://ww1.microchip.com/downloads/aemDocuments/documents/APID/ProductDocuments/DataSheets/MCP23017-Data-Sheet-DS20001952.pdf) 的輸入限制，本版讓這兩腳保持低輸出，其餘未使用腳也保持低。
+
+韌體為十個使用中的 Hall 輸入開啟上拉，2ms 取樣，預設 LOW 觸發。先用 WATCH 確認磁鐵通過時確實觸發、離開後釋放，再測 HOME／MEASURE；未裝磁鐵維持手動 SET／SHOW。啟用 Hall 後，0x23 缺席會拒絕運動，不會默默當作無感測器。
+
+## CP2102 與 USB 燒錄
+
+| CP2102 | ESP32-CAM |
+| --- | --- |
+| TXD，須 3.3V 邏輯 | U0R／GPIO3 |
+| RXD | U0T／GPIO1 |
+| GND | 共地 |
+| 5V／3V3／VCC | **全部不接** |
+| DTR／RTS | 不接 |
+
+燒錄期間仍由 LM2596 的 5.0V 供電。GPIO0→GND 是**臨時跳線**，與接到 MCP 的 GPIO15 RST 不是同一條線。
+
+1. 關馬達分支，控制 5V 保留，確認 CP2102 供電腳未接。
+2. GPIO0 接 GND，按 ESP32-CAM 的 RESET。
+3. VS Code 查詢 CP2102 COM，執行「ESP32-CAM: 建置＋燒錄＋串列監看」。
+4. 成功後移除 GPIO0 跳線，再按 RESET，115200 查看 STATUS。
+5. 先保持馬達分支關閉，確認 MCP 初始化及配置，再依 [操作指南](README.md)核對字元、ARM 與試轉。
+
+首次由雙主控移轉須 USB；後續僅上傳本版一包 `.sffw`。燒錄不需要拔下 MCP 訊號，前提是共地與全部控制板供電正常；全程關馬達支路，因 ROM 燒錄階段不執行應用程式的 RST 控制。

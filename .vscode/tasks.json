@@ -2,6 +2,396 @@
   "version": "2.0.0",
   "tasks": [
     {
+      "label": "ESP32-CAM: 建置韌體",
+      "type": "process",
+      "command": "${command:python.interpreterPath}",
+      "args": [
+        "${workspaceFolder}/esp32cam/tools/dev.py",
+        "build"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}",
+        "env": {
+          "PYTHONUTF8": "1",
+          "PYTHONUNBUFFERED": "1"
+        }
+      },
+      "problemMatcher": [
+        "$gcc"
+      ],
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated",
+        "clear": true
+      },
+      "runOptions": {
+        "instanceLimit": 1
+      },
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      }
+    },
+    {
+      "label": "ESP32-CAM: 建置＋燒錄＋串列監看",
+      "type": "process",
+      "command": "${command:python.interpreterPath}",
+      "args": [
+        "${workspaceFolder}/esp32cam/tools/dev.py",
+        "upload-monitor",
+        "--port",
+        "${input:esp32CamPort}"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}",
+        "env": {
+          "PYTHONUTF8": "1",
+          "PYTHONUNBUFFERED": "1"
+        }
+      },
+      "problemMatcher": [
+        "$gcc"
+      ],
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated",
+        "clear": true
+      },
+      "runOptions": {
+        "instanceLimit": 1
+      }
+    },
+    {
+      "label": "ESP32-CAM: 串列監看",
+      "type": "process",
+      "command": "${command:python.interpreterPath}",
+      "args": [
+        "${workspaceFolder}/esp32cam/tools/dev.py",
+        "monitor",
+        "--port",
+        "${input:esp32CamPort}"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}",
+        "env": {
+          "PYTHONUTF8": "1",
+          "PYTHONUNBUFFERED": "1"
+        }
+      },
+      "problemMatcher": [
+        "$gcc"
+      ],
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated",
+        "clear": true
+      },
+      "runOptions": {
+        "instanceLimit": 1
+      }
+    },
+    {
+      "label": "ESP32-CAM: 查詢連接埠",
+      "type": "process",
+      "command": "${command:python.interpreterPath}",
+      "args": [
+        "${workspaceFolder}/esp32cam/tools/dev.py",
+        "ports"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}",
+        "env": {
+          "PYTHONUTF8": "1",
+          "PYTHONUNBUFFERED": "1"
+        }
+      },
+      "problemMatcher": [
+        "$gcc"
+      ],
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated",
+        "clear": true
+      },
+      "runOptions": {
+        "instanceLimit": 1
+      }
+    },
+    {
+      "label": "ESP32-CAM: 準備環境",
+      "type": "process",
+      "command": "${command:python.interpreterPath}",
+      "args": [
+        "${workspaceFolder}/esp32cam/tools/dev.py",
+        "setup"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}",
+        "env": {
+          "PYTHONUTF8": "1",
+          "PYTHONUNBUFFERED": "1"
+        }
+      },
+      "problemMatcher": [
+        "$gcc"
+      ],
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated",
+        "clear": true
+      },
+      "runOptions": {
+        "instanceLimit": 1
+      }
+    },
+    {
+      "label": "ESP32-CAM: 檢查環境",
+      "type": "process",
+      "command": "${command:python.interpreterPath}",
+      "args": [
+        "${workspaceFolder}/esp32cam/tools/dev.py",
+        "doctor"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}",
+        "env": {
+          "PYTHONUTF8": "1",
+          "PYTHONUNBUFFERED": "1"
+        }
+      },
+      "problemMatcher": [
+        "$gcc"
+      ],
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated",
+        "clear": true
+      },
+      "runOptions": {
+        "instanceLimit": 1
+      }
+    },
+    {
+      "label": "ESP32-CAM: 建置＋燒錄",
+      "type": "process",
+      "command": "${command:python.interpreterPath}",
+      "args": [
+        "${workspaceFolder}/esp32cam/tools/dev.py",
+        "upload",
+        "--port",
+        "${input:esp32CamPort}"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}",
+        "env": {
+          "PYTHONUTF8": "1",
+          "PYTHONUNBUFFERED": "1"
+        }
+      },
+      "problemMatcher": [
+        "$gcc"
+      ],
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated",
+        "clear": true
+      },
+      "runOptions": {
+        "instanceLimit": 1
+      }
+    },
+    {
+      "label": "ESP32-CAM: 重新建置韌體",
+      "type": "process",
+      "command": "${command:python.interpreterPath}",
+      "args": [
+        "${workspaceFolder}/esp32cam/tools/dev.py",
+        "rebuild"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}",
+        "env": {
+          "PYTHONUTF8": "1",
+          "PYTHONUNBUFFERED": "1"
+        }
+      },
+      "problemMatcher": [
+        "$gcc"
+      ],
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated",
+        "clear": true
+      },
+      "runOptions": {
+        "instanceLimit": 1
+      }
+    },
+    {
+      "label": "ESP32-CAM: 全部模擬測試",
+      "type": "process",
+      "command": "${command:python.interpreterPath}",
+      "args": [
+        "${workspaceFolder}/esp32cam/tools/dev.py",
+        "test"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}",
+        "env": {
+          "PYTHONUTF8": "1",
+          "PYTHONUNBUFFERED": "1"
+        }
+      },
+      "problemMatcher": [
+        "$gcc"
+      ],
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated",
+        "clear": true
+      },
+      "runOptions": {
+        "instanceLimit": 1
+      },
+      "group": "test"
+    },
+    {
+      "label": "ESP32-CAM: 手機網頁流程測試",
+      "type": "process",
+      "command": "${command:python.interpreterPath}",
+      "args": [
+        "${workspaceFolder}/esp32cam/tools/dev.py",
+        "test-web"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}",
+        "env": {
+          "PYTHONUTF8": "1",
+          "PYTHONUNBUFFERED": "1"
+        }
+      },
+      "problemMatcher": [
+        "$gcc"
+      ],
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated",
+        "clear": true
+      },
+      "runOptions": {
+        "instanceLimit": 1
+      },
+      "group": "test"
+    },
+    {
+      "label": "ESP32-CAM: 產生接線圖",
+      "type": "process",
+      "command": "${command:python.interpreterPath}",
+      "args": [
+        "${workspaceFolder}/esp32cam/tools/dev.py",
+        "diagrams"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}",
+        "env": {
+          "PYTHONUTF8": "1",
+          "PYTHONUNBUFFERED": "1"
+        }
+      },
+      "problemMatcher": [
+        "$gcc"
+      ],
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated",
+        "clear": true
+      },
+      "runOptions": {
+        "instanceLimit": 1
+      }
+    },
+    {
+      "label": "ESP32-CAM: 開啟網頁模擬器",
+      "type": "process",
+      "command": "${command:python.interpreterPath}",
+      "args": [
+        "${workspaceFolder}/esp32cam/tools/dev.py",
+        "mock-web"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}",
+        "env": {
+          "PYTHONUTF8": "1",
+          "PYTHONUNBUFFERED": "1"
+        }
+      },
+      "problemMatcher": [
+        "$gcc"
+      ],
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated",
+        "clear": true
+      },
+      "runOptions": {
+        "instanceLimit": 1
+      }
+    },
+    {
+      "label": "ESP32-CAM: 準備主機偵錯工具",
+      "type": "process",
+      "command": "${command:python.interpreterPath}",
+      "args": [
+        "${workspaceFolder}/esp32cam/tools/dev.py",
+        "setup-host"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}",
+        "env": {
+          "PYTHONUTF8": "1",
+          "PYTHONUNBUFFERED": "1"
+        }
+      },
+      "problemMatcher": [
+        "$gcc"
+      ],
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated",
+        "clear": true
+      },
+      "runOptions": {
+        "instanceLimit": 1
+      }
+    },
+    {
+      "label": "ESP32-CAM: 建置主機偵錯",
+      "type": "process",
+      "command": "${command:python.interpreterPath}",
+      "args": [
+        "${workspaceFolder}/esp32cam/tools/dev.py",
+        "native-debug"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}",
+        "env": {
+          "PYTHONUTF8": "1",
+          "PYTHONUNBUFFERED": "1"
+        }
+      },
+      "problemMatcher": [
+        "$gcc"
+      ],
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated",
+        "clear": true
+      },
+      "runOptions": {
+        "instanceLimit": 1
+      }
+    },
+    {
       "label": "MEGA: 建置韌體",
       "type": "process",
       "command": "${command:python.interpreterPath}",
@@ -28,8 +418,7 @@
         "instanceLimit": 1
       },
       "group": {
-        "kind": "build",
-        "isDefault": true
+        "kind": "build"
       }
     },
     {
@@ -395,336 +784,6 @@
       "runOptions": {
         "instanceLimit": 1
       }
-    },
-    {
-      "label": "ESP32-CAM: 準備環境",
-      "type": "process",
-      "command": "${command:python.interpreterPath}",
-      "args": [
-        "${workspaceFolder}/esp32cam/tools/dev.py",
-        "setup"
-      ],
-      "options": {
-        "cwd": "${workspaceFolder}",
-        "env": {
-          "PYTHONUTF8": "1",
-          "PYTHONUNBUFFERED": "1"
-        }
-      },
-      "problemMatcher": [
-        "$gcc"
-      ],
-      "presentation": {
-        "reveal": "always",
-        "panel": "dedicated",
-        "clear": true
-      },
-      "runOptions": {
-        "instanceLimit": 1
-      }
-    },
-    {
-      "label": "ESP32-CAM: 檢查環境",
-      "type": "process",
-      "command": "${command:python.interpreterPath}",
-      "args": [
-        "${workspaceFolder}/esp32cam/tools/dev.py",
-        "doctor"
-      ],
-      "options": {
-        "cwd": "${workspaceFolder}",
-        "env": {
-          "PYTHONUTF8": "1",
-          "PYTHONUNBUFFERED": "1"
-        }
-      },
-      "problemMatcher": [
-        "$gcc"
-      ],
-      "presentation": {
-        "reveal": "always",
-        "panel": "dedicated",
-        "clear": true
-      },
-      "runOptions": {
-        "instanceLimit": 1
-      }
-    },
-    {
-      "label": "ESP32-CAM: 查詢連接埠",
-      "type": "process",
-      "command": "${command:python.interpreterPath}",
-      "args": [
-        "${workspaceFolder}/esp32cam/tools/dev.py",
-        "ports"
-      ],
-      "options": {
-        "cwd": "${workspaceFolder}",
-        "env": {
-          "PYTHONUTF8": "1",
-          "PYTHONUNBUFFERED": "1"
-        }
-      },
-      "problemMatcher": [
-        "$gcc"
-      ],
-      "presentation": {
-        "reveal": "always",
-        "panel": "dedicated",
-        "clear": true
-      },
-      "runOptions": {
-        "instanceLimit": 1
-      }
-    },
-    {
-      "label": "ESP32-CAM: 建置韌體",
-      "type": "process",
-      "command": "${command:python.interpreterPath}",
-      "args": [
-        "${workspaceFolder}/esp32cam/tools/dev.py",
-        "build"
-      ],
-      "options": {
-        "cwd": "${workspaceFolder}",
-        "env": {
-          "PYTHONUTF8": "1",
-          "PYTHONUNBUFFERED": "1"
-        }
-      },
-      "problemMatcher": [
-        "$gcc"
-      ],
-      "presentation": {
-        "reveal": "always",
-        "panel": "dedicated",
-        "clear": true
-      },
-      "runOptions": {
-        "instanceLimit": 1
-      }
-    },
-    {
-      "label": "ESP32-CAM: 建置＋燒錄",
-      "type": "process",
-      "command": "${command:python.interpreterPath}",
-      "args": [
-        "${workspaceFolder}/esp32cam/tools/dev.py",
-        "upload",
-        "--port",
-        "${input:esp32CamPort}"
-      ],
-      "options": {
-        "cwd": "${workspaceFolder}",
-        "env": {
-          "PYTHONUTF8": "1",
-          "PYTHONUNBUFFERED": "1"
-        }
-      },
-      "problemMatcher": [
-        "$gcc"
-      ],
-      "presentation": {
-        "reveal": "always",
-        "panel": "dedicated",
-        "clear": true
-      },
-      "runOptions": {
-        "instanceLimit": 1
-      }
-    },
-    {
-      "label": "ESP32-CAM: 建置＋燒錄＋串列監看",
-      "type": "process",
-      "command": "${command:python.interpreterPath}",
-      "args": [
-        "${workspaceFolder}/esp32cam/tools/dev.py",
-        "upload-monitor",
-        "--port",
-        "${input:esp32CamPort}"
-      ],
-      "options": {
-        "cwd": "${workspaceFolder}",
-        "env": {
-          "PYTHONUTF8": "1",
-          "PYTHONUNBUFFERED": "1"
-        }
-      },
-      "problemMatcher": [
-        "$gcc"
-      ],
-      "presentation": {
-        "reveal": "always",
-        "panel": "dedicated",
-        "clear": true
-      },
-      "runOptions": {
-        "instanceLimit": 1
-      }
-    },
-    {
-      "label": "ESP32-CAM: 串列監看",
-      "type": "process",
-      "command": "${command:python.interpreterPath}",
-      "args": [
-        "${workspaceFolder}/esp32cam/tools/dev.py",
-        "monitor",
-        "--port",
-        "${input:esp32CamPort}"
-      ],
-      "options": {
-        "cwd": "${workspaceFolder}",
-        "env": {
-          "PYTHONUTF8": "1",
-          "PYTHONUNBUFFERED": "1"
-        }
-      },
-      "problemMatcher": [
-        "$gcc"
-      ],
-      "presentation": {
-        "reveal": "always",
-        "panel": "dedicated",
-        "clear": true
-      },
-      "runOptions": {
-        "instanceLimit": 1
-      }
-    },
-    {
-      "label": "ESP32-CAM: 全部模擬測試",
-      "type": "process",
-      "command": "${command:python.interpreterPath}",
-      "args": [
-        "${workspaceFolder}/esp32cam/tools/dev.py",
-        "test"
-      ],
-      "options": {
-        "cwd": "${workspaceFolder}",
-        "env": {
-          "PYTHONUTF8": "1",
-          "PYTHONUNBUFFERED": "1"
-        }
-      },
-      "problemMatcher": [
-        "$gcc"
-      ],
-      "presentation": {
-        "reveal": "always",
-        "panel": "dedicated",
-        "clear": true
-      },
-      "runOptions": {
-        "instanceLimit": 1
-      }
-    },
-    {
-      "label": "ESP32-CAM: 產生接線圖",
-      "type": "process",
-      "command": "${command:python.interpreterPath}",
-      "args": [
-        "${workspaceFolder}/esp32cam/tools/dev.py",
-        "diagrams"
-      ],
-      "options": {
-        "cwd": "${workspaceFolder}",
-        "env": {
-          "PYTHONUTF8": "1",
-          "PYTHONUNBUFFERED": "1"
-        }
-      },
-      "problemMatcher": [
-        "$gcc"
-      ],
-      "presentation": {
-        "reveal": "always",
-        "panel": "dedicated",
-        "clear": true
-      },
-      "runOptions": {
-        "instanceLimit": 1
-      }
-    },
-    {
-      "label": "ESP32-CAM: 開啟網頁模擬器",
-      "type": "process",
-      "command": "${command:python.interpreterPath}",
-      "args": [
-        "${workspaceFolder}/esp32cam/tools/dev.py",
-        "mock-web"
-      ],
-      "options": {
-        "cwd": "${workspaceFolder}",
-        "env": {
-          "PYTHONUTF8": "1",
-          "PYTHONUNBUFFERED": "1"
-        }
-      },
-      "problemMatcher": [
-        "$gcc"
-      ],
-      "presentation": {
-        "reveal": "always",
-        "panel": "dedicated",
-        "clear": true
-      },
-      "runOptions": {
-        "instanceLimit": 1
-      }
-    },
-    {
-      "label": "ESP32-CAM: 建置主機偵錯",
-      "type": "process",
-      "command": "${command:python.interpreterPath}",
-      "args": [
-        "${workspaceFolder}/esp32cam/tools/dev.py",
-        "native-debug"
-      ],
-      "options": {
-        "cwd": "${workspaceFolder}",
-        "env": {
-          "PYTHONUTF8": "1",
-          "PYTHONUNBUFFERED": "1"
-        }
-      },
-      "problemMatcher": [
-        "$gcc"
-      ],
-      "presentation": {
-        "reveal": "always",
-        "panel": "dedicated",
-        "clear": true
-      },
-      "runOptions": {
-        "instanceLimit": 1
-      }
-    },
-    {
-      "label": "ESP32-CAM: 手機網頁流程測試",
-      "type": "process",
-      "command": "${command:python.interpreterPath}",
-      "args": [
-        "${workspaceFolder}/esp32cam/tools/dev.py",
-        "test-web"
-      ],
-      "options": {
-        "cwd": "${workspaceFolder}",
-        "env": {
-          "PYTHONUTF8": "1",
-          "PYTHONUNBUFFERED": "1"
-        }
-      },
-      "problemMatcher": [
-        "$gcc"
-      ],
-      "presentation": {
-        "reveal": "always",
-        "panel": "dedicated",
-        "clear": true
-      },
-      "runOptions": {
-        "instanceLimit": 1
-      }
     }
   ],
   "inputs": [
@@ -738,7 +797,7 @@
       "id": "esp32CamPort",
       "type": "promptString",
       "default": "COM4",
-      "description": "輸入已確認的 CP2102 COM 埠（不是 Mega COM3）；GPIO0 接 GND 後 RESET；馬達分支關閉"
+      "description": "輸入已確認的 CP2102 COM 埠；關馬達分支，GPIO0 接 GND 後 RESET；CP2102 供電腳不接"
     }
   ]
 }

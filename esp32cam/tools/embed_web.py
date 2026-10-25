@@ -9,8 +9,8 @@ ASSETS = {
     'kWebGzip': ROOT / 'web/index.html',
     'kWiringRuntimeGzip': ROOT / 'wiring-runtime.svg',
     'kWiringFlashingGzip': ROOT / 'wiring-flashing.svg',
-    'kWiringMegaGzip': ROOT.parent / 'mega2560/wiring-ten.svg',
-    'kWiringHallGzip': ROOT.parent / 'mega2560/hall-board.svg',
+    'kWiringMCPGzip': ROOT / 'wiring-motors.svg',
+    'kWiringHallGzip': ROOT / 'wiring-hall.svg',
 }
 
 

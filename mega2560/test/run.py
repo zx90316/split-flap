@@ -39,9 +39,9 @@ for suite in suites:
     binary = build / (suite + suffix + ('.exe' if os.name == 'nt' else ''))
     subprocess.run(compiler + ['-std=c++11', '-Wall', '-Wextra', '-Werror',
         '-I' + str(root / 'unit_test'), '-I' + str(root / 'test' / 'stubs'),
-        '-I' + str(root.parent / 'libraries/SplitFlapLink/src'),
-        str(root / 'test' / (suite + '.cpp')), str(root / 'unit_test' / 'bench.cpp'),
-        str(root / 'unit_test' / 'panel.cpp'),
+        '-I' + str(root.parent / 'libraries/SplitFlapLink/src'), '-I' + str(root.parent / 'libraries/SplitFlapMotion/src'),
+        str(root / 'test' / (suite + '.cpp')), str(root.parent / 'libraries/SplitFlapMotion/src/bench.cpp'),
+        str(root.parent / 'libraries/SplitFlapMotion/src/panel.cpp'),
         '-o', str(binary)] + debug_flags, check=True, env=env)
     if not args.build_only:
         subprocess.run([str(binary)], check=True)

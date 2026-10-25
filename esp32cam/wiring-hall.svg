@@ -1,0 +1,68 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1300 1000" role="img" aria-labelledby="title desc">
+<title id="title">十路 Hall → MCP 0x23</title><desc id="desc">預設關閉 Hall；接好與安裝磁鐵後，在設定頁啟用。GPA7／GPB7 不接 Hall。</desc>
+<defs><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="context-stroke"/></marker></defs>
+<style>text{font-family:"Microsoft JhengHei","Noto Sans CJK TC",sans-serif;fill:#183f36}.wire{fill:none;stroke-linejoin:round;stroke-linecap:round}</style>
+<rect width="1300" height="1000" fill="#f3f6ef"/>
+<text x="45" y="62" font-size="30" font-weight="bold" text-anchor="start" style="fill:#183f36">十路 Hall → MCP 0x23</text>
+<text x="45" y="96" font-size="17" font-weight="normal" text-anchor="start" style="fill:#183f36">預設關閉 Hall；接好與安裝磁鐵後，在設定頁啟用。GPA7／GPB7 不接 Hall。</text>
+<text x="65" y="165" font-size="21" font-weight="bold" text-anchor="start" style="fill:#183f36">感測位置</text>
+<text x="320" y="165" font-size="21" font-weight="bold" text-anchor="start" style="fill:#183f36">KY-003 訊號</text>
+<text x="655" y="165" font-size="21" font-weight="bold" text-anchor="start" style="fill:#183f36">MCP 0x23</text>
+<text x="970" y="165" font-size="21" font-weight="bold" text-anchor="start" style="fill:#183f36">各感測板供電</text>
+<text x="65" y="220" font-size="21" font-weight="bold" text-anchor="start" style="fill:#183f36">U0</text>
+<text x="320" y="220" font-size="20" font-weight="normal" text-anchor="start" style="fill:#2b65c8">S／OUT →</text>
+<text x="655" y="220" font-size="21" font-weight="normal" text-anchor="start" style="fill:#00866b">GPA0</text>
+<text x="970" y="220" font-size="18" font-weight="normal" text-anchor="start" style="fill:#183f36">VCC 5V／GND 共地</text>
+<polyline class="wire" points="45,238 1240,238" stroke="#d4dfd8" stroke-width="1"/>
+<text x="65" y="268" font-size="21" font-weight="bold" text-anchor="start" style="fill:#183f36">U1</text>
+<text x="320" y="268" font-size="20" font-weight="normal" text-anchor="start" style="fill:#2b65c8">S／OUT →</text>
+<text x="655" y="268" font-size="21" font-weight="normal" text-anchor="start" style="fill:#00866b">GPA1</text>
+<text x="970" y="268" font-size="18" font-weight="normal" text-anchor="start" style="fill:#183f36">VCC 5V／GND 共地</text>
+<polyline class="wire" points="45,286 1240,286" stroke="#d4dfd8" stroke-width="1"/>
+<text x="65" y="316" font-size="21" font-weight="bold" text-anchor="start" style="fill:#183f36">U2</text>
+<text x="320" y="316" font-size="20" font-weight="normal" text-anchor="start" style="fill:#2b65c8">S／OUT →</text>
+<text x="655" y="316" font-size="21" font-weight="normal" text-anchor="start" style="fill:#00866b">GPA2</text>
+<text x="970" y="316" font-size="18" font-weight="normal" text-anchor="start" style="fill:#183f36">VCC 5V／GND 共地</text>
+<polyline class="wire" points="45,334 1240,334" stroke="#d4dfd8" stroke-width="1"/>
+<text x="65" y="364" font-size="21" font-weight="bold" text-anchor="start" style="fill:#183f36">U3</text>
+<text x="320" y="364" font-size="20" font-weight="normal" text-anchor="start" style="fill:#2b65c8">S／OUT →</text>
+<text x="655" y="364" font-size="21" font-weight="normal" text-anchor="start" style="fill:#00866b">GPA3</text>
+<text x="970" y="364" font-size="18" font-weight="normal" text-anchor="start" style="fill:#183f36">VCC 5V／GND 共地</text>
+<polyline class="wire" points="45,382 1240,382" stroke="#d4dfd8" stroke-width="1"/>
+<text x="65" y="412" font-size="21" font-weight="bold" text-anchor="start" style="fill:#183f36">U4</text>
+<text x="320" y="412" font-size="20" font-weight="normal" text-anchor="start" style="fill:#2b65c8">S／OUT →</text>
+<text x="655" y="412" font-size="21" font-weight="normal" text-anchor="start" style="fill:#00866b">GPA4</text>
+<text x="970" y="412" font-size="18" font-weight="normal" text-anchor="start" style="fill:#183f36">VCC 5V／GND 共地</text>
+<polyline class="wire" points="45,430 1240,430" stroke="#d4dfd8" stroke-width="1"/>
+<text x="65" y="460" font-size="21" font-weight="bold" text-anchor="start" style="fill:#183f36">U5</text>
+<text x="320" y="460" font-size="20" font-weight="normal" text-anchor="start" style="fill:#2b65c8">S／OUT →</text>
+<text x="655" y="460" font-size="21" font-weight="normal" text-anchor="start" style="fill:#00866b">GPA5</text>
+<text x="970" y="460" font-size="18" font-weight="normal" text-anchor="start" style="fill:#183f36">VCC 5V／GND 共地</text>
+<polyline class="wire" points="45,478 1240,478" stroke="#d4dfd8" stroke-width="1"/>
+<text x="65" y="508" font-size="21" font-weight="bold" text-anchor="start" style="fill:#183f36">U6</text>
+<text x="320" y="508" font-size="20" font-weight="normal" text-anchor="start" style="fill:#2b65c8">S／OUT →</text>
+<text x="655" y="508" font-size="21" font-weight="normal" text-anchor="start" style="fill:#00866b">GPA6</text>
+<text x="970" y="508" font-size="18" font-weight="normal" text-anchor="start" style="fill:#183f36">VCC 5V／GND 共地</text>
+<polyline class="wire" points="45,526 1240,526" stroke="#d4dfd8" stroke-width="1"/>
+<text x="65" y="556" font-size="21" font-weight="bold" text-anchor="start" style="fill:#183f36">U7</text>
+<text x="320" y="556" font-size="20" font-weight="normal" text-anchor="start" style="fill:#2b65c8">S／OUT →</text>
+<text x="655" y="556" font-size="21" font-weight="normal" text-anchor="start" style="fill:#00866b">GPB0</text>
+<text x="970" y="556" font-size="18" font-weight="normal" text-anchor="start" style="fill:#183f36">VCC 5V／GND 共地</text>
+<polyline class="wire" points="45,574 1240,574" stroke="#d4dfd8" stroke-width="1"/>
+<text x="65" y="604" font-size="21" font-weight="bold" text-anchor="start" style="fill:#183f36">U8</text>
+<text x="320" y="604" font-size="20" font-weight="normal" text-anchor="start" style="fill:#2b65c8">S／OUT →</text>
+<text x="655" y="604" font-size="21" font-weight="normal" text-anchor="start" style="fill:#00866b">GPB1</text>
+<text x="970" y="604" font-size="18" font-weight="normal" text-anchor="start" style="fill:#183f36">VCC 5V／GND 共地</text>
+<polyline class="wire" points="45,622 1240,622" stroke="#d4dfd8" stroke-width="1"/>
+<text x="65" y="652" font-size="21" font-weight="bold" text-anchor="start" style="fill:#183f36">U9</text>
+<text x="320" y="652" font-size="20" font-weight="normal" text-anchor="start" style="fill:#2b65c8">S／OUT →</text>
+<text x="655" y="652" font-size="21" font-weight="normal" text-anchor="start" style="fill:#00866b">GPB2</text>
+<text x="970" y="652" font-size="18" font-weight="normal" text-anchor="start" style="fill:#183f36">VCC 5V／GND 共地</text>
+<polyline class="wire" points="45,670 1240,670" stroke="#d4dfd8" stroke-width="1"/>
+<rect x="45" y="745" width="1195" height="200" rx="13" fill="#fff" stroke="#bfd0c5" stroke-width="2"/>
+<text x="63" y="779" font-size="22" font-weight="bold" text-anchor="start" style="fill:#183f36">地址、重設與測試</text>
+<text x="65" y="805" font-size="18" font-weight="normal" text-anchor="start" style="fill:#183f36">0x23 地址 A2 A1 A0＝011。VCC＝5V，GND＝共地，RST 接四片共用重設線。</text>
+<text x="65" y="834" font-size="18" font-weight="normal" text-anchor="start" style="fill:#183f36">GPA7／GPB7 與其餘未使用輸出保持低；每路 S／OUT 分開，不把十路訊號短接。</text>
+<text x="65" y="863" font-size="18" font-weight="normal" text-anchor="start" style="fill:#183f36">核對 KY-003 板上 S／+／−；不要照模組外觀猜針序。預設 POLARITY LOW，依實測確認。</text>
+<text x="65" y="892" font-size="18" font-weight="normal" text-anchor="start" style="fill:#183f36">先 WATCH 看原始訊號，再試 HOME／MEASURE；尚無磁鐵時沿用手動定位。</text>
+</svg>

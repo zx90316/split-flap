@@ -1,5 +1,7 @@
 # Mega＋ESP32-CAM 統一更新可行性
 
+> 歷史雙主控研究，基準保留於 `esp32-purchased-bom`。本分支已採用 [ESP32-CAM＋MCP23017 單主控](README.md)，只需一份韌體；未實作下列雙板更新器。
+
 研究日期：2026-10-26（Asia/Taipei）。基準為 `cac9658`、ESP32 韌體 1.1.0、Arduino AVR 1.8.8、Arduino-ESP32 3.3.12。本文件是研究與實作建議；雙板更新器、USB 轉送及新版 Bootloader 尚未實作，也沒有改動或燒錄目前正常運行的韌體。
 
 使用者於 2026-10-26 回報現版「實際測試通過，目前完美運行」。設計沿用現有 Mega、AI-Thinker ESP32-CAM、CP2102、P011、LM2596，不以新增模組為前提。

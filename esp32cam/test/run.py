@@ -60,11 +60,21 @@ compile_checked([zig, 'cc', '-std=c99', '-c', dep / 'cJSON.c', '-o', obj])
 debug = ['-g', '-O0'] + (['-gcodeview'] if os.name == 'nt' else []) if args.debug else []
 binary = build / ('test_bridge' + ('_debug' if args.debug else '') + ('.exe' if os.name == 'nt' else ''))
 compile_checked([zig, 'c++', '-std=c++11', '-Wall', '-Wextra', '-Werror',
-    '-I' + str(ROOT / 'libraries/SplitFlapLink/src'), '-I' + str(ROOT / 'mega2560/test/stubs'),
+    '-I' + str(ROOT / 'libraries/SplitFlapLink/src'), '-I' + str(ROOT / 'libraries/SplitFlapMotion/src'), '-I' + str(ROOT / 'mega2560/test/stubs'),
     '-I' + str(ROOT / 'mega2560/unit_test'), '-I' + str(dep),
-    ROOT / 'esp32cam/test/test_bridge.cpp', ROOT / 'mega2560/unit_test/bench.cpp',
-    ROOT / 'mega2560/unit_test/panel.cpp', obj, '-o', binary] + debug)
+    ROOT / 'esp32cam/test/test_bridge.cpp', ROOT / 'libraries/SplitFlapMotion/src/bench.cpp',
+    ROOT / 'libraries/SplitFlapMotion/src/panel.cpp', obj, '-o', binary] + debug)
 if not args.build_only:
     subprocess.run([binary], check=True, env=env)
 else:
     print('Built:', binary)
+
+local_binary = build / ('test_local' + ('_debug' if args.debug else '') + ('.exe' if os.name == 'nt' else ''))
+compile_checked([zig, 'c++', '-std=c++11', '-Wall', '-Wextra', '-Werror',
+    '-I' + str(ROOT / 'libraries/SplitFlapLink/src'), '-I' + str(ROOT / 'libraries/SplitFlapMotion/src'),
+    ROOT / 'esp32cam/test/test_local.cpp', ROOT / 'libraries/SplitFlapMotion/src/bench.cpp',
+    ROOT / 'libraries/SplitFlapMotion/src/panel.cpp', '-o', local_binary] + debug)
+if not args.build_only:
+    subprocess.run([local_binary], check=True, env=env)
+else:
+    print('Built:', local_binary)

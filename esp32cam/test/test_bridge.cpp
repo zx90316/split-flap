@@ -115,7 +115,7 @@ void jsonApi() {
   }
   json = cJSON_Parse("{\"op\":\"UNITS\",\"value\":[7,0,2]}");
   assert(cam::commandPayload(json, 3, cam::Align::Left, payload, n) && n == 6 && payload[3] == 7); cJSON_Delete(json);
-  uint8_t header[64] = {}; memcpy(header, "SFCAM01", 8); sf::put32(header + 8, 123456); sf::put32(header + 12, 1); memcpy(header + 48, "splitflap-cam-v1", 16); uint32_t size;
+  uint8_t header[64] = {}; memcpy(header, "SFCAM02", 8); sf::put32(header + 8, 123456); sf::put32(header + 12, 2); memcpy(header + 48, "splitflap-mcp-v2", 16); uint32_t size;
   assert(cam::otaHeader(header, 1966080, size) && size == 123456);
   header[0] ^= 1; assert(!cam::otaHeader(header, 1966080, size)); header[0] ^= 1;
   sf::put32(header + 8, 1966081); assert(!cam::otaHeader(header, 1966080, size));
@@ -227,4 +227,16 @@ void persistentGlyphs() {
   sf::put16(record + 11, sf::crc16(record, 11)); assert(!memory.decode(record, sizeof(record)));
   puts("PASS durable glyph history: all 45 characters, physical mapping, CRC/range rejection, no mid-motion or unknown-position overwrite");
 }
-int main() { display(); jsonApi(); endToEnd(); networkProvisioning(); persistentGlyphs(); }
+void localConsole() {
+  uint8_t bytes[160],n=0;
+  assert(cam::consolePayload("INIT",1,0,bytes,n) && bytes[0]==uint8_t(sf::Op::Init));
+  assert(cam::consolePayload("SPEED ALL 800",3,0,bytes,n) && bytes[1]==sf::kAll && sf::get16(bytes+2)==800);
+  assert(cam::consolePayload("UNIT 7",3,0,bytes,n) && bytes[1]==7);
+  assert(cam::consolePayload("UNITS 7,0,9",3,0,bytes,n) && bytes[2]==3 && bytes[5]==9);
+  assert(cam::consolePayload("TEXT ÄÖÜ",3,0,bytes,n) && bytes[3]==27 && bytes[5]==29);
+  assert(!cam::consolePayload("ARM 123",1,0,bytes,n));
+  assert(!cam::consolePayload("UNITS 1,",3,0,bytes,n));
+  assert(!cam::consolePayload("SPEED 800 STOP",1,0,bytes,n));
+  puts("PASS local serial parser: bounded commands, UTF-8, maps, ALL settings, extra argument rejection");
+}
+int main() { display(); jsonApi(); endToEnd(); networkProvisioning(); persistentGlyphs(); localConsole(); }

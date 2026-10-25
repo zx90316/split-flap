@@ -1,5 +1,7 @@
 # 在 VS Code 建置、燒錄與偵錯 Mega
 
+> 以下為 `esp32-purchased-bom` 雙主控工作流程。本單主控分支的 Ctrl+Shift+B 已改為 ESP32-CAM，舊 Mega F5 選項移到歷史群組；目前操作見 [單主控指南](../esp32cam/README.md)。共用運動核心的實作現位於 `libraries/SplitFlapMotion/src/`。
+
 適用目前的 Windows 開發環境。以「檔案 → 開啟資料夾」開啟 **repo 根目錄**，讓 VS Code 載入根目錄的 `.vscode/launch.json` 與 `tasks.json`。不要只開單一 `.ino` 或 `mega2560/` 子資料夾。
 
 ## 平常最常用的操作

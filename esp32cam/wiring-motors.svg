@@ -1,0 +1,88 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 1170" role="img" aria-labelledby="title desc">
+<title id="title">MCP → ULN2003：U0～U9 四相逐線表</title><desc id="desc">每列四個 MCP 腳依序接同一片 ULN 的 IN1、IN2、IN3、IN4；馬達插頭維持接 ULN 原插座。</desc>
+<defs><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="context-stroke"/></marker></defs>
+<style>text{font-family:"Microsoft JhengHei","Noto Sans CJK TC",sans-serif;fill:#183f36}.wire{fill:none;stroke-linejoin:round;stroke-linecap:round}</style>
+<rect width="1440" height="1170" fill="#f3f6ef"/>
+<text x="45" y="62" font-size="30" font-weight="bold" text-anchor="start" style="fill:#183f36">MCP → ULN2003：U0～U9 四相逐線表</text>
+<text x="45" y="96" font-size="17" font-weight="normal" text-anchor="start" style="fill:#183f36">每列四個 MCP 腳依序接同一片 ULN 的 IN1、IN2、IN3、IN4；馬達插頭維持接 ULN 原插座。</text>
+<text x="60" y="165" font-size="20" font-weight="bold" text-anchor="start" style="fill:#183f36">MCP 地址</text>
+<text x="245" y="165" font-size="20" font-weight="bold" text-anchor="start" style="fill:#183f36">顯示位</text>
+<text x="410" y="165" font-size="20" font-weight="bold" text-anchor="start" style="fill:#183f36">MCP 腳位（依序）</text>
+<text x="820" y="165" font-size="20" font-weight="bold" text-anchor="start" style="fill:#183f36">ULN 輸入（依序）</text>
+<text x="1190" y="165" font-size="20" font-weight="bold" text-anchor="start" style="fill:#183f36">馬達</text>
+<text x="60" y="220" font-size="21" font-weight="normal" text-anchor="start" style="fill:#183f36">0x20</text>
+<text x="245" y="220" font-size="22" font-weight="bold" text-anchor="start" style="fill:#183f36">U0</text>
+<text x="410" y="220" font-size="19" font-weight="normal" text-anchor="start" style="fill:#2b65c8">GPA0 / GPA1 / GPA2 / GPA3</text>
+<text x="820" y="220" font-size="19" font-weight="normal" text-anchor="start" style="fill:#00866b">IN1 / IN2 / IN3 / IN4</text>
+<text x="1190" y="220" font-size="18" font-weight="normal" text-anchor="start" style="fill:#183f36">U0 五線插頭</text>
+<polyline class="wire" points="45,244 1385,244" stroke="#d4dfd8" stroke-width="1"/>
+<text x="60" y="282" font-size="21" font-weight="normal" text-anchor="start" style="fill:#183f36">0x20</text>
+<text x="245" y="282" font-size="22" font-weight="bold" text-anchor="start" style="fill:#183f36">U1</text>
+<text x="410" y="282" font-size="19" font-weight="normal" text-anchor="start" style="fill:#2b65c8">GPA4 / GPA5 / GPA6 / GPA7</text>
+<text x="820" y="282" font-size="19" font-weight="normal" text-anchor="start" style="fill:#00866b">IN1 / IN2 / IN3 / IN4</text>
+<text x="1190" y="282" font-size="18" font-weight="normal" text-anchor="start" style="fill:#183f36">U1 五線插頭</text>
+<polyline class="wire" points="45,306 1385,306" stroke="#d4dfd8" stroke-width="1"/>
+<text x="60" y="344" font-size="21" font-weight="normal" text-anchor="start" style="fill:#183f36">0x20</text>
+<text x="245" y="344" font-size="22" font-weight="bold" text-anchor="start" style="fill:#183f36">U2</text>
+<text x="410" y="344" font-size="19" font-weight="normal" text-anchor="start" style="fill:#2b65c8">GPB0 / GPB1 / GPB2 / GPB3</text>
+<text x="820" y="344" font-size="19" font-weight="normal" text-anchor="start" style="fill:#00866b">IN1 / IN2 / IN3 / IN4</text>
+<text x="1190" y="344" font-size="18" font-weight="normal" text-anchor="start" style="fill:#183f36">U2 五線插頭</text>
+<polyline class="wire" points="45,368 1385,368" stroke="#d4dfd8" stroke-width="1"/>
+<text x="60" y="406" font-size="21" font-weight="normal" text-anchor="start" style="fill:#183f36">0x20</text>
+<text x="245" y="406" font-size="22" font-weight="bold" text-anchor="start" style="fill:#183f36">U3</text>
+<text x="410" y="406" font-size="19" font-weight="normal" text-anchor="start" style="fill:#2b65c8">GPB4 / GPB5 / GPB6 / GPB7</text>
+<text x="820" y="406" font-size="19" font-weight="normal" text-anchor="start" style="fill:#00866b">IN1 / IN2 / IN3 / IN4</text>
+<text x="1190" y="406" font-size="18" font-weight="normal" text-anchor="start" style="fill:#183f36">U3 五線插頭</text>
+<polyline class="wire" points="45,430 1385,430" stroke="#d4dfd8" stroke-width="1"/>
+<text x="60" y="468" font-size="21" font-weight="normal" text-anchor="start" style="fill:#183f36">0x21</text>
+<text x="245" y="468" font-size="22" font-weight="bold" text-anchor="start" style="fill:#183f36">U4</text>
+<text x="410" y="468" font-size="19" font-weight="normal" text-anchor="start" style="fill:#2b65c8">GPA0 / GPA1 / GPA2 / GPA3</text>
+<text x="820" y="468" font-size="19" font-weight="normal" text-anchor="start" style="fill:#00866b">IN1 / IN2 / IN3 / IN4</text>
+<text x="1190" y="468" font-size="18" font-weight="normal" text-anchor="start" style="fill:#183f36">U4 五線插頭</text>
+<polyline class="wire" points="45,492 1385,492" stroke="#d4dfd8" stroke-width="1"/>
+<text x="60" y="530" font-size="21" font-weight="normal" text-anchor="start" style="fill:#183f36">0x21</text>
+<text x="245" y="530" font-size="22" font-weight="bold" text-anchor="start" style="fill:#183f36">U5</text>
+<text x="410" y="530" font-size="19" font-weight="normal" text-anchor="start" style="fill:#2b65c8">GPA4 / GPA5 / GPA6 / GPA7</text>
+<text x="820" y="530" font-size="19" font-weight="normal" text-anchor="start" style="fill:#00866b">IN1 / IN2 / IN3 / IN4</text>
+<text x="1190" y="530" font-size="18" font-weight="normal" text-anchor="start" style="fill:#183f36">U5 五線插頭</text>
+<polyline class="wire" points="45,554 1385,554" stroke="#d4dfd8" stroke-width="1"/>
+<text x="60" y="592" font-size="21" font-weight="normal" text-anchor="start" style="fill:#183f36">0x21</text>
+<text x="245" y="592" font-size="22" font-weight="bold" text-anchor="start" style="fill:#183f36">U6</text>
+<text x="410" y="592" font-size="19" font-weight="normal" text-anchor="start" style="fill:#2b65c8">GPB0 / GPB1 / GPB2 / GPB3</text>
+<text x="820" y="592" font-size="19" font-weight="normal" text-anchor="start" style="fill:#00866b">IN1 / IN2 / IN3 / IN4</text>
+<text x="1190" y="592" font-size="18" font-weight="normal" text-anchor="start" style="fill:#183f36">U6 五線插頭</text>
+<polyline class="wire" points="45,616 1385,616" stroke="#d4dfd8" stroke-width="1"/>
+<text x="60" y="654" font-size="21" font-weight="normal" text-anchor="start" style="fill:#183f36">0x21</text>
+<text x="245" y="654" font-size="22" font-weight="bold" text-anchor="start" style="fill:#183f36">U7</text>
+<text x="410" y="654" font-size="19" font-weight="normal" text-anchor="start" style="fill:#2b65c8">GPB4 / GPB5 / GPB6 / GPB7</text>
+<text x="820" y="654" font-size="19" font-weight="normal" text-anchor="start" style="fill:#00866b">IN1 / IN2 / IN3 / IN4</text>
+<text x="1190" y="654" font-size="18" font-weight="normal" text-anchor="start" style="fill:#183f36">U7 五線插頭</text>
+<polyline class="wire" points="45,678 1385,678" stroke="#d4dfd8" stroke-width="1"/>
+<text x="60" y="716" font-size="21" font-weight="normal" text-anchor="start" style="fill:#183f36">0x22</text>
+<text x="245" y="716" font-size="22" font-weight="bold" text-anchor="start" style="fill:#183f36">U8</text>
+<text x="410" y="716" font-size="19" font-weight="normal" text-anchor="start" style="fill:#2b65c8">GPA0 / GPA1 / GPA2 / GPA3</text>
+<text x="820" y="716" font-size="19" font-weight="normal" text-anchor="start" style="fill:#00866b">IN1 / IN2 / IN3 / IN4</text>
+<text x="1190" y="716" font-size="18" font-weight="normal" text-anchor="start" style="fill:#183f36">U8 五線插頭</text>
+<polyline class="wire" points="45,740 1385,740" stroke="#d4dfd8" stroke-width="1"/>
+<text x="60" y="778" font-size="21" font-weight="normal" text-anchor="start" style="fill:#183f36">0x22</text>
+<text x="245" y="778" font-size="22" font-weight="bold" text-anchor="start" style="fill:#183f36">U9</text>
+<text x="410" y="778" font-size="19" font-weight="normal" text-anchor="start" style="fill:#2b65c8">GPA4 / GPA5 / GPA6 / GPA7</text>
+<text x="820" y="778" font-size="19" font-weight="normal" text-anchor="start" style="fill:#00866b">IN1 / IN2 / IN3 / IN4</text>
+<text x="1190" y="778" font-size="18" font-weight="normal" text-anchor="start" style="fill:#183f36">U9 五線插頭</text>
+<polyline class="wire" points="45,802 1385,802" stroke="#d4dfd8" stroke-width="1"/>
+<rect x="45" y="855" width="655" height="245" rx="13" fill="#fff" stroke="#bfd0c5" stroke-width="2"/>
+<text x="63" y="889" font-size="22" font-weight="bold" text-anchor="start" style="fill:#183f36">電源與地址</text>
+<text x="65" y="915" font-size="17" font-weight="normal" text-anchor="start" style="fill:#183f36">MCP VCC＝控制 5V；GND＝共地。</text>
+<text x="65" y="944" font-size="17" font-weight="normal" text-anchor="start" style="fill:#183f36">地址 A2 A1 A0：0x20＝000，0x21＝001，0x22＝010。</text>
+<text x="65" y="973" font-size="17" font-weight="normal" text-anchor="start" style="fill:#183f36">每片 ULN 正端／COM＝有開關的 12V_MOTOR。</text>
+<text x="65" y="1002" font-size="17" font-weight="normal" text-anchor="start" style="fill:#183f36">ULN GND 回電源共地；不能把 COM 接 5V。</text>
+<text x="65" y="1031" font-size="17" font-weight="normal" text-anchor="start" style="fill:#183f36">未啟用 U 的相位輸出低；0x22 GPB 全部保持低。</text>
+<rect x="730" y="855" width="655" height="245" rx="13" fill="#fff" stroke="#bfd0c5" stroke-width="2"/>
+<text x="748" y="889" font-size="22" font-weight="bold" text-anchor="start" style="fill:#183f36">相序與模組名稱</text>
+<text x="750" y="915" font-size="17" font-weight="normal" text-anchor="start" style="fill:#183f36">以實際 IN1～IN4 印字接線；若需調相序用 ORDER。</text>
+<text x="750" y="944" font-size="17" font-weight="normal" text-anchor="start" style="fill:#183f36">四路是驅動訊號，不直接供應線圈電流。</text>
+<text x="750" y="973" font-size="17" font-weight="normal" text-anchor="start" style="fill:#183f36">MCP 地址 A0/A1/A2、GPA/GPB 和 P011 A0 互不相同。</text>
+<text x="750" y="1002" font-size="17" font-weight="normal" text-anchor="start" style="fill:#183f36">四片 MCP 的 SDA／SCL／RST 並接到正常運作圖。</text>
+<text x="750" y="1031" font-size="17" font-weight="normal" text-anchor="start" style="fill:#183f36">只使用 0x20～0x22 作馬達，0x23 保留給 Hall。</text>
+<text x="45" y="1140" font-size="18" font-weight="normal" text-anchor="start" style="fill:#183f36">相位對應與原版 45 片順序維持；每圈步數與方向依各機構校準。</text>
+</svg>

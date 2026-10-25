@@ -32,13 +32,13 @@ async function main() {
     await page.goto(url);await page.getByRole('textbox',{name:'帳號',exact:true}).fill('admin');
     await page.getByRole('textbox',{name:'密碼',exact:true}).fill('MockPassword123');
     await Promise.all([page.waitForURL(url+'/'),page.getByRole('button',{name:'登入',exact:true}).click()]);
-    await page.locator('#connection').filter({hasText:'Mega 已連線'}).waitFor();
+    await page.locator('#connection').filter({hasText:'MCP 已就緒'}).waitFor();
     await control({connected:false});await page.reload();
-    await page.locator('#connection').filter({hasText:'Mega 尚未連線'}).waitFor();
+    await page.locator('#connection').filter({hasText:'MCP 尚未就緒'}).waitFor();
     await page.getByRole('button',{name:'裝置設定',exact:true}).click();
     await page.locator('#ssid').fill('First-Setup-WiFi');await page.locator('#wifiPassword').fill('TestNetwork123');
     assert.equal(await page.locator('#saveNetwork').isEnabled(),true);
-    assert.equal(await page.locator('#saveLayout').isEnabled(),false);
+    assert.equal(await page.locator('#saveLayout').isEnabled(),true);
     await page.locator('#saveNetwork').click();await toast('網路設定已保存');
     assert.equal((await api()).network.ssid,'First-Setup-WiFi');
     assert.equal((await api()).units.some(u=>u.armed),false);
@@ -46,17 +46,34 @@ async function main() {
     await page.waitForFunction(()=>document.getElementById('ssid').value==='First-Setup-WiFi');
     await page.screenshot({path:path.join(BUILD,'ui-network-without-mega.jpg'),type:'jpeg',quality:85,fullPage:true});
     await page.locator('#ssid').fill('Unsaved-WiFi-Draft');
-    await control({connected:true});await page.locator('#connection').filter({hasText:'Mega 已連線'}).waitFor();
+    await control({connected:true});await page.locator('#connection').filter({hasText:'MCP 已就緒'}).waitFor();
     assert.equal(await page.locator('#ssid').inputValue(),'Unsaved-WiFi-Draft');
-    await control({connected:false});await page.locator('#connection').filter({hasText:'Mega 尚未連線'}).waitFor();
+    await control({connected:false});await page.locator('#connection').filter({hasText:'MCP 尚未就緒'}).waitFor();
     await control({maintenance:true});
     await page.waitForFunction(()=>document.getElementById('saveNetwork').disabled);
     const locked=await api();const rejected=await context.request.post(url+'/api/network',{data:{ssid:'Blocked-Network'},headers:{'X-CSRF-Token':locked.csrf}});
     assert.equal(rejected.status(),409);assert.equal((await api()).network.ssid,'First-Setup-WiFi');
     await control({maintenance:false,connected:true});
-    await page.locator('#connection').filter({hasText:'Mega 已連線'}).waitFor();
+    await page.locator('#connection').filter({hasText:'MCP 已就緒'}).waitFor();
     await page.getByRole('button',{name:'顯示',exact:true}).click();
-    console.log('PASS browser first-boot Wi-Fi save/reload without Mega; motor controls remain disabled; OTA maintenance blocks network changes');
+    console.log('PASS browser first-boot Wi-Fi without MCP; offline installation editable; OTA maintenance blocks network changes');
+    await page.getByRole('button',{name:'裝置設定',exact:true}).click();
+    await control({connected:false});await page.locator('#connection').filter({hasText:'MCP 尚未就緒'}).waitFor();
+    await page.locator('#initialize').click();await toast('請先定位');
+    await control({presentMask:15});await page.locator('#initialize').click();await toast('MCP 已初始化');
+    await page.locator('#connection').filter({hasText:'MCP 已就緒'}).waitFor();
+    assert.equal((await api()).units.some(u=>u.armed),false);
+    await page.locator('#hallEnabled').check();await page.locator('#saveHardware').click();await toast('霍爾設定已保存');
+    await page.waitForFunction(()=>S.hardware.hallEnabled===true&&!waiting);
+    assert.equal((await api()).hardware.hallEnabled,true);
+    await page.locator('#hallEnabled').uncheck();await page.locator('#saveHardware').click();await toast('霍爾設定已保存');
+    await page.waitForFunction(()=>S.hardware.hallEnabled===false&&!waiting);
+    assert.equal((await api()).hardware.hallEnabled,false);
+    await page.getByRole('button',{name:'調機與狀態',exact:true}).click();
+    await page.getByText('速度、霍爾與驅動測試',{exact:true}).click();
+    assert.equal(await page.getByRole('button',{name:'監看霍爾',exact:true}).isEnabled(),false);
+    await page.getByRole('button',{name:'顯示',exact:true}).click();
+    console.log('PASS browser MCP missing/retry, safe initialization, persisted Hall toggle and disabled Hall commands');
     assert.equal(await page.locator('#startMode').isEnabled(),false);
     await page.locator('#targetText').fill('AB');assert.equal(await page.locator('#sendText').isEnabled(),false);
     await page.getByRole('combobox',{name:'U0 目前字元',exact:true}).selectOption('26');
@@ -76,7 +93,7 @@ async function main() {
       await img.scrollIntoViewIfNeeded();await img.evaluate(node=>node.decode());
       assert.equal(await img.evaluate(node=>node.naturalWidth>0),true);
     }
-    for(const diagramPath of ['/wiring-runtime.svg','/wiring-flashing.svg','/wiring-mega.svg','/wiring-hall.svg']){
+    for(const diagramPath of ['/wiring-runtime.svg','/wiring-flashing.svg','/wiring-motors.svg','/wiring-hall.svg']){
       const diagram=await context.request.get(url+diagramPath);assert.equal(diagram.status(),200);assert.match(diagram.headers()['content-type'],/image\/svg\+xml/);
     }
     assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true);
@@ -129,12 +146,12 @@ async function main() {
     const downloadPromise=page.waitForEvent('download');await page.locator('#export').click();const download=await downloadPromise;
     const backup=path.join(BUILD,'settings.json');await download.saveAs(backup);await toast('已匯出設定');
     const contents=await fs.readFile(backup,'utf8');assert(!contents.includes('Password'));assert(!contents.includes('csrf'));
-    const invalid=JSON.parse(contents);invalid.mega.units=[0,0];const invalidPath=path.join(BUILD,'invalid-settings.json');
+    const invalid=JSON.parse(contents);invalid.controller.units=[0,0];const invalidPath=path.join(BUILD,'invalid-settings.json');
     await fs.writeFile(invalidPath,JSON.stringify(invalid));await page.locator('#importFile').setInputFiles(invalidPath);
-    await page.locator('#import').click();await toast('整份設定驗證失敗');assert.deepEqual((await api()).mega.units,[0,1,2,3,4]);
+    await page.locator('#import').click();await toast('整份設定驗證失敗');assert.deepEqual((await api()).controller.units,[0,1,2,3,4]);
     await page.locator('#importFile').setInputFiles(backup);await page.locator('#import').click();await toast('設定已匯入');
-    await control({connected:false});await page.locator('#connection').filter({hasText:'尚未連線'}).waitFor();assert.equal(await page.locator('#stop').isEnabled(),false);
-    await control({connected:true});await page.locator('#connection').filter({hasText:'已連線'}).waitFor();
+    await control({connected:false});await page.locator('#connection').filter({hasText:'尚未就緒'}).waitFor();assert.equal(await page.locator('#stop').isEnabled(),true);
+    await control({connected:true});await page.locator('#connection').filter({hasText:'已就緒'}).waitFor();
     await control({reboot:true});await toast('設備已重新啟動');assert.equal((await api()).units.some(u=>u.armed),false);
     await page.getByRole('button',{name:'顯示',exact:true}).click();
     assert.equal(await page.locator('#currentPreview').textContent(),'HELLO');
@@ -149,7 +166,7 @@ async function main() {
     const corrupt=Buffer.from(bytes);corrupt[100]^=1;const corruptPath=path.join(BUILD,'corrupt.sffw');await fs.writeFile(corruptPath,corrupt);
     const partialPath=path.join(BUILD,'partial.sffw');await fs.writeFile(partialPath,bytes.subarray(0,bytes.length-17));
     async function prepare(file) {
-      await page.locator('#prepareUpdate').click();await toast('Mega 已確認停止');
+      await page.locator('#prepareUpdate').click();await toast('控制器已確認停止');
       await page.locator('#firmwareFile').setInputFiles(file);
       await page.waitForFunction(()=>!document.getElementById('uploadUpdate').disabled);
     }
@@ -169,7 +186,7 @@ async function main() {
     await page.screenshot({path:path.join(BUILD,'ui-desktop.jpg'),type:'jpeg',quality:85});
     assert.deepEqual(errors,[]);
     console.log('PASS browser OTA prepare/STOP, truncated/wrong-SHA rejection, successful upload/reboot; mobile/desktop layout; no JS errors');
-    await fs.writeFile(path.join(BUILD,'browser-results.json'),JSON.stringify({passed:true,viewport:[390,844],groups:7,errors},null,2));
+    await fs.writeFile(path.join(BUILD,'browser-results.json'),JSON.stringify({passed:true,viewport:[390,844],groups:8,errors},null,2));
   } catch(error) {
     if(stderr)console.error('Mock server diagnostics:',stderr.slice(-6000));
     const current=browser?.contexts()[0]?.pages().find(p=>!p.isClosed());

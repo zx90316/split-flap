@@ -34,16 +34,16 @@ def package(image=None, destination=None):
     if len(binary) < 256 or len(binary) > 1966080 or binary[0] != 0xE9 or binary[12:14] != b'\0\0':
         raise ValueError('不是適用於 ESP32／min_spiffs 的映像。')
     digest = hashlib.sha256(binary).digest()
-    header = b'SFCAM01\0' + struct.pack('<II', len(binary), 1) + digest + b'splitflap-cam-v1'
+    header = b'SFCAM02\0' + struct.pack('<II', len(binary), 2) + digest + b'splitflap-mcp-v2'
     assert len(header) == 64
     destination.mkdir(parents=True, exist_ok=True)
     result = destination / 'splitflap-esp32cam.sffw'
     result.write_bytes(header + binary)
     shutil.copyfile(image, destination / 'splitflap-esp32cam.bin')
-    metadata = {'device': 'splitflap-esp32cam', 'board': FQBN, 'core': CORE, 'protocol': 1,
-                'firmware': '1.1.0', 'size': len(binary), 'sha256': digest.hex()}
+    metadata = {'device': 'splitflap-esp32cam-mcp', 'board': FQBN, 'core': CORE, 'protocol': 2,
+                'firmware': '2.0.0', 'size': len(binary), 'sha256': digest.hex()}
     (destination / 'firmware.json').write_text(json.dumps(metadata, indent=2) + '\n', encoding='utf-8')
-    print(f'ESP32-CAM：網頁更新檔 {result} ({len(binary)} bytes, SHA-256 {digest.hex()[:16]}…)')
+    print(f'ESP32-CAM：網頁更新檔 {result} ({len(header) + len(binary)} bytes；app {len(binary)} bytes, SHA-256 {digest.hex()[:16]}…)')
     return result
 
 
@@ -88,7 +88,7 @@ def test_web():
 
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('action', choices=['doctor', 'setup', 'ports', 'build', 'rebuild', 'upload',
+    parser.add_argument('action', choices=['doctor', 'setup', 'setup-host', 'ports', 'build', 'rebuild', 'upload',
                          'upload-monitor', 'monitor', 'test', 'test-web', 'native-debug', 'diagrams', 'mock-web'])
     parser.add_argument('--port')
     args = parser.parse_args(argv)
@@ -98,6 +98,12 @@ def main(argv=None):
             run([shared.arduino_cli(), 'core', 'update-index', '--additional-urls', INDEX])
             run([shared.arduino_cli(), 'core', 'install', CORE, '--additional-urls', INDEX])
             run([sys.executable, ROOT / 'esp32cam/test/run.py', '--setup'])
+        elif args.action == 'setup-host':
+            if shared.zig_compiler():
+                run([shared.zig_compiler(), 'version'])
+            else:
+                run([sys.executable, '-m', 'pip', 'install', '--disable-pip-version-check',
+                     '--target', shared.project_path('.tools/host-compiler'), 'ziglang==0.16.0'])
         elif args.action == 'doctor':
             shared.doctor()
             run([shared.arduino_cli(), 'board', 'details', '--fqbn', FQBN, '--no-color'])

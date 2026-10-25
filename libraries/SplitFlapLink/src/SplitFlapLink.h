@@ -13,7 +13,7 @@ enum class Stage : uint8_t { Accepted = 1, Done, Rejected, Fault };
 enum class Error : uint8_t { None, Busy, Invalid, Readiness, Session, Protocol, LinkLost, UsbOverride, Storage, Stopped, Unknown };
 enum class Op : uint8_t { Stop = 1, Arm, SetIndex, SetText, Text, Step, Rev, Flap, Goto, Home,
   Measure, Cycle, Led, Watch, Select, Digits, Units, Speed, Accel, Revolution, Offset, Direction,
-  Order, Polarity, Save, Load, ApplyConfig, Claim };
+  Order, Polarity, Save, Load, ApplyConfig, Claim, Init };
 inline const char* errorName(Error e) {
   switch (e) {
     case Error::None: return "none"; case Error::Busy: return "busy";

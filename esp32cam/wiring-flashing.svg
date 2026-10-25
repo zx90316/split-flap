@@ -1,62 +1,52 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1300 1180" role="img" aria-labelledby="title desc">
-<title id="title">CP2102 燒錄：UART0 資料線＋外部控制 5V</title><desc id="desc">只適用 3.3V UART 邏輯的 CP2102 轉接板；依 TXD／RXD／GND 印字，不能照排針位置猜。</desc>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1300 920" role="img" aria-labelledby="title desc">
+<title id="title">單主控燒錄：一條 CP2102 USB</title><desc id="desc">CP2102 只接 TXD、RXD、GND；控制電源由 LM2596 的穩壓 5.0V 提供。</desc>
 <defs><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="context-stroke"/></marker></defs>
 <style>text{font-family:"Microsoft JhengHei","Noto Sans CJK TC",sans-serif;fill:#183f36}.wire{fill:none;stroke-linejoin:round;stroke-linecap:round}</style>
-<rect width="1300" height="1180" fill="#f3f6ef"/>
-<text x="45" y="62" font-size="30" font-weight="bold" text-anchor="start" style="fill:#183f36">CP2102 燒錄：UART0 資料線＋外部控制 5V</text>
-<text x="45" y="96" font-size="17" font-weight="normal" text-anchor="start" style="fill:#183f36">只適用 3.3V UART 邏輯的 CP2102 轉接板；依 TXD／RXD／GND 印字，不能照排針位置猜。</text>
-<rect x="65" y="155" width="470" height="145" rx="13" fill="#fff0f1" stroke="#bfd0c5" stroke-width="2"/>
-<text x="83" y="189" font-size="22" font-weight="bold" text-anchor="start" style="fill:#183f36">12V → LM2596 → 5.0V</text>
-<text x="85" y="221" font-size="17" font-weight="normal" text-anchor="start" style="fill:#183f36">馬達 12V 分支保持關閉</text>
-<text x="85" y="250" font-size="17" font-weight="normal" text-anchor="start" style="fill:#183f36">控制 5V 供兩板；Mega USB 不接電腦</text>
-<rect x="65" y="350" width="360" height="70" rx="13" fill="#fff" stroke="#bfd0c5" stroke-width="2"/>
-<text x="83" y="384" font-size="22" font-weight="bold" text-anchor="start" style="fill:#183f36">電腦 USB → CP2102</text>
-<rect x="65" y="460" width="360" height="350" rx="13" fill="#e7f3ec" stroke="#bfd0c5" stroke-width="2"/>
-<text x="83" y="494" font-size="22" font-weight="bold" text-anchor="start" style="fill:#183f36">CP2102 USB-UART</text>
-<polyline class="wire" points="245,420 245,460" stroke="#384b47" stroke-width="4"/>
-<circle cx="425" cy="550" r="5" fill="#2b65c8"/>
-<text x="411" y="556" font-size="17" font-weight="normal" text-anchor="end" style="fill:#2b65c8">TXD（3.3V 邏輯）</text>
-<circle cx="425" cy="635" r="5" fill="#00866b"/>
-<text x="411" y="641" font-size="17" font-weight="normal" text-anchor="end" style="fill:#00866b">RXD</text>
-<circle cx="245" cy="810" r="5" fill="#384b47"/>
-<text x="231" y="816" font-size="17" font-weight="normal" text-anchor="end" style="fill:#384b47">GND</text>
-<text x="85" y="720" font-size="18" font-weight="normal" text-anchor="start" style="fill:#cc3746">5V、3V3、VCC：都不接</text>
-<text x="85" y="760" font-size="18" font-weight="normal" text-anchor="start" style="fill:#183f36">DTR／RTS／RST：不接</text>
-<rect x="795" y="390" width="385" height="445" rx="13" fill="#edf3ff" stroke="#bfd0c5" stroke-width="2"/>
-<text x="813" y="424" font-size="22" font-weight="bold" text-anchor="start" style="fill:#183f36">AI-Thinker ESP32-CAM</text>
-<circle cx="985" cy="390" r="5" fill="#cc3746"/>
-<text x="971" y="396" font-size="17" font-weight="normal" text-anchor="end" style="fill:#cc3746">5V 輸入</text>
-<circle cx="795" cy="550" r="5" fill="#2b65c8"/>
-<text x="809" y="556" font-size="17" font-weight="normal" text-anchor="start" style="fill:#2b65c8">U0R / GPIO3（RX0）</text>
-<circle cx="795" cy="635" r="5" fill="#00866b"/>
-<text x="809" y="641" font-size="17" font-weight="normal" text-anchor="start" style="fill:#00866b">U0T / GPIO1（TX0）</text>
-<circle cx="1180" cy="480" r="5" fill="#384b47"/>
-<text x="1166" y="486" font-size="17" font-weight="normal" text-anchor="end" style="fill:#384b47">GPIO0</text>
-<circle cx="985" cy="835" r="5" fill="#384b47"/>
-<text x="971" y="841" font-size="17" font-weight="normal" text-anchor="end" style="fill:#384b47">GND</text>
-<text x="815" y="707" font-size="17" font-weight="normal" text-anchor="start" style="fill:#183f36">按板上的 RESET 鍵重設</text>
-<text x="815" y="736" font-size="17" font-weight="normal" text-anchor="start" style="fill:#183f36">燒錄完成移除 GPIO0 跳線</text>
-<text x="815" y="765" font-size="17" font-weight="normal" text-anchor="start" style="fill:#183f36">再按 RESET 才會運行韌體</text>
-<polyline class="wire" points="535,205 985,205 985,390" stroke="#cc3746" stroke-width="4" marker-end="url(#arrow)"/>
-<text x="650" y="239" font-size="18" font-weight="normal" text-anchor="start" style="fill:#cc3746">外部 5V 電源</text>
-<polyline class="wire" points="425,550 795,550" stroke="#2b65c8" stroke-width="3" marker-end="url(#arrow)"/>
-<text x="505" y="532" font-size="18" font-weight="normal" text-anchor="start" style="fill:#2b65c8">TX → RX</text>
-<polyline class="wire" points="795,635 425,635" stroke="#00866b" stroke-width="3" marker-end="url(#arrow)"/>
-<text x="505" y="618" font-size="18" font-weight="normal" text-anchor="start" style="fill:#00866b">RX ← TX</text>
-<polyline class="wire" points="1180,480 1245,480 1245,900" stroke="#384b47" stroke-width="3" stroke-dasharray="8 6"/>
-<text x="1225" y="752" font-size="17" font-weight="normal" text-anchor="end" style="fill:#384b47">燒錄</text>
-<text x="1225" y="783" font-size="17" font-weight="normal" text-anchor="end" style="fill:#384b47">跳線</text>
-<polyline class="wire" points="50,900 1245,900" stroke="#384b47" stroke-width="4"/>
-<polyline class="wire" points="65,265 35,265 35,900 50,900" stroke="#384b47" stroke-width="3"/>
-<polyline class="wire" points="245,810 245,900" stroke="#384b47" stroke-width="3"/>
-<circle cx="245" cy="900" r="5" fill="#384b47"/>
-<polyline class="wire" points="985,835 985,900" stroke="#384b47" stroke-width="3"/>
-<circle cx="985" cy="900" r="5" fill="#384b47"/>
-<circle cx="1245" cy="900" r="5" fill="#384b47"/>
-<text x="65" y="938" font-size="18" font-weight="normal" text-anchor="start" style="fill:#183f36">共地：LM2596 OUT−／12V−、ESP32 GND、CP2102 GND；Mega 若接著也必須共地。</text>
-<rect x="65" y="975" width="1115" height="150" rx="13" fill="#fff" stroke="#bfd0c5" stroke-width="2"/>
-<text x="83" y="1009" font-size="22" font-weight="bold" text-anchor="start" style="fill:#183f36">操作順序（Mega 正常供電見另一張圖）</text>
-<text x="85" y="1035" font-size="17" font-weight="normal" text-anchor="start" style="fill:#183f36">關馬達分支 → GPIO0 接 GND → RESET → VS Code 上傳 → 移除跳線 → RESET → 串列輸入 ACCESS</text>
-<text x="85" y="1064" font-size="17" font-weight="normal" text-anchor="start" style="fill:#183f36">兩板都供電才可保留 P011 A0／A1／B0／B1；單板斷電前先拔這四條訊號線。</text>
-<text x="85" y="1093" font-size="17" font-weight="normal" text-anchor="start" style="fill:#183f36">CP2102 的 5V／3V3／VCC 不接；只燒錄 ESP32 時不需要移除兩板的控制 5V。</text>
+<rect width="1300" height="920" fill="#f3f6ef"/>
+<text x="45" y="62" font-size="30" font-weight="bold" text-anchor="start" style="fill:#183f36">單主控燒錄：一條 CP2102 USB</text>
+<text x="45" y="96" font-size="17" font-weight="normal" text-anchor="start" style="fill:#183f36">CP2102 只接 TXD、RXD、GND；控制電源由 LM2596 的穩壓 5.0V 提供。</text>
+<rect x="60" y="150" width="500" height="130" rx="13" fill="#fff" stroke="#bfd0c5" stroke-width="2"/>
+<text x="78" y="184" font-size="22" font-weight="bold" text-anchor="start" style="fill:#183f36">12V → LM2596 → 5.0V</text>
+<text x="80" y="215" font-size="17" font-weight="normal" text-anchor="start" style="fill:#183f36">馬達 12V 分支關閉；控制電源保留</text>
+<text x="80" y="244" font-size="17" font-weight="normal" text-anchor="start" style="fill:#183f36">外部 5V 接 ESP32 板上「5V」腳</text>
+<rect x="60" y="340" width="365" height="310" rx="13" fill="#e7f3ec" stroke="#bfd0c5" stroke-width="2"/>
+<text x="78" y="374" font-size="22" font-weight="bold" text-anchor="start" style="fill:#183f36">電腦 USB → CP2102</text>
+<circle cx="425" cy="420" r="5" fill="#2b65c8"/>
+<text x="411" y="426" font-size="17" font-weight="normal" text-anchor="end" style="fill:#2b65c8">TXD（3.3V 邏輯）</text>
+<circle cx="425" cy="500" r="5" fill="#00866b"/>
+<text x="411" y="506" font-size="17" font-weight="normal" text-anchor="end" style="fill:#00866b">RXD</text>
+<circle cx="240" cy="650" r="5" fill="#384b47"/>
+<text x="226" y="656" font-size="17" font-weight="normal" text-anchor="end" style="fill:#384b47">GND</text>
+<text x="80" y="568" font-size="18" font-weight="normal" text-anchor="start" style="fill:#cc3746">5V／3V3／VCC：全部不接</text>
+<text x="80" y="610" font-size="18" font-weight="normal" text-anchor="start" style="fill:#183f36">DTR／RTS：不接</text>
+<rect x="835" y="300" width="385" height="350" rx="13" fill="#edf3ff" stroke="#bfd0c5" stroke-width="2"/>
+<text x="853" y="334" font-size="22" font-weight="bold" text-anchor="start" style="fill:#183f36">AI-Thinker ESP32-CAM</text>
+<circle cx="1025" cy="300" r="5" fill="#cc3746"/>
+<text x="1039" y="306" font-size="17" font-weight="normal" text-anchor="start" style="fill:#cc3746">5V</text>
+<circle cx="835" cy="420" r="5" fill="#2b65c8"/>
+<text x="849" y="426" font-size="17" font-weight="normal" text-anchor="start" style="fill:#2b65c8">U0R / GPIO3</text>
+<circle cx="835" cy="500" r="5" fill="#00866b"/>
+<text x="849" y="506" font-size="17" font-weight="normal" text-anchor="start" style="fill:#00866b">U0T / GPIO1</text>
+<circle cx="1220" cy="365" r="5" fill="#384b47"/>
+<text x="1206" y="371" font-size="17" font-weight="normal" text-anchor="end" style="fill:#384b47">GPIO0</text>
+<circle cx="1025" cy="650" r="5" fill="#384b47"/>
+<text x="1011" y="656" font-size="17" font-weight="normal" text-anchor="end" style="fill:#384b47">GND</text>
+<text x="855" y="568" font-size="18" font-weight="normal" text-anchor="start" style="fill:#183f36">板上 RESET：按下重設</text>
+<text x="855" y="610" font-size="17" font-weight="normal" text-anchor="start" style="fill:#183f36">GPIO13／14／15 為 MCP 訊號</text>
+<polyline class="wire" points="560,200 1025,200 1025,300" stroke="#cc3746" stroke-width="4" marker-end="url(#arrow)"/>
+<polyline class="wire" points="425,420 835,420" stroke="#2b65c8" stroke-width="3" marker-end="url(#arrow)"/>
+<text x="530" y="402" font-size="18" font-weight="normal" text-anchor="start" style="fill:#2b65c8">TX → RX</text>
+<polyline class="wire" points="835,500 425,500" stroke="#00866b" stroke-width="3" marker-end="url(#arrow)"/>
+<text x="530" y="482" font-size="18" font-weight="normal" text-anchor="start" style="fill:#00866b">RX ← TX</text>
+<polyline class="wire" points="40,700 1265,700" stroke="#384b47" stroke-width="4"/>
+<polyline class="wire" points="240,650 240,700" stroke="#384b47" stroke-width="3"/>
+<circle cx="240" cy="700" r="5" fill="#384b47"/>
+<polyline class="wire" points="1025,650 1025,700" stroke="#384b47" stroke-width="3"/>
+<circle cx="1025" cy="700" r="5" fill="#384b47"/>
+<polyline class="wire" points="60,245 40,245 40,700" stroke="#384b47" stroke-width="3"/>
+<polyline class="wire" points="1220,365 1265,365 1265,700" stroke="#384b47" stroke-width="3" stroke-dasharray="8 6"/>
+<rect x="60" y="750" width="1160" height="135" rx="13" fill="#fff" stroke="#bfd0c5" stroke-width="2"/>
+<text x="78" y="784" font-size="22" font-weight="bold" text-anchor="start" style="fill:#183f36">燒錄順序</text>
+<text x="80" y="810" font-size="17" font-weight="normal" text-anchor="start" style="fill:#183f36">關馬達支路 → GPIO0 接 GND → 按 RESET → VS Code 上傳 → 移除 GPIO0 跳線 → RESET</text>
+<text x="80" y="839" font-size="17" font-weight="normal" text-anchor="start" style="fill:#183f36">先備份舊網頁設定；單主控首次用 USB 燒錄。之後網頁只上傳本版 .sffw；MCP 不需燒錄。</text>
 </svg>

@@ -18,10 +18,10 @@ GLYPHS = [' ', *'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'Ä', 'Ö', 'Ü', *'0123456789', '
 
 
 def verify_package(data):
-    if len(data) < 320 or data[:8] != b'SFCAM01\0' or data[48:64] != b'splitflap-cam-v1':
+    if len(data) < 320 or data[:8] != b'SFCAM02\0' or data[48:64] != b'splitflap-mcp-v2':
         raise ValueError('只接受本專案的 .sffw 檔案。')
     size, protocol = struct.unpack('<II', data[8:16])
-    if protocol != 1 or size > 1966080 or size != len(data) - 64:
+    if protocol != 2 or size > 1966080 or size != len(data) - 64:
         raise ValueError('映像長度或協定版本不符。')
     image = data[64:]
     if image[0] != 0xe9 or image[12:14] != b'\0\0' or hashlib.sha256(image).digest() != data[16:48]:
@@ -43,6 +43,7 @@ class Model:
         self.jobs = []
         self.pending = None
         self.connected = True
+        self.hardware = dict(hallEnabled=False,initialized=True,outputsDisabled=True,configStorageOk=True,presentMask=15,requiredMask=1,clockHz=400000,maxTickGapUs=250,maxFlushUs=300,lateTicks=0)
         self.maintenance = False
         self.ticket = ''
         self.ota_ready = False
@@ -57,6 +58,7 @@ class Model:
             self.pending = None
             callback()
             job['stage'] = 'done'
+            self.hardware['outputsDisabled'] = True
         self.display['unix'] = int(time.time()) if self.display['timeValid'] else 0
         for unit in self.units:
             if unit['reference'] != 'NONE' and not unit['mode']:
@@ -68,16 +70,17 @@ class Model:
         self.pending = None
         for unit in self.units:
             unit.update(mode=0, armed=False, reference='NONE', remaining=0)
+        self.hardware['outputsDisabled'] = True
         self.display.update(running=False, reason='已停止，請重新定位。')
 
     def state(self):
         self.advance()
-        return dict(firmware='1.1.0-mock', protocol=1, boot=self.boot, nextRequest=self.next_request, csrf=self.csrf,
+        return dict(firmware='2.0.0-mock', architecture='esp32cam-mcp', hardware=self.hardware, protocol=2, boot=self.boot, nextRequest=self.next_request, csrf=self.csrf,
                     displayMemoryOk=True,
                     connected=self.connected, protocolMismatch=False, uncertain=False, maintenance=self.maintenance, storageOk=True,
                     networkEditable=not self.pending and not self.maintenance,
                     ageMs=0, digits=len(self.schema['units']), selected=0, busy=bool(self.pending), saving=False,
-                    watching=False, usbLocked=False, error='', mega=self.schema, units=self.units, jobs=self.jobs[-16:],
+                    watching=False, usbLocked=False, error='', controller=self.schema, units=self.units, jobs=self.jobs[-16:],
                     display=self.display, network=self.network, otaReady=self.ota_ready, otaError='')
 
     def new_job(self, body, op, stop=False):
@@ -91,8 +94,8 @@ class Model:
             raise ValueError('unknown')
         if request != self.next_request:
             raise ValueError('invalid')
-        if not self.connected:
-            raise ValueError('link_lost')
+        if not self.connected and op not in {'STOP','OFF','INIT','CONFIG','SAVE','LOAD'}:
+            raise ValueError('not_ready')
         if self.pending and not stop:
             raise ValueError('busy')
         self.next_request += 1
@@ -116,6 +119,15 @@ class Model:
         if repeated:
             return {'id': job['id']}
         self.display.update(running=False, reason='已切換為手動操作。')
+        if op == 'INIT':
+            self.stop()
+            self.connected = self.hardware['presentMask'] & self.hardware['requiredMask'] == self.hardware['requiredMask']
+            self.hardware['initialized'] = self.connected
+            job.update(stage='done' if self.connected else 'rejected',error='none' if self.connected else 'not_ready')
+            return {'id':job['id']}
+        if op in {'HOME','WATCH','MEASURE'} and not self.hardware['hallEnabled']:
+            job.update(stage='rejected',error='not_ready')
+            return {'id':job['id']}
         if op in {'STOP', 'OFF', 'CLAIM'}:
             self.stop()
             job['stage'] = 'done'
@@ -159,6 +171,7 @@ class Model:
                         self.units[u].update(index=value, target=value, mode=0, remaining=0, steps=91)
                         if op == 'HOME':
                             self.units[u]['reference'] = 'HALL'
+                self.hardware['outputsDisabled'] = False
                 self.pending = (time.monotonic() + 0.7, complete, job)
         return {'id': job['id']}
 
@@ -205,7 +218,7 @@ def handler_for(model):
                 if path == '/api/state':
                     self.send_json(model.state())
                 elif path == '/api/config':
-                    self.send_json(dict(schema=1, device='splitflap-esp32cam', mega=model.schema,
+                    self.send_json(dict(schema=2, device='splitflap-esp32cam-mcp', controller=model.schema,hardware={'hallEnabled':model.hardware['hallEnabled']},
                                         display={k: model.display[k] for k in ['mode', 'clockFormat', 'dateFormat', 'timezone', 'align']}))
                 elif path == '/':
                     page = (ROOT / 'esp32cam/web/index.html').read_bytes()
@@ -214,9 +227,9 @@ def handler_for(model):
                     self.send_header('Content-Length', str(len(page)))
                     self.end_headers()
                     self.wfile.write(page)
-                elif path in {'/wiring-runtime.svg', '/wiring-flashing.svg', '/wiring-mega.svg', '/wiring-hall.svg'}:
+                elif path in {'/wiring-runtime.svg', '/wiring-flashing.svg', '/wiring-motors.svg', '/wiring-hall.svg'}:
                     files = {'/wiring-runtime.svg': 'esp32cam/wiring-runtime.svg', '/wiring-flashing.svg': 'esp32cam/wiring-flashing.svg',
-                             '/wiring-mega.svg': 'mega2560/wiring-ten.svg', '/wiring-hall.svg': 'mega2560/hall-board.svg'}
+                             '/wiring-motors.svg': 'esp32cam/wiring-motors.svg', '/wiring-hall.svg': 'esp32cam/wiring-hall.svg'}
                     image = (ROOT / files[path]).read_bytes()
                     self.send_response(200)
                     self.send_header('Content-Type', 'image/svg+xml; charset=utf-8')
@@ -268,9 +281,14 @@ def handler_for(model):
                     if path == '/api/command':
                         self.send_json(model.command(body), 202)
                     elif path == '/api/config':
-                        settings = copy.deepcopy(body['mega'])
+                        settings = copy.deepcopy(body.get('controller',body.get('mega')))
+                        hardware = body.get('hardware')
+                        if hardware is not None and (type(hardware) is not dict or 'hallEnabled' not in hardware):
+                            raise ValueError('霍爾設定無效。')
+                        hall = hardware['hallEnabled'] if hardware is not None else model.hardware['hallEnabled']
+                        if type(hall) is not bool: raise ValueError('霍爾設定無效。')
                         units = settings['units']
-                        if body.get('schema') != 1 or not 1 <= len(units) <= 10 or len(set(units)) != len(units) or any(type(u) is not int or not 0 <= u <= 9 for u in units) or len(settings['calibration']) != 10:
+                        if body.get('schema') not in {1,2} or not 1 <= len(units) <= 10 or len(set(units)) != len(units) or any(type(u) is not int or not 0 <= u <= 9 for u in units) or len(settings['calibration']) != 10:
                             raise ValueError('整份設定驗證失敗。')
                         for c in settings['calibration']:
                             if not 1000 <= c['revolution'] <= 20000 or not 0 <= c['offset'] < c['revolution'] or not 800 <= c['speed'] <= 30000 or not 100 <= c['accel'] <= 6000 or sorted(c['order']) != list('1234'):
@@ -279,6 +297,15 @@ def handler_for(model):
                         if not repeated:
                             previous = model.schema
                             changed_map = previous['units'] != units
+                            if hall != model.hardware['hallEnabled']:
+                                for u in model.units:
+                                    u['armed'] = False
+                                    if not hall and u['reference'] == 'HALL': u['reference'] = 'NONE'
+                            model.hardware['hallEnabled'] = hall
+                            model.hardware['requiredMask'] = (8 if hall else 0) | sum(1<<chip for chip in {u//4 for u in units})
+                            model.connected = model.hardware['presentMask'] & model.hardware['requiredMask'] == model.hardware['requiredMask']
+                            model.hardware['initialized'] = model.connected
+                            if not model.connected: model.stop()
                             geometry = ['revolution', 'offset', 'direction', 'order', 'activeLow']
                             for u in model.units:
                                 physical = u['unit']
@@ -327,8 +354,11 @@ def handler_for(model):
                             model.maintenance = bool(body['maintenance'])
                         if 'connected' in body:
                             model.connected = body['connected']
+                            model.hardware['initialized'] = model.connected
+                            model.hardware['presentMask'] = 15 if model.connected else 0
                             if not model.connected:
                                 model.stop()
+                        if 'presentMask' in body: model.hardware['presentMask']=body['presentMask']
                         if body.get('reboot'):
                             model.stop()
                             model.boot += 1

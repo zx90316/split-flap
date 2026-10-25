@@ -7,7 +7,7 @@
 #include <ESPmDNS.h>
 #include <Update.h>
 #include <mbedtls/md.h>
-#include "bridge.h"
+#include "local_controller.h"
 #include "app_settings.h"
 #include "json_helpers.h"
 
@@ -47,7 +47,8 @@ class App {
   void console();
   void resetNetwork();
   bool saveApp(const AppSettings& candidate);
-  Bridge bridge_;
+  bool writeAppSettings(const AppSettings& candidate);
+  LocalController controller_;
   AppSettings pendingSettings_;
   WebServer server_{80}; DNSServer dns_; AppStore store_; AppSettings settings_;
   DisplayMemory displayMemory_;

@@ -1,6 +1,8 @@
 # Mega 2560：先把一個字元接好、轉好
 
-使用已有的 **Mega 2560＋ULN2003＋12V 28BYJ-48＋KY-003**，以電腦 USB 下指令。軟體支援 1～10 任意位數、多位並行文字更新與 EEPROM 保存，實機目前已回報 U0 通過；先只接 U0，再擴充其餘位置。[多位設定](multi-unit.md)說明 DIGITS／UNITS。新增的 [ESP32-CAM 手機控制台](../esp32cam/README.md)使用 Serial1；網頁版供電／電平轉換另依該接線圖。
+> 本頁保留 Mega 硬體回歸與舊操作。`codex/esp32cam-single-controller` 的正式主控已改為 [ESP32-CAM＋MCP23017](../esp32cam/README.md)，不使用 Mega；雙主控穩定版本在 `esp32-purchased-bom`。
+
+使用已有的 **Mega 2560＋ULN2003＋12V 28BYJ-48＋KY-003**，以電腦 USB 下指令。軟體支援 1～10 任意位數、多位並行文字更新與 EEPROM 保存，實機目前已回報 U0 通過；先只接 U0，再擴充其餘位置。[多位設定](multi-unit.md)說明 DIGITS／UNITS。雙主控版的 [ESP32-CAM 手機控制台](https://github.com/zx90316/split-flap/blob/e65f30e/esp32cam/README.md)使用 Serial1；供電／電平轉換依該封存版本。
 
 磁鐵尚未到貨時，可先用[手動定位與指定字元](#無磁鐵手動定位與指定字元)；這個模式不需要霍爾回饋。
 

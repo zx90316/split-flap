@@ -2,6 +2,7 @@
 #pragma once
 #include <cJSON.h>
 #include <math.h>
+#include <stdlib.h>
 #include "display_model.h"
 
 namespace cam {
@@ -82,7 +83,7 @@ inline bool commandPayload(const cJSON* body, uint8_t width, Align align, uint8_
     {"LED", sf::Op::Led}, {"WATCH", sf::Op::Watch}, {"UNIT", sf::Op::Select}, {"DIGITS", sf::Op::Digits},
     {"UNITS", sf::Op::Units}, {"SPEED", sf::Op::Speed}, {"ACCEL", sf::Op::Accel}, {"REVSTEPS", sf::Op::Revolution},
     {"OFFSET", sf::Op::Offset}, {"DIR", sf::Op::Direction}, {"ORDER", sf::Op::Order}, {"POLARITY", sf::Op::Polarity},
-    {"SAVE", sf::Op::Save}, {"LOAD", sf::Op::Load}, {"CLAIM", sf::Op::Claim}};
+    {"SAVE", sf::Op::Save}, {"LOAD", sf::Op::Load}, {"CLAIM", sf::Op::Claim}, {"INIT", sf::Op::Init}};
   uint8_t code = 0; for (const auto& entry : names) if (!strcmp(name, entry.name)) { code = uint8_t(entry.op); break; }
   if (!code) return false;
   const cJSON* target = cJSON_GetObjectItemCaseSensitive(body, "unit"); int64_t n;
@@ -118,5 +119,45 @@ inline bool commandPayload(const cJSON* body, uint8_t width, Align align, uint8_
     length = 3 + out[2];
   }
   return true;
+}
+inline bool consolePayload(const char* line, uint8_t width, uint8_t selected, uint8_t* out, uint8_t& size) {
+  if (!line || strlen(line) >= 96) return false;
+  char buffer[96]; strcpy(buffer, line); char* rest = strchr(buffer, ' ');
+  if (rest) { *rest++ = 0; while (*rest == ' ') ++rest; }
+  else rest = buffer + strlen(buffer);
+  cJSON* b = cJSON_CreateObject(); if (!b) return false;
+  str(b, "op", buffer); num(b, "unit", selected);
+  const bool text = !strcmp(buffer, "TEXT") || !strcmp(buffer, "SETTEXT");
+  const bool string = text || !strcmp(buffer, "SET") || !strcmp(buffer, "SHOW") || !strcmp(buffer, "ORDER") || !strcmp(buffer, "POLARITY");
+  if (text || !strcmp(buffer, "STOP") || !strcmp(buffer, "OFF") || !strcmp(buffer, "INIT") || !strcmp(buffer, "SAVE") || !strcmp(buffer, "LOAD")) {
+    cJSON_DeleteItemFromObjectCaseSensitive(b, "unit"); str(b, "unit", "ALL");
+  }
+  if (!strncmp(rest, "ALL", 3) && (!rest[3] || rest[3] == ' ')) {
+    cJSON_DeleteItemFromObjectCaseSensitive(b, "unit"); str(b, "unit", "ALL"); rest += 3; while (*rest == ' ') ++rest;
+  }
+  bool ok = true;
+  if (!strcmp(buffer, "UNITS")) {
+    cJSON* units = cJSON_AddArrayToObject(b, "value"); const char* p = rest;
+    do {
+      if (*p < '0' || *p > '9') { ok = false; break; }
+      cJSON_AddItemToArray(units, cJSON_CreateNumber(*p++ - '0'));
+      if (*p && *p++ != ',') { ok = false; break; }
+      if (p[-1] == ',' && !*p) { ok = false; break; }
+    } while (*p);
+  } else if (string) {
+    const size_t n = strlen(rest);
+    if (n >= 2 && rest[0] == '"' && rest[n - 1] == '"') { rest[n - 1] = 0; ++rest; }
+    str(b, "value", rest);
+  } else if (*rest) {
+    const bool numeric = !strcmp(buffer,"UNIT") || !strcmp(buffer,"STEP") || !strcmp(buffer,"SPEED") ||
+      !strcmp(buffer,"ACCEL") || !strcmp(buffer,"REVSTEPS") || !strcmp(buffer,"OFFSET") ||
+      !strcmp(buffer,"DIR") || !strcmp(buffer,"DIGITS") || !strcmp(buffer,"GOTO") || !strcmp(buffer,"SETINDEX");
+    if (!numeric) { cJSON_Delete(b); return false; }
+    char* end = nullptr; const long n = strtol(rest, &end, 10); ok = end != rest && !*end;
+    if (!strcmp(buffer, "UNIT")) { cJSON_DeleteItemFromObjectCaseSensitive(b, "unit"); num(b, "unit", n); }
+    else num(b, "value", n);
+  }
+  if (ok) ok = commandPayload(b, width, Align::Left, out, size);
+  cJSON_Delete(b); return ok;
 }
 }

@@ -1,65 +1,90 @@
-# ESP32↔Mega 協定 v1
+# 單主控 2.0 介面與執行模型
 
-兩端共用 `libraries/SplitFlapLink/src/SplitFlapLink.h`，115200 baud、8N1。Mega Serial1=D19 RX／D18 TX；ESP32 UART2=GPIO14 RX／GPIO13 TX。USB 人工指令仍是原本的 Serial 115200。
+本版正式入口為 `controller/controller.ino` → `App` → `LocalController`。MCP23017 由 ESP32 直接透過 I²C 控制；**正式韌體不啟用 ESP↔Mega UART、COBS 或心跳**。`bridge*.h`、`SplitFlapLink` 舊封包與舊 Mega 測試保留作回歸；`SplitFlapLink` 的設定資料型別和操作列舉仍由本版共用。
 
-實體電平轉換使用現有 P011 8 路 MOS 板的兩路：ESP GPIO13→A0／B0→Mega D19、Mega D18→B1／A1→ESP GPIO14；VCCA=ESP3V3、VCCB=Mega5V，全部共地。兩板皆供電才接訊號，單板斷電／切換供電前先拔四條訊號線；這片板不假設具斷電隔離。詳見 [接線與供電切換](wiring.md)。協定速率未改，電腦測試不能證明實板的上升時間或串列穩定性。
+## 工作、狀態與停止
 
-## 封包
+GET `/api/state` 回傳快照，POST `/api/command` 接受工作後回 202 與 `id`，由 jobs 查詢 `queued / accepted / done / rejected / fault`。202 只表示接受，不能視為馬達到位。一次只接受一項一般工作，STOP 可取代待執行與運動中的工作；中止整批、線圈關閉、解除 ARM 並使位置失效。狀態查詢不打斷運動。
 
-先組 raw bytes，再 COBS 編碼，以 `0x00` 結尾。多 byte 整數均 little-endian。
+修改與更新需 Digest 登入及 `X-CSRF-Token`；有 Origin 時須符合目前 Host。每次開機使用新的 boot，網頁動作攜帶快照的 boot 和 nextRequest；舊 boot 拒絕，不能重播重啟前的動作。同一開機的最近 16 個 request 以內容 CRC 去重，重送相同工作回原 id，不重複運動；內容不同或順序不符拒絕。串列與自動顯示使用同一個本機佇列。
 
-| 欄位 | 大小 |
+範例：
+
+```json
+{"boot":12345,"request":1,"op":"TEXT","unit":"ALL","value":"HELLO","align":0}
+```
+
+operation 支援 STOP/OFF、INIT、UNIT、ARM、SET/SETINDEX、SETTEXT、SHOW/GOTO、TEXT、STEP、REV、FLAP、CYCLE、HOME、MEASURE、WATCH、LED、DIGITS、UNITS、SPEED、ACCEL、REVSTEPS、OFFSET、DIR、ORDER、POLARITY、SAVE、LOAD。數字 unit 為實體 U0～U9；ALL 為目前安裝清單。TEXT/SETTEXT 操作整串；SETTEXT 需恰好等於位數。SHOW 的字串是顯示字元，GOTO 的數字是 0～44 索引。
+
+INIT 可在缺少 MCP 時重試，先停止並使全部位置失效；不自動 ARM。HOME/MEASURE/WATCH 需要明確啟用 Hall。SAVE／LOAD 與配置可在 MCP 尚未接齊時執行，但運動需要所有本次配置所需板就緒。
+
+快照包含 firmware `2.0.0`、architecture `esp32cam-mcp`、protocol `2`、boot/nextRequest、controller 配置、十位狀態、近期 jobs、Wi-Fi、顯示模式及 hardware：
+
+| hardware 欄位 | 意義 |
 | --- | --- |
-| version=1、kind | 各 1 byte |
-| session、request id | 各 uint32 |
-| payload length | uint8，0～160 |
-| payload | length bytes |
-| CRC16 | uint16，涵蓋 header 與 payload |
+| hallEnabled | 是否要求 0x23 並啟用 Hall 命令 |
+| initialized | 本機 MCP 初始化是否完成 |
+| presentMask | 0x20／21／22／23 分別是 bit 0／1／2／3 |
+| requiredMask | 依目前安裝清單與 Hall 開關計算的必要板 |
+| outputsDisabled | RST 已保持低，或三片輸出快取皆為零；不是外部量測 |
+| configStorageOk | 最近馬達設定保存／NVS 狀態 |
+| clockHz | 400000 |
+| maxTickGapUs / maxFlushUs / lateTicks | 運動時最大迴圈間隔、最大相位批次寫入時間及間隔超過 800µs 的次數 |
 
-CRC 為 CCITT-FALSE，poly 0x1021、init 0xffff；`123456789`→0x29b1。最大 raw 173 bytes、含 delimiter 的 wire 175 bytes。損壞、過長、長度不符、CRC 錯誤均不執行；未完成封包停頓超過 100ms 後丟棄到下一個 delimiter。
+legacy 相容欄位 protocolMismatch、uncertain、usbLocked 保持 false；不再存在雙板接管操作。
 
-kind 依序為 Boot=1、Hello=2、Welcome=3、Ping=4、Pong=5、Command=6、Result=7、Query=8、Panel=9、Unit=10、Config=11。
+## 排程與 I²C
 
-ESP32 使用每次開機／重連不同的非零 session，Hello 的 payload 空白；Welcome 回 `{protocol, megaFirmwareMajor}`。只有正確 session／版本才接受命令。Mega Boot 與兩秒無有效回覆使 ESP32 取消等待中的舊工作，重新握手，不重送動作。
+FreeRTOS core 1、priority 5 的唯一控制工作讀寫 Wire，esp_timer 每 250µs 通知；中斷內不做 I²C。HTTP／上傳在另一個一般工作流程，經鎖定的快照和單項佇列互動。控制工作不依賴手機頁面、UART 心跳或網路請求持續發生。
 
-## 命令與結果
+每片馬達 MCP 以一次 16-bit OLAT 寫入合併四顆的變更，未改變的板略過。只輸出啟用位置；其他 nibble 永遠零。每位另記錄真正 MCP 寫完的時刻，至少過要求間隔後才允許下一相；不因排程落後而補發短間隔相位。此策略避免過快，代價是實際週期可能大於設定值。
 
-Command payload 開頭為 `{op, physicalUnit}`，unit=0～9 或 ALL=255。動作、範圍、參數及 enabled 狀態由 Mega 最終驗證。opcode 定義於共用 header；數字命令參數為 uint16，索引 uint8，文字為 `{count, glyphIndices[count]}`，安裝清單為 `{count, units[count]}`。完整設定為固定 121-byte 序列化，包含 count、10-byte map、十筆 11-byte 校準。
+Hall 每 2ms 獨立讀取；暫存器檢查每 20ms 輪流一項，工作完成前作完整檢查，不在每一相讀回所有暫存器。檢查 IOCON、IODIR、GPPU、OLAT；NACK、短讀、重設／暫存器異常會拉低共用 RST、取消整批並使位置失效，需 INIT 及重新定位。運動時控制迴圈超過 100ms 或積壓超過 16 個通知亦故障停止；這是軟體恢復處理，不是獨立硬體斷電保證。
 
-Result payload 為 `{stage, error, op}`，stage=Accepted1／Done2／Rejected3／Fault4；HTTP 202 只表示 ESP32 已接受傳送，不代表馬達完成。STEP、TEXT、HOME、MEASURE、CYCLE 與 EEPROM 保存會在完成後另外回 Done／Fault。
+800µs、10 顆並行與現有轉換板在實機上的裕度仍待量測。統計數值是裝置執行時觀察，原生測試的假 I²C 時序不能證明實板速度。
 
-Mega 保留八筆命令結果，重複 ID／相同 payload 回既有結果，不重複執行；相同 ID／不同內容拒絕。已退役的舊 ID 即使離開快取也不會重新執行。每 session 的命令 ID 單調遞增。
+## 設定、匯入與 NVS
 
-ESP32 **只送一次動作封包**；需要補查結果時送 Query，id 指向該命令。Mega 回既有 Accepted／Done／Fault；不知道的 ID 回 Unknown，絕不從查詢開始動作。Unknown 會使 ESP32 禁止其他動作，直到使用者 STOP／Claim 確認恢復。
+GET `/api/config` 匯出以下 schema 2；POST 同路徑額外攜帶 boot/request，先驗證整份，再保存與套用。
 
-STOP 優先於其他等待工作。UART 已送出一部分的 frame 先完成，再送 STOP，以免破壞 framing。沒有一般動作排隊；網頁及自動模式同時最多一項工作。每項 TEXT／HOME ALL／CYCLE ALL 內的啟用位置並行起步，各自完成；與目標相同的位置不動。STOP 終止整批所有位、解除全部 ARM、使可信定位失效；ESP32 字元歷史保留供核對。
+```json
+{
+  "schema":2,
+  "device":"splitflap-esp32cam-mcp",
+  "controller":{
+    "units":[0],
+    "calibration":["十個完整校準物件；此處僅示意，非可匯入值"]
+  },
+  "hardware":{"hallEnabled":false},
+  "display":{"mode":"text","clockFormat":"HH:MM","dateFormat":"YYYY-MM-DD","timezone":480,"align":0}
+}
+```
 
-## 狀態、心跳與 USB
+calibration 固定十筆，每筆含 revolution、offset、speed、accel、direction、order、activeLow。位置 1～10 個、0～9、不重複；Hall 必須是布林。省略 hardware 時沿用目前 Hall 設定。接受舊 `schema:1`、device `splitflap-esp32cam` 與 `mega` 欄位，將校準／顯示偏好移轉到本機；舊備份不會替使用者開啟 Hall。
 
-Ping／Pong 每 500ms；Query 與狀態分頁不影響運動。Mega 的收送每輪都有 byte 預算，使用 `availableForWrite`，不等整行、不 flush、不在轉動中列印長篇 USB 狀態。狀態包含 panel、十筆 unit、完整設定，ESP32 收齊相同 snapshot ID 才發布，資料年齡超過兩秒時不接受新動作。
+`flap-motion` namespace 採 cfg-a／cfg-b 兩筆 132-byte blob：SFM2 magic（4）、generation（4）、設定（121）、Hall 布林（1）、CRC16（2）。寫入非目前槽，讀回驗證成功才承認新版本；開機挑最新有效槽。無有效設定則 U0、800／800、Hall 關閉。沒有 ARM 或位置狀態。
 
-單位回報 enabled、模式、定位來源、索引、目標、ARM、原始／去抖 Hall、步數／剩餘、三筆量測、校準及錯誤。記錄值是韌體估計；手動模式無法證實硬體存在或漏步。
+`flap-cam` 沿用雙主控版 AppSettings、Wi-Fi／登入、顯示偏好及 DisplayMemory 格式，不作全片擦除即可保留。字元歷史僅記錄停止且定位有效的值，未知或運動中不覆寫。所有 NVS 寫入均先保留閒置控制狀態，避免 flash 暫停發生在步進中。速度／加速度保留位置及 ARM，幾何設定只讓受影響位失效；安裝清單變動解除 ARM，保留共同位置基準。
 
-只有遠端 ARM／運動／WATCH 所取得的控制，才受 Mega 的兩秒心跳租期保護。租期到期停止全組、解除 ARM 與定位；同 session 遲到的命令也會拒絕，須 STOP／Claim 或重新握手。即使只有 ESP32→Mega 這一路斷線、ESP32 仍收到狀態，也會顯示不確定並停止自動模式。ESP32 的 UART 工作獨立 FreeRTOS task，不受網頁／OTA HTTP 等待影響。手機關閉頁面不會停止心跳。
+整份匯入先保存馬達 blob，再保存顯示偏好，兩個 namespace **不是同一筆交易**。若後者失敗，工作會標為 storage fault、停止自動顯示並提示重新匯入；已保存的校準不會回滾。匯出與狀態不提供密碼。
 
-USB 轉動期間任何非換行字元仍依原行為停止並丟棄整行；USB 人工控制使網頁進入 UsbOverride，自動顯示暫停。USB STATUS／HELP 在閒置時不接管。恢復時按「接管網頁控制」（Claim），解除 ARM 與定位，再由使用者重新設定。ESP32 未連接時，USB 調機可獨立使用。
+其他端點：POST `/api/network` 保存網路／登入，POST `/api/preferences` 控制時鐘與日期，POST `/api/time` 接收 Unix 秒校時。網路設定在 MCP 缺席時仍可用；忙碌、保存、WATCH、維護期間拒絕。
 
-## Web API
+## 單包 OTA
 
-所有控制、設定與更新使用 Digest 驗證；POST 額外要求 `X-CSRF-Token`，有 Origin 時必須符合目前 Host。憑證／CSRF 在 upload START 即檢查，不能只在上傳完成 handler 才驗證。
+POST `/api/ota/prepare` 先提交 STOP，回工作 id 與一次性 ticket；確認 STOP 完成、全組未 ARM、輸出關閉才可上傳。POST `/api/update` 需驗證登入、CSRF 及 `X-OTA-Ticket`。上傳前進入維護、RST 保持低；完成或失敗前不接受其他動作。失敗清除 ticket，保留原開機分割，可重新準備；MCP 缺席時仍可進行。
 
-- `GET /api/state`：連線、軟體記錄、校準、工作、網路、顯示與 OTA 就緒狀態，含本次 ESP boot、nextRequest、csrf、networkEditable、displayMemoryOk。每個 unit 的 rememberedIndex 為最後保存字元（0～44 或 null），獨立於目前 reference；歷史不會自動恢復定位或 ARM。不包含密碼。網路設定依 networkEditable 啟用，不要求 Mega 連線；其他馬達控制仍要求 Mega 就緒。
-- `POST /api/command`：`{boot, request, op, unit, value?, align?}`。op 使用既有命令名稱；例 `TEXT`／`SETTEXT` 的 value 是 Unicode 文字，送 Mega 前轉 0～44 索引。SHOW／SET 亦可用 glyph 或 index。
-- `GET /api/config`：schema1、device、mega、display 的備份。
-- `POST /api/config`：加上 boot／request，整份驗證後送 Mega ApplyConfig 並持久化；若含 display，等待 Mega 完成後保存 ESP32 NVS，兩者成功才回 job=done。NVS 失敗回 fault／storage，保留已保存的 Mega 設定，須重新匯入。
-- `POST /api/network`：ssid，可選 password、apPassword、adminPassword；省略密碼欄位表示保留。
-- `POST /api/preferences`：mode、run、clockFormat／dateFormat、timezone（分鐘）、align。只傳 run=false 可暫停而不取消已接受工作。
-- `POST /api/time`：`{unix: secondsUTC}`，支援 2024～2099 年。
-- `POST /api/ota/prepare`：boot／request，取得 STOP job 與一次性 ticket；等 otaReady 後使用。
-- `POST /api/update`：multipart 上傳 `.sffw`，須有 CSRF 與 `X-OTA-Ticket`。
+本版 `.sffw` 為 64-byte header＋原始 ESP32 app image：
 
-外部 request 必須等於 nextRequest；相同 request／相同內容回既有 job，不再次動作。快取外的已退役 request 拒絕。多頁同時操作若撞號，顯示錯誤，需刷新後由使用者重新下指令；前端不自動重送動作。
+| offset | 長度 | 內容 |
+| --- | --- | --- |
+| 0 | 8 | `SFCAM02` 後接 NUL |
+| 8 | 4 | app 長度，little endian |
+| 12 | 4 | 更新格式版本 2，little endian |
+| 16 | 32 | app SHA-256 |
+| 48 | 16 | `splitflap-mcp-v2` |
+| 64 | app 長度 | ESP32 app，256～1966080 bytes |
 
-## OTA 封裝
+驗證 ESP32 image magic／chip ID、長度及摘要，再由 Update.end 完成映像驗證並切換開機分割。`SFCAM01` 雙主控包與普通 `.bin` 均拒絕；舊雙主控頁也拒絕本包，所以第一次移轉用 USB。USB 燒錄同一份 app 與標準 OTA 分割，不需其他主控 Bootloader 更新。
 
-64-byte header：magic `SFCAM01\0`（8）、映像長度 uint32、協定 uint32、SHA-256（32）、專案 tag `splitflap-cam-v1`（16）。後接 app `.bin`，大小最多 1,966,080 bytes；晶片必須 ESP32。上傳開始、資料寫入、結束與最終 HTTP handler 均需有效的 Mega 停止狀態。長度／SHA-256、完整 HTTP 請求與 SDK 映像驗證通過，才選取新分割區；多檔、截斷、失聯或 USB 重新啟用都中止更新。開機後自動模式保持暫停。
+SHA-256 是檔案完整性校驗，並非發行者簽章。更新中斷保留原應用；不宣稱新應用開機後有自動健康回退。完整硬體斷電驗收尚未執行。

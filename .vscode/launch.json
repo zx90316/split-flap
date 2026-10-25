@@ -2,283 +2,6 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "type": "debugpy",
-      "request": "launch",
-      "program": "${workspaceFolder}/mega2560/tools/dev.py",
-      "cwd": "${workspaceFolder}",
-      "console": "integratedTerminal",
-      "justMyCode": true,
-      "subProcess": false,
-      "env": {
-        "PYTHONUTF8": "1",
-        "PYTHONUNBUFFERED": "1"
-      },
-      "internalConsoleOptions": "neverOpen",
-      "name": "MEGA: 建置韌體",
-      "args": [
-        "build"
-      ],
-      "presentation": {
-        "group": "1-實板與操作",
-        "order": 1
-      }
-    },
-    {
-      "type": "debugpy",
-      "request": "launch",
-      "program": "${workspaceFolder}/mega2560/tools/dev.py",
-      "cwd": "${workspaceFolder}",
-      "console": "integratedTerminal",
-      "justMyCode": true,
-      "subProcess": false,
-      "env": {
-        "PYTHONUTF8": "1",
-        "PYTHONUNBUFFERED": "1"
-      },
-      "internalConsoleOptions": "neverOpen",
-      "name": "MEGA: 建置＋燒錄＋串列除錯",
-      "args": [
-        "upload-monitor",
-        "--port",
-        "${input:megaPort}"
-      ],
-      "presentation": {
-        "group": "1-實板與操作",
-        "order": 2
-      }
-    },
-    {
-      "type": "debugpy",
-      "request": "launch",
-      "program": "${workspaceFolder}/mega2560/tools/dev.py",
-      "cwd": "${workspaceFolder}",
-      "console": "integratedTerminal",
-      "justMyCode": true,
-      "subProcess": false,
-      "env": {
-        "PYTHONUTF8": "1",
-        "PYTHONUNBUFFERED": "1"
-      },
-      "internalConsoleOptions": "neverOpen",
-      "name": "MEGA: 串列除錯（115200）",
-      "args": [
-        "monitor",
-        "--port",
-        "${input:megaPort}"
-      ],
-      "presentation": {
-        "group": "1-實板與操作",
-        "order": 3
-      }
-    },
-    {
-      "type": "debugpy",
-      "request": "launch",
-      "program": "${workspaceFolder}/mega2560/tools/dev.py",
-      "cwd": "${workspaceFolder}",
-      "console": "integratedTerminal",
-      "justMyCode": true,
-      "subProcess": false,
-      "env": {
-        "PYTHONUTF8": "1",
-        "PYTHONUNBUFFERED": "1"
-      },
-      "internalConsoleOptions": "neverOpen",
-      "name": "MEGA: 建置＋燒錄",
-      "args": [
-        "upload",
-        "--port",
-        "${input:megaPort}"
-      ],
-      "presentation": {
-        "group": "1-實板與操作",
-        "order": 4
-      }
-    },
-    {
-      "type": "debugpy",
-      "request": "launch",
-      "program": "${workspaceFolder}/mega2560/tools/dev.py",
-      "cwd": "${workspaceFolder}",
-      "console": "integratedTerminal",
-      "justMyCode": true,
-      "subProcess": false,
-      "env": {
-        "PYTHONUTF8": "1",
-        "PYTHONUNBUFFERED": "1"
-      },
-      "internalConsoleOptions": "neverOpen",
-      "name": "MEGA: 查詢連接埠",
-      "args": [
-        "ports"
-      ],
-      "presentation": {
-        "group": "1-實板與操作",
-        "order": 5
-      }
-    },
-    {
-      "type": "debugpy",
-      "request": "launch",
-      "program": "${workspaceFolder}/mega2560/tools/dev.py",
-      "cwd": "${workspaceFolder}",
-      "console": "integratedTerminal",
-      "justMyCode": true,
-      "subProcess": false,
-      "env": {
-        "PYTHONUTF8": "1",
-        "PYTHONUNBUFFERED": "1"
-      },
-      "internalConsoleOptions": "neverOpen",
-      "name": "MEGA: 執行全部主機測試",
-      "args": [
-        "test"
-      ],
-      "presentation": {
-        "group": "1-實板與操作",
-        "order": 6
-      }
-    },
-    {
-      "type": "debugpy",
-      "request": "launch",
-      "program": "${workspaceFolder}/mega2560/tools/dev.py",
-      "cwd": "${workspaceFolder}",
-      "console": "integratedTerminal",
-      "justMyCode": true,
-      "subProcess": false,
-      "env": {
-        "PYTHONUTF8": "1",
-        "PYTHONUNBUFFERED": "1"
-      },
-      "internalConsoleOptions": "neverOpen",
-      "name": "MEGA: 工具檢查",
-      "args": [
-        "doctor"
-      ],
-      "presentation": {
-        "group": "1-實板與操作",
-        "order": 7
-      }
-    },
-    {
-      "name": "主機中斷點: 歸零與運動核心",
-      "type": "cppvsdbg",
-      "request": "launch",
-      "program": "${workspaceFolder}/mega2560/test/.build/test_bench_debug.exe",
-      "args": [],
-      "cwd": "${workspaceFolder}",
-      "console": "internalConsole",
-      "stopAtEntry": true,
-      "preLaunchTask": "MEGA: 建置主機偵錯 bench",
-      "symbolSearchPath": "${workspaceFolder}/mega2560/test/.build",
-      "requireExactSource": true,
-      "presentation": {
-        "group": "2-主機C++偵錯",
-        "order": 1
-      }
-    },
-    {
-      "name": "主機中斷點: Arduino介面模擬",
-      "type": "cppvsdbg",
-      "request": "launch",
-      "program": "${workspaceFolder}/mega2560/test/.build/test_adapter_debug.exe",
-      "args": [],
-      "cwd": "${workspaceFolder}",
-      "console": "internalConsole",
-      "stopAtEntry": true,
-      "preLaunchTask": "MEGA: 建置主機偵錯 adapter",
-      "symbolSearchPath": "${workspaceFolder}/mega2560/test/.build",
-      "requireExactSource": true,
-      "presentation": {
-        "group": "2-主機C++偵錯",
-        "order": 2
-      }
-    },
-    {
-      "name": "主機中斷點: 多位顯示排程",
-      "type": "cppvsdbg",
-      "request": "launch",
-      "program": "${workspaceFolder}/mega2560/test/.build/test_panel_debug.exe",
-      "args": [],
-      "cwd": "${workspaceFolder}",
-      "console": "internalConsole",
-      "stopAtEntry": true,
-      "preLaunchTask": "MEGA: 建置主機偵錯 panel",
-      "symbolSearchPath": "${workspaceFolder}/mega2560/test/.build",
-      "requireExactSource": true,
-      "presentation": {
-        "group": "2-主機C++偵錯",
-        "order": 3
-      }
-    },
-    {
-      "name": "ESP32-CAM: 準備環境",
-      "type": "debugpy",
-      "request": "launch",
-      "program": "${workspaceFolder}/esp32cam/tools/dev.py",
-      "args": [
-        "setup"
-      ],
-      "cwd": "${workspaceFolder}",
-      "console": "integratedTerminal",
-      "justMyCode": true,
-      "subProcess": false,
-      "env": {
-        "PYTHONUTF8": "1",
-        "PYTHONUNBUFFERED": "1"
-      },
-      "internalConsoleOptions": "neverOpen",
-      "presentation": {
-        "group": "3-ESP32-CAM",
-        "order": 10
-      }
-    },
-    {
-      "name": "ESP32-CAM: 檢查環境",
-      "type": "debugpy",
-      "request": "launch",
-      "program": "${workspaceFolder}/esp32cam/tools/dev.py",
-      "args": [
-        "doctor"
-      ],
-      "cwd": "${workspaceFolder}",
-      "console": "integratedTerminal",
-      "justMyCode": true,
-      "subProcess": false,
-      "env": {
-        "PYTHONUTF8": "1",
-        "PYTHONUNBUFFERED": "1"
-      },
-      "internalConsoleOptions": "neverOpen",
-      "presentation": {
-        "group": "3-ESP32-CAM",
-        "order": 11
-      }
-    },
-    {
-      "name": "ESP32-CAM: 查詢連接埠",
-      "type": "debugpy",
-      "request": "launch",
-      "program": "${workspaceFolder}/esp32cam/tools/dev.py",
-      "args": [
-        "ports"
-      ],
-      "cwd": "${workspaceFolder}",
-      "console": "integratedTerminal",
-      "justMyCode": true,
-      "subProcess": false,
-      "env": {
-        "PYTHONUTF8": "1",
-        "PYTHONUNBUFFERED": "1"
-      },
-      "internalConsoleOptions": "neverOpen",
-      "presentation": {
-        "group": "3-ESP32-CAM",
-        "order": 12
-      }
-    },
-    {
       "name": "ESP32-CAM: 建置韌體",
       "type": "debugpy",
       "request": "launch",
@@ -296,8 +19,8 @@
       },
       "internalConsoleOptions": "neverOpen",
       "presentation": {
-        "group": "3-ESP32-CAM",
-        "order": 13
+        "group": "1-ESP32-CAM 單主控",
+        "order": 0
       }
     },
     {
@@ -320,8 +43,8 @@
       },
       "internalConsoleOptions": "neverOpen",
       "presentation": {
-        "group": "3-ESP32-CAM",
-        "order": 14
+        "group": "1-ESP32-CAM 單主控",
+        "order": 1
       }
     },
     {
@@ -344,8 +67,120 @@
       },
       "internalConsoleOptions": "neverOpen",
       "presentation": {
-        "group": "3-ESP32-CAM",
-        "order": 15
+        "group": "1-ESP32-CAM 單主控",
+        "order": 2
+      }
+    },
+    {
+      "name": "ESP32-CAM: 查詢連接埠",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}/esp32cam/tools/dev.py",
+      "args": [
+        "ports"
+      ],
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "justMyCode": true,
+      "subProcess": false,
+      "env": {
+        "PYTHONUTF8": "1",
+        "PYTHONUNBUFFERED": "1"
+      },
+      "internalConsoleOptions": "neverOpen",
+      "presentation": {
+        "group": "1-ESP32-CAM 單主控",
+        "order": 3
+      }
+    },
+    {
+      "name": "ESP32-CAM: 準備環境",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}/esp32cam/tools/dev.py",
+      "args": [
+        "setup"
+      ],
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "justMyCode": true,
+      "subProcess": false,
+      "env": {
+        "PYTHONUTF8": "1",
+        "PYTHONUNBUFFERED": "1"
+      },
+      "internalConsoleOptions": "neverOpen",
+      "presentation": {
+        "group": "1-ESP32-CAM 單主控",
+        "order": 4
+      }
+    },
+    {
+      "name": "ESP32-CAM: 檢查環境",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}/esp32cam/tools/dev.py",
+      "args": [
+        "doctor"
+      ],
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "justMyCode": true,
+      "subProcess": false,
+      "env": {
+        "PYTHONUTF8": "1",
+        "PYTHONUNBUFFERED": "1"
+      },
+      "internalConsoleOptions": "neverOpen",
+      "presentation": {
+        "group": "1-ESP32-CAM 單主控",
+        "order": 5
+      }
+    },
+    {
+      "name": "ESP32-CAM: 建置＋燒錄",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}/esp32cam/tools/dev.py",
+      "args": [
+        "upload",
+        "--port",
+        "${input:esp32CamPort}"
+      ],
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "justMyCode": true,
+      "subProcess": false,
+      "env": {
+        "PYTHONUTF8": "1",
+        "PYTHONUNBUFFERED": "1"
+      },
+      "internalConsoleOptions": "neverOpen",
+      "presentation": {
+        "group": "1-ESP32-CAM 單主控",
+        "order": 6
+      }
+    },
+    {
+      "name": "ESP32-CAM: 重新建置韌體",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}/esp32cam/tools/dev.py",
+      "args": [
+        "rebuild"
+      ],
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "justMyCode": true,
+      "subProcess": false,
+      "env": {
+        "PYTHONUTF8": "1",
+        "PYTHONUNBUFFERED": "1"
+      },
+      "internalConsoleOptions": "neverOpen",
+      "presentation": {
+        "group": "1-ESP32-CAM 單主控",
+        "order": 7
       }
     },
     {
@@ -366,47 +201,8 @@
       },
       "internalConsoleOptions": "neverOpen",
       "presentation": {
-        "group": "3-ESP32-CAM",
-        "order": 16
-      }
-    },
-    {
-      "name": "ESP32-CAM: 開啟網頁模擬器",
-      "type": "debugpy",
-      "request": "launch",
-      "program": "${workspaceFolder}/esp32cam/tools/dev.py",
-      "args": [
-        "mock-web"
-      ],
-      "cwd": "${workspaceFolder}",
-      "console": "integratedTerminal",
-      "justMyCode": true,
-      "subProcess": false,
-      "env": {
-        "PYTHONUTF8": "1",
-        "PYTHONUNBUFFERED": "1"
-      },
-      "internalConsoleOptions": "neverOpen",
-      "presentation": {
-        "group": "3-ESP32-CAM",
-        "order": 17
-      }
-    },
-    {
-      "name": "主機中斷點: ESP32↔Mega 通訊與網頁命令",
-      "type": "cppvsdbg",
-      "request": "launch",
-      "program": "${workspaceFolder}/esp32cam/test/.build/test_bridge_debug.exe",
-      "args": [],
-      "cwd": "${workspaceFolder}",
-      "console": "internalConsole",
-      "stopAtEntry": true,
-      "preLaunchTask": "ESP32-CAM: 建置主機偵錯",
-      "symbolSearchPath": "${workspaceFolder}/esp32cam/test/.build",
-      "requireExactSource": true,
-      "presentation": {
-        "group": "4-ESP32通訊主機偵錯",
-        "order": 1
+        "group": "1-ESP32-CAM 單主控",
+        "order": 8
       }
     },
     {
@@ -427,8 +223,319 @@
       },
       "internalConsoleOptions": "neverOpen",
       "presentation": {
-        "group": "3-ESP32-CAM",
-        "order": 19
+        "group": "1-ESP32-CAM 單主控",
+        "order": 9
+      }
+    },
+    {
+      "name": "ESP32-CAM: 產生接線圖",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}/esp32cam/tools/dev.py",
+      "args": [
+        "diagrams"
+      ],
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "justMyCode": true,
+      "subProcess": false,
+      "env": {
+        "PYTHONUTF8": "1",
+        "PYTHONUNBUFFERED": "1"
+      },
+      "internalConsoleOptions": "neverOpen",
+      "presentation": {
+        "group": "1-ESP32-CAM 單主控",
+        "order": 10
+      }
+    },
+    {
+      "name": "ESP32-CAM: 開啟網頁模擬器",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}/esp32cam/tools/dev.py",
+      "args": [
+        "mock-web"
+      ],
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "justMyCode": true,
+      "subProcess": false,
+      "env": {
+        "PYTHONUTF8": "1",
+        "PYTHONUNBUFFERED": "1"
+      },
+      "internalConsoleOptions": "neverOpen",
+      "presentation": {
+        "group": "1-ESP32-CAM 單主控",
+        "order": 11
+      }
+    },
+    {
+      "name": "ESP32-CAM: 準備主機偵錯工具",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}/esp32cam/tools/dev.py",
+      "args": [
+        "setup-host"
+      ],
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "justMyCode": true,
+      "subProcess": false,
+      "env": {
+        "PYTHONUTF8": "1",
+        "PYTHONUNBUFFERED": "1"
+      },
+      "internalConsoleOptions": "neverOpen",
+      "presentation": {
+        "group": "1-ESP32-CAM 單主控",
+        "order": 12
+      }
+    },
+    {
+      "name": "主機中斷點: MCP 單主控與運動",
+      "type": "cppvsdbg",
+      "request": "launch",
+      "program": "${workspaceFolder}/esp32cam/test/.build/test_local_debug.exe",
+      "args": [],
+      "cwd": "${workspaceFolder}",
+      "console": "internalConsole",
+      "stopAtEntry": true,
+      "preLaunchTask": "ESP32-CAM: 建置主機偵錯",
+      "symbolSearchPath": "${workspaceFolder}/esp32cam/test/.build",
+      "requireExactSource": true,
+      "presentation": {
+        "group": "2-單主控模擬偵錯",
+        "order": 1
+      }
+    },
+    {
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}/mega2560/tools/dev.py",
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "justMyCode": true,
+      "subProcess": false,
+      "env": {
+        "PYTHONUTF8": "1",
+        "PYTHONUNBUFFERED": "1"
+      },
+      "internalConsoleOptions": "neverOpen",
+      "name": "MEGA: 建置韌體",
+      "args": [
+        "build"
+      ],
+      "presentation": {
+        "group": "9-歷史雙主控工具",
+        "order": 0
+      }
+    },
+    {
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}/mega2560/tools/dev.py",
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "justMyCode": true,
+      "subProcess": false,
+      "env": {
+        "PYTHONUTF8": "1",
+        "PYTHONUNBUFFERED": "1"
+      },
+      "internalConsoleOptions": "neverOpen",
+      "name": "MEGA: 建置＋燒錄＋串列除錯",
+      "args": [
+        "upload-monitor",
+        "--port",
+        "${input:megaPort}"
+      ],
+      "presentation": {
+        "group": "9-歷史雙主控工具",
+        "order": 1
+      }
+    },
+    {
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}/mega2560/tools/dev.py",
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "justMyCode": true,
+      "subProcess": false,
+      "env": {
+        "PYTHONUTF8": "1",
+        "PYTHONUNBUFFERED": "1"
+      },
+      "internalConsoleOptions": "neverOpen",
+      "name": "MEGA: 串列除錯（115200）",
+      "args": [
+        "monitor",
+        "--port",
+        "${input:megaPort}"
+      ],
+      "presentation": {
+        "group": "9-歷史雙主控工具",
+        "order": 2
+      }
+    },
+    {
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}/mega2560/tools/dev.py",
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "justMyCode": true,
+      "subProcess": false,
+      "env": {
+        "PYTHONUTF8": "1",
+        "PYTHONUNBUFFERED": "1"
+      },
+      "internalConsoleOptions": "neverOpen",
+      "name": "MEGA: 建置＋燒錄",
+      "args": [
+        "upload",
+        "--port",
+        "${input:megaPort}"
+      ],
+      "presentation": {
+        "group": "9-歷史雙主控工具",
+        "order": 3
+      }
+    },
+    {
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}/mega2560/tools/dev.py",
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "justMyCode": true,
+      "subProcess": false,
+      "env": {
+        "PYTHONUTF8": "1",
+        "PYTHONUNBUFFERED": "1"
+      },
+      "internalConsoleOptions": "neverOpen",
+      "name": "MEGA: 查詢連接埠",
+      "args": [
+        "ports"
+      ],
+      "presentation": {
+        "group": "9-歷史雙主控工具",
+        "order": 4
+      }
+    },
+    {
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}/mega2560/tools/dev.py",
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "justMyCode": true,
+      "subProcess": false,
+      "env": {
+        "PYTHONUTF8": "1",
+        "PYTHONUNBUFFERED": "1"
+      },
+      "internalConsoleOptions": "neverOpen",
+      "name": "MEGA: 執行全部主機測試",
+      "args": [
+        "test"
+      ],
+      "presentation": {
+        "group": "9-歷史雙主控工具",
+        "order": 5
+      }
+    },
+    {
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}/mega2560/tools/dev.py",
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "justMyCode": true,
+      "subProcess": false,
+      "env": {
+        "PYTHONUTF8": "1",
+        "PYTHONUNBUFFERED": "1"
+      },
+      "internalConsoleOptions": "neverOpen",
+      "name": "MEGA: 工具檢查",
+      "args": [
+        "doctor"
+      ],
+      "presentation": {
+        "group": "9-歷史雙主控工具",
+        "order": 6
+      }
+    },
+    {
+      "name": "主機中斷點: 歸零與運動核心",
+      "type": "cppvsdbg",
+      "request": "launch",
+      "program": "${workspaceFolder}/mega2560/test/.build/test_bench_debug.exe",
+      "args": [],
+      "cwd": "${workspaceFolder}",
+      "console": "internalConsole",
+      "stopAtEntry": true,
+      "preLaunchTask": "MEGA: 建置主機偵錯 bench",
+      "symbolSearchPath": "${workspaceFolder}/mega2560/test/.build",
+      "requireExactSource": true,
+      "presentation": {
+        "group": "9-歷史雙主控工具",
+        "order": 7
+      }
+    },
+    {
+      "name": "主機中斷點: Arduino介面模擬",
+      "type": "cppvsdbg",
+      "request": "launch",
+      "program": "${workspaceFolder}/mega2560/test/.build/test_adapter_debug.exe",
+      "args": [],
+      "cwd": "${workspaceFolder}",
+      "console": "internalConsole",
+      "stopAtEntry": true,
+      "preLaunchTask": "MEGA: 建置主機偵錯 adapter",
+      "symbolSearchPath": "${workspaceFolder}/mega2560/test/.build",
+      "requireExactSource": true,
+      "presentation": {
+        "group": "9-歷史雙主控工具",
+        "order": 8
+      }
+    },
+    {
+      "name": "主機中斷點: 多位顯示排程",
+      "type": "cppvsdbg",
+      "request": "launch",
+      "program": "${workspaceFolder}/mega2560/test/.build/test_panel_debug.exe",
+      "args": [],
+      "cwd": "${workspaceFolder}",
+      "console": "internalConsole",
+      "stopAtEntry": true,
+      "preLaunchTask": "MEGA: 建置主機偵錯 panel",
+      "symbolSearchPath": "${workspaceFolder}/mega2560/test/.build",
+      "requireExactSource": true,
+      "presentation": {
+        "group": "9-歷史雙主控工具",
+        "order": 9
+      }
+    },
+    {
+      "name": "主機中斷點: ESP32↔Mega 通訊與網頁命令",
+      "type": "cppvsdbg",
+      "request": "launch",
+      "program": "${workspaceFolder}/esp32cam/test/.build/test_bridge_debug.exe",
+      "args": [],
+      "cwd": "${workspaceFolder}",
+      "console": "internalConsole",
+      "stopAtEntry": true,
+      "preLaunchTask": "ESP32-CAM: 建置主機偵錯",
+      "symbolSearchPath": "${workspaceFolder}/esp32cam/test/.build",
+      "requireExactSource": true,
+      "presentation": {
+        "group": "9-歷史雙主控工具",
+        "order": 10
       }
     }
   ],
@@ -443,7 +550,7 @@
       "id": "esp32CamPort",
       "type": "promptString",
       "default": "COM4",
-      "description": "輸入已確認的 CP2102 COM 埠（不是 Mega COM3）；GPIO0 接 GND 後 RESET；馬達分支關閉"
+      "description": "輸入已確認的 CP2102 COM 埠；關馬達分支，GPIO0 接 GND 後 RESET；CP2102 供電腳不接"
     }
   ]
 }

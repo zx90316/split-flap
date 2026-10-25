@@ -111,7 +111,7 @@ class ArtifactsTest(unittest.TestCase):
     def test_ota_rejects_wrong_protocol_project_and_too_large(self):
         image = bytearray(256)
         image[0] = 0xe9
-        data = b'SFCAM01\0' + struct.pack('<II', len(image), 2) + hashlib.sha256(image).digest() + b'splitflap-cam-v1' + image
+        data = b'SFCAM02\0' + struct.pack('<II', len(image), 3) + hashlib.sha256(image).digest() + b'splitflap-mcp-v2' + image
         with self.assertRaises(ValueError):
             mock.verify_package(data)
         with self.assertRaises(ValueError):
@@ -133,10 +133,11 @@ class ArtifactsTest(unittest.TestCase):
         self.assertEqual(len(labels), len(set(labels)))
         defaults = [t for t in tasks['tasks'] if isinstance(t.get('group'), dict) and t['group'].get('isDefault')]
         self.assertEqual(len(defaults), 1)
+        self.assertEqual(defaults[0]['label'], 'ESP32-CAM: 建置韌體')
         for config in launches['configurations']:
             if 'preLaunchTask' in config:
                 self.assertIn(config['preLaunchTask'], labels)
-        for name in ['wiring-runtime.svg', 'wiring-flashing.svg']:
+        for name in ['wiring-runtime.svg', 'wiring-flashing.svg', 'wiring-motors.svg', 'wiring-hall.svg']:
             from xml.etree import ElementTree
             ElementTree.parse(ROOT / 'esp32cam' / name)
 
@@ -242,14 +243,14 @@ class HttpFixtureTest(unittest.TestCase):
         self.assertEqual(self.model.units[0]['index'], 27)
         config = copy = json.loads(json.dumps(self.model.schema))
         config['units'] = [7, 0, 2]
-        response = self.post(client, '/api/config', dict(schema=1, boot=self.model.boot, request=self.model.next_request, mega=config))
+        response = self.post(client, '/api/config', dict(schema=1, boot=self.model.boot, request=self.model.next_request, controller=config))
         self.assertIn('id', response)
         self.assertEqual(self.model.schema['units'], [7, 0, 2])
         self.assertFalse(self.model.units[1]['enabled'])
         bad = json.loads(json.dumps(copy))
         bad['units'] = [0, 0]
         with self.assertRaises(urllib.error.HTTPError):
-            self.post(client, '/api/config', dict(schema=1, boot=self.model.boot, request=self.model.next_request, mega=bad))
+            self.post(client, '/api/config', dict(schema=1, boot=self.model.boot, request=self.model.next_request, controller=bad))
         self.assertEqual(self.model.schema['units'], [7, 0, 2])
 
     def test_fixture_ota_requires_stop_ticket_and_clears_failed_attempt(self):
@@ -276,6 +277,24 @@ class HttpFixtureTest(unittest.TestCase):
         self.assertFalse(self.model.ota_ready)
         self.assertEqual(self.model.ticket, '')
         self.assertEqual(self.model.boot, boot)
+
+    def test_dual_backup_migration_and_strict_hardware_validation(self):
+        client = self.client()
+        self.login(client)
+        config = json.loads(json.dumps(self.model.schema))
+        config['units'] = [7, 0, 9]
+        config['calibration'][7]['speed'] = 1500
+        result = self.post(client, '/api/config', dict(schema=1, device='splitflap-esp32cam',
+            boot=self.model.boot, request=self.model.next_request, mega=config))
+        self.assertIn('id', result)
+        self.assertEqual(self.model.schema['units'], [7, 0, 9])
+        self.assertEqual(self.model.schema['calibration'][7]['speed'], 1500)
+        self.assertFalse(self.model.hardware['hallEnabled'])
+        for invalid in [{'hallEnabled': 1}, {'hallEnabled': 'false'}, {}, []]:
+            with self.assertRaises(urllib.error.HTTPError):
+                self.post(client, '/api/config', dict(schema=2, boot=self.model.boot,
+                    request=self.model.next_request, controller=config, hardware=invalid))
+            self.assertFalse(self.model.hardware['hallEnabled'])
 
 
 if __name__ == '__main__':

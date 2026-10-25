@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # SPDX-License-Identifier: GPL-3.0-only
-"""Generate the two reviewable wiring SVGs. Coordinates are functional, not pin pitch."""
+"""Generate four single-controller wiring SVGs. Coordinates are functional, not pin pitch."""
 from html import escape
 from pathlib import Path
 
@@ -44,117 +44,122 @@ class Svg:
 
 
 def runtime():
-    s = Svg(1440, 1320, '正常運作：12V 系統供電＋ESP32-CAM ↔ Mega',
-            '依針腳名稱接線；方塊為功能示意，不代表模組外觀、排針順序或實際尺寸。')
-    s.box(45, 145, 290, 160, '隔離式 12V 電源')
-    s.note(65, 218, ['正端經保險絲／主開關', '負端接共地分配點'])
-    s.pin(335, 185, '+12V', V12); s.pin(335, 280, 'GND', GND)
-    s.box(565, 165, 320, 150, '現有 LM2596 → 5.0V')
-    s.pin(565, 220, 'IN+', V12, 'left'); s.pin(885, 225, 'OUT+ 5V', V5)
-    s.text(585, 275, 'IN−／OUT− 接共地', 17, GND)
-    s.box(1080, 145, 310, 160, '馬達 12V 分支')
-    s.note(1100, 214, ['獨立開關 → 各 ULN + / COM', '各 ULN GND 回共地分配點', '馬達／Hall 接線沿用 Mega 圖'])
-    s.wire([(335,185),(440,185),(440,130),(1055,130),(1055,185),(1080,185)], V12, 4, True)
-    s.wire([(440,185),(440,220),(565,220)], V12, 4, True); s.dot(440,185,V12)
-    s.text(1035, 353, 'LM2596 → Mega 5V 腳', 20, V5, weight='bold')
-    s.text(1035, 380, '正常運作時 Mega USB-B 拔除', 17)
-    s.wire([(885,225),(945,225),(945,390),(1210,390),(1210,455)], V5, 4, True)
-    s.wire([(945,335),(30,335),(30,505),(65,505)], V5, 4, True); s.dot(945,335,V5)
-    s.text(55, 369, '控制 5V 分支：關閉馬達分支時保持供電', 18, V5)
-    s.box(65, 455, 395, 465, 'AI-Thinker ESP32-CAM', '#edf3ff')
-    s.text(85, 540, '相機／SD 卡／閃光燈不啟用', 17)
-    s.pin(65,505,'5V 輸入',V5,'left')
-    s.pin(460,590,'GPIO13 / TX2',TX)
-    s.pin(460,660,'GPIO14 / RX2',RX)
-    s.pin(460,760,'3V3 輸出',V3)
-    s.text(85, 835, 'GPIO0：正常運作不接 GND', 18)
-    s.text(85, 870, 'U0R / U0T 留給 CP2102', 18)
-    s.pin(260,920,'GND',GND)
-    s.box(585, 485, 300, 405, 'P011 8 路電平轉換', '#f5effa')
-    s.text(602, 548, 'A 側 3.3V ／ B 側 5V', 18)
-    s.pin(585,590,'A0',TX,'left'); s.pin(885,590,'B0',TX)
-    s.pin(585,660,'A1',RX,'left'); s.pin(885,660,'B1',RX)
-    s.pin(585,760,'VCCA',V3,'left')
-    s.pin(885,760,'VCCB',V5); s.pin(735,890,'GND',GND)
-    s.text(602, 817, 'A2–A7 / B2–B7：不接', 17)
-    s.text(602, 850, '沿用現有 MOS 板，沒有 OE', 17)
-    s.box(1035, 455, 355, 465, 'Arduino Mega 2560', '#e7f3ec')
-    s.text(1055,510,'5V 腳：接穩壓後的 5.0V',18,V5)
-    s.text(1055,548,'USB-B：燒錄／調機時才接電腦',17)
-    s.pin(1035,590,'D19 / RX1',TX,'left'); s.pin(1035,660,'D18 / TX1',RX,'left')
-    s.pin(1035,760,'5V 電源節點 → VCCB',V5,'left')
-    s.text(1055,835,'馬達腳位／Hall 腳位維持原表',17); s.text(1055,870,'VIN／DC 圓孔不接',17)
-    s.pin(1210,920,'GND',GND)
-    s.wire([(460,590),(585,590)],TX,3,True); s.wire([(885,590),(1035,590)],TX,3,True)
-    s.wire([(1035,660),(885,660)],RX,3,True); s.wire([(585,660),(460,660)],RX,3,True)
-    s.wire([(460,760),(585,760)],V3,3,True)
-    s.wire([(1035,760),(885,760)],V5,3,True)
-    s.wire([(335,280),(370,280),(370,320),(15,320),(15,960)],GND,4)
-    s.wire([(15,960),(1340,960)],GND,4)
-    s.wire([(700,315),(700,352)],GND,3)
-    s.wire([(370,320),(700,320)],GND,3); s.dot(370,320,GND); s.dot(700,320,GND)
-    s.wire([(780,315),(780,340),(700,340)],GND,3)
-    s.dot(700,340,GND)
-    for y,w in [(352,26),(360,18),(368,10)]: s.wire([(700-w/2,y),(700+w/2,y)],GND,2)
-    s.text(715,365,'GND 分配點',15,GND)
-    s.wire([(670,590),(785,590)],TX,2,True)
-    s.wire([(785,660),(670,660)],RX,2,True)
-    for x,y in [(260,920),(735,890),(1210,920)]: s.wire([(x,y),(x,960)],GND,3); s.dot(x,960,GND)
-    s.text(55,1003,'共地：12V−、LM2596 IN−／OUT−、Mega、ESP32、ULN、Hall、CP2102 GND',18,GND)
-    s.box(45,1030,665,225,'現有 P011：使用 2／8 路')
-    s.note(65,1090,['VCCA／A0–A7：3.3V；VCCB／B0–B7：5V。',
-      'A0 ↔ B0：ESP TX → Mega RX。',
-      'B1 ↔ A1：Mega TX → ESP RX；其餘六路不接。',
-      '沒有 OE；使用板上既有元件，不另加模組或電容。',
-      '兩板皆供電才接訊號；單板斷電前拔四條訊號線。'],size=17)
-    s.box(735,1030,655,225,'Mega 改接電腦燒錄')
-    s.note(755,1090,['① 關馬達與控制電源；先拔 UART 四條訊號線。',
-      '② 拔 LM2596 → Mega 5V 線，再接電腦 USB。',
-      '③ 完成後拔 USB、關控制電源，再復原 5V／UART。',
-      '④ 兩板重新供電；重新定位並 ARM 才可轉動。',
-      '外部 5V 與電腦 USB 不並接；CP2102 接法見另一張圖。'],size=17)
-    s.text(45,1293,'線色：橘=12V　紅=5V　紫=3.3V　藍=ESP→Mega　綠=Mega→ESP　灰黑=共地；無圓點的交叉線不相接。',17)
+    s=Svg(1440,1080,'單主控正常運作：ESP32-CAM＋四片 MCP23017','四片使用 0x20～0x23；六片庫存中兩片備用。依板上印字接線，圖框不是實際排針順序。')
+    s.box(45,140,290,150,'12V 電源')
+    s.note(65,210,['正端經保險絲／主開關','負端回共地'])
+    s.box(440,140,290,150,'LM2596：5.0V')
+    s.note(460,210,['IN+ 接 12V','IN−／OUT− 接共地'])
+    s.box(1050,140,335,150,'馬達 12V 分支')
+    s.note(1070,210,['獨立實體開關','供各 ULN 正端／COM'])
+    s.wire([(335,180),(400,180),(440,180)],V12,4,True)
+    s.wire([(400,180),(400,125),(1010,125),(1010,180),(1050,180)],V12,4,True);s.dot(400,180,V12)
+    s.wire([(730,180),(950,180),(950,335),(210,335),(210,390)],V5,4,True)
+    s.wire([(950,335),(1220,335),(1220,390)],V5,4,True);s.dot(950,335,V5)
+    s.text(490,324,'控制 5V：ESP32 5V、四片 MCP VCC、Hall VCC、P011 VCCB',18,V5)
+    s.box(45,390,350,370,'AI-Thinker ESP32-CAM','#edf3ff')
+    s.pin(395,480,'GPIO13 / SDA',TX);s.pin(395,550,'GPIO14 / SCL',RX);s.pin(395,620,'GPIO15 / OD RST',V12)
+    s.pin(395,700,'3V3 輸出',V3);s.pin(210,390,'5V',V5,'left');s.pin(210,760,'GND',GND)
+    s.text(65,448,'相機／SD／閃光燈停用',17)
+    s.box(560,390,320,370,'P011 現有 8 路板','#f5effa')
+    for y,a,b,c in [(480,'A0','B0',TX),(550,'A1','B1',RX),(620,'A2','B2',V12)]:
+        s.pin(560,y,a,c,'left');s.pin(880,y,b,c)
+        s.wire([(395,y),(560,y)],c,3)
+        s.wire([(660,y),(780,y)],c,2)
+    s.pin(560,700,'VCCA',V3,'left');s.pin(880,700,'VCCB',V5);s.pin(720,760,'GND',GND)
+    s.wire([(395,700),(560,700)],V3,3)
+    s.wire([(950,335),(950,700),(880,700)],V5,3)
+    s.text(580,738,'A3～A7／B3～B7 不接；無 OE',16)
+    s.box(1060,390,325,370,'四片 MCP23017','#e7f3ec')
+    s.pin(1220,390,'VCC 5V',V5,'left')
+    for y,label,c in [(480,'全部 SDA',TX),(550,'全部 SCL',RX),(620,'全部 RST',V12)]:
+        s.pin(1060,y,label,c,'left');s.wire([(880,y),(1060,y)],c,3)
+    s.text(1080,680,'0x20／0x21／0x22 → ULN',17)
+    s.text(1080,714,'0x23 ← 十路 Hall',17)
+    s.pin(1220,760,'全部 GND',GND)
+    s.wire([(25,795),(1385,795)],GND,4)
+    for x in [210,720,1220]:s.wire([(x,760),(x,795)],GND,3);s.dot(x,795,GND)
+    s.wire([(65,290),(25,290),(25,795)],GND,3)
+    s.pin(65,290,'GND',GND,'left');s.pin(585,290,'GND',GND,'left')
+    s.wire([(585,290),(585,307),(420,307),(420,795)],GND,3);s.dot(420,795,GND)
+    s.box(1060,855,325,155,'10 組 ULN＋12V 馬達')
+    s.note(1080,920,['相位接法見 U0～U9 圖','馬達五線插頭接原 ULN 插座'],size=16)
+    s.wire([(1385,245),(1420,245),(1420,910),(1385,910)],V12,4,True)
+    s.pin(1220,1010,'ULN GND',GND)
+    s.wire([(1220,1010),(1220,1028),(1430,1028),(1430,795),(1385,795)],GND,3)
+    s.wire([(1385,720),(1400,720),(1400,835),(1210,835),(1210,855)],TX,3,True)
+    s.box(45,840,945,175,'接線要點')
+    s.note(65,900,['P011 只轉換訊號；MCP VCC 接控制 5V，不接 12V。所有 GND 共地。',
+      '移除原 ESP32 GPIO13／14 到 Mega 的 UART 線；不插 SD 卡。',
+      '各板都有電才接訊號；先關馬達分支再改線。RST 拉低不等於切斷 12V。'],size=17)
+    s.text(45,1050,'線色：紅=5V　紫=3.3V　橘=12V／重設訊號（依標籤區分）　藍=SDA／相位　綠=SCL　灰黑=共地。',17)
     s.save('wiring-runtime.svg')
 
-
 def flashing():
-    s = Svg(1300, 1180, 'CP2102 燒錄：UART0 資料線＋外部控制 5V',
-            '只適用 3.3V UART 邏輯的 CP2102 轉接板；依 TXD／RXD／GND 印字，不能照排針位置猜。')
-    s.box(65,155,470,145,'12V → LM2596 → 5.0V', '#fff0f1')
-    s.note(85,221,['馬達 12V 分支保持關閉', '控制 5V 供兩板；Mega USB 不接電腦'])
-    s.box(65,350,360,70,'電腦 USB → CP2102')
-    s.box(65,460,360,350,'CP2102 USB-UART', '#e7f3ec')
-    s.wire([(245,420),(245,460)],GND,4)
-    s.pin(425,550,'TXD（3.3V 邏輯）',TX)
-    s.pin(425,635,'RXD',RX)
-    s.pin(245,810,'GND',GND)
-    s.text(85,720,'5V、3V3、VCC：都不接',18,V5)
-    s.text(85,760,'DTR／RTS／RST：不接',18)
-    s.box(795,390,385,445,'AI-Thinker ESP32-CAM','#edf3ff')
-    s.pin(985,390,'5V 輸入',V5)
-    s.pin(795,550,'U0R / GPIO3（RX0）',TX,'left')
-    s.pin(795,635,'U0T / GPIO1（TX0）',RX,'left')
-    s.pin(1180,480,'GPIO0',GND)
-    s.pin(985,835,'GND',GND)
-    s.note(815,707,['按板上的 RESET 鍵重設', '燒錄完成移除 GPIO0 跳線', '再按 RESET 才會運行韌體'])
-    s.wire([(535,205),(985,205),(985,390)],V5,4,True)
-    s.text(650,239,'外部 5V 電源',18,V5)
-    s.wire([(425,550),(795,550)],TX,3,True); s.text(505,532,'TX → RX',18,TX)
-    s.wire([(795,635),(425,635)],RX,3,True); s.text(505,618,'RX ← TX',18,RX)
-    s.wire([(1180,480),(1245,480),(1245,900)],GND,3,dash=True)
-    s.text(1225,752,'燒錄',17,GND,anchor='end'); s.text(1225,783,'跳線',17,GND,anchor='end')
-    s.wire([(50,900),(1245,900)],GND,4)
-    s.wire([(65,265),(35,265),(35,900),(50,900)],GND,3)
-    for x,y in [(245,810),(985,835)]: s.wire([(x,y),(x,900)],GND,3); s.dot(x,900,GND)
-    s.dot(1245,900,GND)
-    s.text(65,938,'共地：LM2596 OUT−／12V−、ESP32 GND、CP2102 GND；Mega 若接著也必須共地。',18)
-    s.box(65,975,1115,150,'操作順序（Mega 正常供電見另一張圖）')
-    s.note(85,1035,['關馬達分支 → GPIO0 接 GND → RESET → VS Code 上傳 → 移除跳線 → RESET → 串列輸入 ACCESS',
-      '兩板都供電才可保留 P011 A0／A1／B0／B1；單板斷電前先拔這四條訊號線。',
-      'CP2102 的 5V／3V3／VCC 不接；只燒錄 ESP32 時不需要移除兩板的控制 5V。'],size=17)
+    s=Svg(1300,920,'單主控燒錄：一條 CP2102 USB','CP2102 只接 TXD、RXD、GND；控制電源由 LM2596 的穩壓 5.0V 提供。')
+    s.box(60,150,500,130,'12V → LM2596 → 5.0V')
+    s.note(80,215,['馬達 12V 分支關閉；控制電源保留','外部 5V 接 ESP32 板上「5V」腳'])
+    s.box(60,340,365,310,'電腦 USB → CP2102','#e7f3ec')
+    s.pin(425,420,'TXD（3.3V 邏輯）',TX);s.pin(425,500,'RXD',RX);s.pin(240,650,'GND',GND)
+    s.text(80,568,'5V／3V3／VCC：全部不接',18,V5)
+    s.text(80,610,'DTR／RTS：不接',18)
+    s.box(835,300,385,350,'AI-Thinker ESP32-CAM','#edf3ff')
+    s.pin(1025,300,'5V',V5,'left');s.pin(835,420,'U0R / GPIO3',TX,'left');s.pin(835,500,'U0T / GPIO1',RX,'left')
+    s.pin(1220,365,'GPIO0',GND);s.pin(1025,650,'GND',GND)
+    s.text(855,568,'板上 RESET：按下重設',18)
+    s.text(855,610,'GPIO13／14／15 為 MCP 訊號',17)
+    s.wire([(560,200),(1025,200),(1025,300)],V5,4,True)
+    s.wire([(425,420),(835,420)],TX,3,True);s.text(530,402,'TX → RX',18,TX)
+    s.wire([(835,500),(425,500)],RX,3,True);s.text(530,482,'RX ← TX',18,RX)
+    s.wire([(40,700),(1265,700)],GND,4)
+    for x in [240,1025]:s.wire([(x,650),(x,700)],GND,3);s.dot(x,700,GND)
+    s.wire([(60,245),(40,245),(40,700)],GND,3)
+    s.wire([(1220,365),(1265,365),(1265,700)],GND,3,dash=True)
+    s.box(60,750,1160,135,'燒錄順序')
+    s.note(80,810,['關馬達支路 → GPIO0 接 GND → 按 RESET → VS Code 上傳 → 移除 GPIO0 跳線 → RESET',
+      '先備份舊網頁設定；單主控首次用 USB 燒錄。之後網頁只上傳本版 .sffw；MCP 不需燒錄。'],size=17)
     s.save('wiring-flashing.svg')
 
+def motors():
+    s=Svg(1440,1170,'MCP → ULN2003：U0～U9 四相逐線表','每列四個 MCP 腳依序接同一片 ULN 的 IN1、IN2、IN3、IN4；馬達插頭維持接 ULN 原插座。')
+    for x,label in [(60,'MCP 地址'),(245,'顯示位'),(410,'MCP 腳位（依序）'),(820,'ULN 輸入（依序）'),(1190,'馬達')]:s.text(x,165,label,20,weight='bold')
+    for u in range(10):
+        y=220+u*62;chip=u//4;bank='A' if u%4<2 else 'B';first=(u%2)*4
+        s.text(60,y,f'0x{0x20+chip:02X}',21)
+        s.text(245,y,f'U{u}',22,weight='bold')
+        s.text(410,y,' / '.join(f'GP{bank}{first+n}' for n in range(4)),19,TX)
+        s.text(820,y,'IN1 / IN2 / IN3 / IN4',19,RX)
+        s.text(1190,y,f'U{u} 五線插頭',18)
+        s.wire([(45,y+24),(1385,y+24)],'#d4dfd8',1)
+    s.box(45,855,655,245,'電源與地址')
+    s.note(65,915,['MCP VCC＝控制 5V；GND＝共地。',
+      '地址 A2 A1 A0：0x20＝000，0x21＝001，0x22＝010。',
+      '每片 ULN 正端／COM＝有開關的 12V_MOTOR。',
+      'ULN GND 回電源共地；不能把 COM 接 5V。',
+      '未啟用 U 的相位輸出低；0x22 GPB 全部保持低。'],size=17)
+    s.box(730,855,655,245,'相序與模組名稱')
+    s.note(750,915,['以實際 IN1～IN4 印字接線；若需調相序用 ORDER。',
+      '四路是驅動訊號，不直接供應線圈電流。',
+      'MCP 地址 A0/A1/A2、GPA/GPB 和 P011 A0 互不相同。',
+      '四片 MCP 的 SDA／SCL／RST 並接到正常運作圖。',
+      '只使用 0x20～0x22 作馬達，0x23 保留給 Hall。'],size=17)
+    s.text(45,1140,'相位對應與原版 45 片順序維持；每圈步數與方向依各機構校準。',18)
+    s.save('wiring-motors.svg')
 
-if __name__ == '__main__':
-    runtime(); flashing()
-    print('Generated esp32cam/wiring-runtime.svg and wiring-flashing.svg')
+def halls():
+    s=Svg(1300,1000,'十路 Hall → MCP 0x23','預設關閉 Hall；接好與安裝磁鐵後，在設定頁啟用。GPA7／GPB7 不接 Hall。')
+    for x,label in [(65,'感測位置'),(320,'KY-003 訊號'),(655,'MCP 0x23'),(970,'各感測板供電')]:s.text(x,165,label,21,weight='bold')
+    for u in range(10):
+        y=220+u*48;pin=f'GPA{u}' if u<7 else f'GPB{u-7}'
+        s.text(65,y,f'U{u}',21,weight='bold');s.text(320,y,'S／OUT →',20,TX);s.text(655,y,pin,21,RX)
+        s.text(970,y,'VCC 5V／GND 共地',18)
+        s.wire([(45,y+18),(1240,y+18)],'#d4dfd8',1)
+    s.box(45,745,1195,200,'地址、重設與測試')
+    s.note(65,805,['0x23 地址 A2 A1 A0＝011。VCC＝5V，GND＝共地，RST 接四片共用重設線。',
+      'GPA7／GPB7 與其餘未使用輸出保持低；每路 S／OUT 分開，不把十路訊號短接。',
+      '核對 KY-003 板上 S／+／−；不要照模組外觀猜針序。預設 POLARITY LOW，依實測確認。',
+      '先 WATCH 看原始訊號，再試 HOME／MEASURE；尚無磁鐵時沿用手動定位。'],size=18)
+    s.save('wiring-hall.svg')
+
+if __name__=='__main__':
+    runtime();flashing();motors();halls()
+    print('Generated four single-controller wiring SVGs')
