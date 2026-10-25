@@ -21,7 +21,7 @@ uint16_t integerRoot(uint32_t value) {
 bool Bench::configure(const Config& c) {
   if (busy() || c.revolution < 1000 || c.revolution > 20000 ||
       c.offset >= c.revolution || c.intervalUs < kMinIntervalUs ||
-      c.intervalUs > kMaxIntervalUs || c.acceleration < 100 || c.acceleration > 2000 ||
+      c.intervalUs > kMaxIntervalUs || c.acceleration < 100 || c.acceleration > 6000 ||
       (c.direction != 1 && c.direction != -1)) return false;
   uint8_t seen = 0;
   for (uint8_t i = 0; i < 4; ++i) {
@@ -43,10 +43,20 @@ bool Bench::arm() {
 
 void Bench::stop() {
   mode_ = Mode::Idle;
-  armed_ = homed_ = false;
+  armed_ = false;
+  reference_ = Reference::None;
   coils_ = 0;
   remaining_ = rampSteps_ = 0;
   error_ = nullptr;
+}
+
+bool Bench::setCurrent(uint8_t index) {
+  if (busy() || index >= kFlapCount) return false;
+  stop();  // Recording a visible flap never energizes or automatically arms.
+  position_ = positionFor(config_.revolution, index);
+  index_ = index;
+  reference_ = Reference::Manual;
+  return true;
 }
 
 void Bench::fail(const char* reason) {
@@ -71,7 +81,7 @@ bool Bench::begin(Job job, uint32_t now) {
 
 bool Bench::step(uint16_t count, uint32_t now) {
   if (count == 0 || count > 20000 || !begin(Job::Raw, now)) return false;
-  homed_ = false;
+  reference_ = Reference::None;
   mode_ = Mode::Raw;
   startRamp(count, now);
   return true;
@@ -79,7 +89,7 @@ bool Bench::step(uint16_t count, uint32_t now) {
 
 bool Bench::led(uint32_t now) {
   if (!begin(Job::Led, now)) return false;
-  homed_ = false;
+  reference_ = Reference::None;
   ledIndex_ = 0;
   coils_ = 1;
   mode_ = Mode::Led;
@@ -87,7 +97,7 @@ bool Bench::led(uint32_t now) {
 }
 
 void Bench::startHome(uint32_t now) {
-  homed_ = false;
+  reference_ = Reference::None;
   stageSteps_ = 0;
   lastStepAt_ = now;
   mode_ = Mode::HomeStart;
@@ -106,16 +116,19 @@ bool Bench::measure(uint32_t now) {
 }
 
 bool Bench::goTo(uint8_t target, uint32_t now) {
-  if (target > 44 || !homed_ || !begin(Job::Move, now)) return false;
+  if (target >= kFlapCount || !positioned() || !begin(Job::Move, now)) return false;
   target_ = target;
-  if (target < index_) startHome(now);
+  if (homed() && target < index_) startHome(now);
   else startMove(target, now);
   return true;
 }
 
 bool Bench::cycle(uint32_t now) {
-  if (!homed_ || !begin(Job::Cycle, now)) return false;
-  startHome(now);
+  if (!positioned() || !begin(Job::Cycle, now)) return false;
+  if (manual()) {
+    cycleStart_ = index_;
+    startMove((index_ + 1) % kFlapCount, now);
+  } else startHome(now);
   return true;
 }
 
@@ -137,7 +150,7 @@ void Bench::settle(uint32_t now) {
 }
 
 uint16_t Bench::referenceInterval() const {
-  // Unknown Hall endpoints must stay slow; cruise tuning must not alter calibration.
+  // Fast cruise settings must not speed up Hall searches or measurement.
   return config_.intervalUs > kReferenceIntervalUs ? config_.intervalUs : kReferenceIntervalUs;
 }
 
@@ -168,12 +181,13 @@ void Bench::startMove(uint8_t target, uint32_t now) {
   const uint16_t destination = positionFor(config_.revolution, target);
   mode_ = Mode::Moving;
   if (destination == position_) { index_ = target; settle(now); }
-  else startRamp(destination - position_, now);
+  else startRamp(destination > position_ ? destination - position_ :
+      config_.revolution - position_ + destination, now);
 }
 
 void Bench::homeDone(uint32_t now) {
   position_ = index_ = 0;
-  homed_ = true;
+  reference_ = Reference::Hall;
   if (job_ == Job::Move && target_ != 0) startMove(target_, now);
   else settle(now);
 }
@@ -231,7 +245,8 @@ void Bench::tick(uint32_t now, bool activeHall) {
   }
   if (mode_ == Mode::Pause) {
     if (static_cast<uint32_t>(now - stageAt_) >= 400000) {
-      if (index_ == 44) { cycleFinal_ = true; startHome(now); }
+      if (manual()) startMove((index_ + 1) % kFlapCount, now);
+      else if (index_ == kFlapCount - 1) { cycleFinal_ = true; startHome(now); }
       else startMove(index_ + 1, now);
     }
     return;
@@ -274,11 +289,14 @@ void Bench::tick(uint32_t now, bool activeHall) {
   if (static_cast<uint32_t>(now - lastStepAt_) < interval) return;
   advance(now);
   if (ramped) {
-    if (mode_ == Mode::Moving) ++position_;
+    if (mode_ == Mode::Moving && ++position_ == config_.revolution) position_ = 0;
     if (--remaining_ == 0) {
       if (mode_ == Mode::Offset) homeDone(now);
       else {
-        if (mode_ == Mode::Moving) index_ = target_;
+        if (mode_ == Mode::Moving) {
+          index_ = target_;
+          if (job_ == Job::Cycle && manual() && index_ == cycleStart_) cycleFinal_ = true;
+        }
         settle(now);
       }
     } else updateRampInterval();

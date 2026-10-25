@@ -52,11 +52,24 @@ bool number(const char* text, uint16_t& value) {
   return true;
 }
 
+void printValue(uint8_t index) {
+  if (index == 0) Serial.print(F("BLANK"));
+  else if (index == 27) Serial.print(F("AE"));
+  else if (index == 28) Serial.print(F("OE"));
+  else if (index == 29) Serial.print(F("UE"));
+  else Serial.print(mega::characterFor(index));
+}
+
 void status() {
   const mega::Config& c = bench.config();
   Serial.print(F("U")); Serial.print(selectedUnit);
   Serial.print(F(" armed=")); Serial.print(bench.armed());
   Serial.print(F(" homed=")); Serial.print(bench.homed());
+  Serial.print(F(" reference="));
+  Serial.print(bench.manual() ? F("MANUAL") : bench.homed() ? F("HALL") : F("NONE"));
+  Serial.print(F(" value="));
+  if (bench.positioned()) printValue(bench.index());
+  else Serial.print(F("UNKNOWN"));
   Serial.print(F(" index=")); Serial.print(bench.index());
   Serial.print(F(" REVSTEPS=")); Serial.print(c.revolution);
   Serial.print(F(" OFFSET=")); Serial.print(c.offset);
@@ -73,12 +86,14 @@ void help() {
   Serial.println(F("Mega bench: 115200, newline. Motors OFF at boot. No EEPROM writes."));
   Serial.println(F("STATUS | WATCH | STOP | OFF | ARM | UNIT 0..9"));
   Serial.println(F("LED (UNPLUG MOTOR) | STEP 1..20000 | REV | HOME | MEASURE"));
-  Serial.println(F("FLAP | GOTO 0..44 | CYCLE (HOME required for these three)"));
+  Serial.println(F("SET value (current, no motion) | SHOW value (target) | SETINDEX 0..44"));
+  Serial.println(F("Values: BLANK, A..Z, AE/OE/UE ($/&/#), 0..9, : . - ? !"));
+  Serial.println(F("FLAP | GOTO 0..44 | CYCLE (ARM + position from SET or HOME required)"));
   Serial.println(F("ORDER 1234 | DIR 1/-1 | REVSTEPS 1000..20000 | OFFSET 0..rev-1"));
-  Serial.println(F("SPEED 1500..30000 (cruise us/half-step) | ACCEL 100..2000 (half-steps/s^2)"));
+  Serial.println(F("SPEED 800..30000 (cruise us/half-step) | ACCEL 100..6000 (half-steps/s^2)"));
   Serial.println(F("Ramped moves start/end at 10000us or slower; HOME/MEASURE use 5000us or slower."));
   Serial.println(F("POLARITY LOW/HIGH"));
-  Serial.println(F("Settings disarm and invalidate position. ARM again before motion."));
+  Serial.println(F("Settings disarm and invalidate position. SET current or HOME again; ARM before motion."));
   Serial.println(F("Any non-newline byte during motion/WATCH aborts the ENTIRE line."));
   Serial.println(F("STOP cannot cut 12V or protect against controller/power failure."));
 }
@@ -98,6 +113,18 @@ void command(char* line) {
     bench = mega::Bench(); activeLow = true;
     Serial.println(F("OK selected unit; defaults restored, disarmed")); status(); return;
   }
+  if (!strcmp(cmd, "SET") || !strcmp(cmd, "SETINDEX")) {
+    uint8_t index = 0;
+    const bool valid = !strcmp(cmd, "SET") ? mega::indexFor(arg, index) :
+        numeric && n < mega::kFlapCount;
+    if (!strcmp(cmd, "SETINDEX")) index = static_cast<uint8_t>(n);
+    ok = valid && bench.setCurrent(index);
+    writeOutputs();
+    Serial.println(ok ? F("OK manual reference; no motion, disarmed; ARM before SHOW") :
+        F("ERR current value; SET BLANK/A..Z/AE/OE/UE/0..9/:/./-/?/! or SETINDEX 0..44"));
+    if (ok) status();
+    return;
+  }
   mega::Config c = bench.config();
   bool setting = true;
   if (!strcmp(cmd, "ORDER") && arg && strlen(arg) == 4) {
@@ -116,9 +143,9 @@ void command(char* line) {
   } else setting = false;
   if (setting) {
     ok = bench.configure(c); writeOutputs();
-    Serial.println(ok ? F("OK settings; disarmed, HOME required") : F("ERR invalid settings")); return;
+    Serial.println(ok ? F("OK settings; disarmed, SET current or HOME required") : F("ERR invalid settings")); return;
   }
-  if (arg && strcmp(cmd, "STEP") && strcmp(cmd, "GOTO")) {
+  if (arg && strcmp(cmd, "STEP") && strcmp(cmd, "GOTO") && strcmp(cmd, "SHOW")) {
     Serial.println(F("ERR unknown command or invalid argument")); return;
   }
   if (!strcmp(cmd, "HELP") && !arg) { help(); return; }
@@ -136,12 +163,19 @@ void command(char* line) {
   else if (!strcmp(cmd, "REV") && !arg) ok = bench.step(c.revolution, now);
   else if (!strcmp(cmd, "HOME") && !arg) ok = bench.home(now);
   else if (!strcmp(cmd, "MEASURE") && !arg) ok = bench.measure(now);
-  else if (!strcmp(cmd, "FLAP") && !arg) ok = bench.goTo((bench.index() + 1) % 45, now);
-  else if (!strcmp(cmd, "GOTO") && numeric && n <= 44) ok = bench.goTo(n, now);
+  else if (!strcmp(cmd, "FLAP") && !arg) ok = bench.goTo((bench.index() + 1) % mega::kFlapCount, now);
+  else if (!strcmp(cmd, "GOTO") && numeric && n < mega::kFlapCount) ok = bench.goTo(n, now);
+  else if (!strcmp(cmd, "SHOW")) {
+    uint8_t index = 0;
+    if (!mega::indexFor(arg, index)) {
+      Serial.println(F("ERR target value; SHOW BLANK/A..Z/AE/OE/UE/0..9/:/./-/?/!")); return;
+    }
+    ok = bench.goTo(index, now);
+  }
   else if (!strcmp(cmd, "CYCLE") && !arg) ok = bench.cycle(now);
   if (ok) reportedMeasures = 0;
   writeOutputs();
-  Serial.println(ok ? F("BUSY (any non-newline byte stops)") : F("ERR command/range; ARM and, for display, HOME first"));
+  Serial.println(ok ? F("BUSY (any non-newline byte stops)") : F("ERR command/range; ARM and, for display, SET current or HOME first"));
 }
 
 void setup() {

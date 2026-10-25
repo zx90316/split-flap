@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-only
 #pragma once
 #include <stdint.h>
+#include "display.h"
 
 namespace mega {
 struct Config {
@@ -16,11 +17,12 @@ enum class Mode : uint8_t {
   Idle, Raw, Led, HomeStart, Clear, Seek, Offset, Moving, Measure, Settle, Pause
 };
 enum class Job : uint8_t { Raw, Led, Home, Move, Measure, Cycle };
+enum class Reference : uint8_t { None, Manual, Hall };
 
 // Pure, non-blocking single-unit state machine. All timestamps are micros().
 class Bench {
  public:
-  static const uint16_t kMinIntervalUs = 1500;
+  static const uint16_t kMinIntervalUs = 800;
   static const uint16_t kMaxIntervalUs = 30000;
   static const uint16_t kStartIntervalUs = 10000;
   static const uint16_t kReferenceIntervalUs = 5000;
@@ -31,6 +33,7 @@ class Bench {
   const Config& config() const { return config_; }
   bool arm();
   void stop();
+  bool setCurrent(uint8_t index);
   bool step(uint16_t count, uint32_t now);
   bool led(uint32_t now);
   bool home(uint32_t now);
@@ -40,7 +43,9 @@ class Bench {
   void tick(uint32_t now, bool activeHall);
   bool busy() const { return mode_ != Mode::Idle; }
   bool armed() const { return armed_; }
-  bool homed() const { return homed_; }
+  bool homed() const { return reference_ == Reference::Hall; }
+  bool manual() const { return reference_ == Reference::Manual; }
+  bool positioned() const { return reference_ != Reference::None; }
   bool hall() const { return stableHall_; }
   uint8_t coils() const { return coils_; }
   uint8_t index() const { return index_; }
@@ -50,7 +55,7 @@ class Bench {
   const char* error() const { return error_; }
   Mode mode() const { return mode_; }
   static uint16_t positionFor(uint16_t revolution, uint8_t index) {
-    return static_cast<uint16_t>((static_cast<uint32_t>(revolution) * index + 22) / 45);
+    return static_cast<uint16_t>((static_cast<uint32_t>(revolution) * index + kFlapCount / 2) / kFlapCount);
   }
 
  private:
@@ -68,11 +73,12 @@ class Bench {
   Config config_;
   Mode mode_ = Mode::Idle;
   Job job_ = Job::Raw;
-  bool armed_ = false, homed_ = false, phaseKnown_ = false;
+  Reference reference_ = Reference::None;
+  bool armed_ = false, phaseKnown_ = false;
   bool hallKnown_ = false, rawHall_ = false, stableHall_ = false;
   bool tickKnown_ = false, markerCleared_ = false, cycleFinal_ = false;
   uint8_t phase_ = 0, coils_ = 0, index_ = 0, target_ = 0, ledIndex_ = 0;
-  uint8_t measuredCount_ = 0;
+  uint8_t measuredCount_ = 0, cycleStart_ = 0;
   uint16_t measured_[3] = {0, 0, 0};
   uint16_t remaining_ = 0, position_ = 0;
   uint16_t rampSteps_ = 0, rampIntervalUs_ = kStartIntervalUs;

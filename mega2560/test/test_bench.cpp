@@ -198,7 +198,7 @@ void accelerationProfiles() {
   for (uint16_t count : counts) {
     Rotor r;
     mega::Config c = r.bench.config(); c.intervalUs = 1500;
-    if (count == 20000) c.acceleration = 2000;  // Largest distance/rate product.
+    if (count == 20000) c.acceleration = 6000;  // Largest distance/rate product.
     assert(r.bench.configure(c)); assert(r.bench.arm());
     assert(r.bench.step(count, r.now));
     const std::vector<uint32_t> times = intervals(r);
@@ -271,12 +271,12 @@ void rampedDisplayAndSlowReference() {
 void rampLimitsAndImmediateStops() {
   mega::Bench b;
   mega::Config c;
-  c.intervalUs = 1499; assert(!b.configure(c));
+  c.intervalUs = 799; assert(!b.configure(c));
   c.intervalUs = 30001; assert(!b.configure(c));
   c.intervalUs = 1500; c.acceleration = 99; assert(!b.configure(c));
-  c.acceleration = 2001; assert(!b.configure(c));
+  c.acceleration = 6001; assert(!b.configure(c));
   c.acceleration = 100; assert(b.configure(c)); assert(b.arm());
-  c.acceleration = 2000; assert(b.configure(c)); assert(!b.armed());
+  c.acceleration = 6000; assert(b.configure(c)); assert(!b.armed());
   for (uint16_t stopAt : {uint16_t(1), uint16_t(150), uint16_t(750), uint16_t(1400)}) {
     Rotor r; c = r.bench.config(); c.intervalUs = 1500;
     assert(r.bench.configure(c)); assert(r.bench.arm()); assert(r.bench.step(1500, r.now));
@@ -288,6 +288,125 @@ void rampLimitsAndImmediateStops() {
     assert(r.bench.arm()); assert(r.bench.step(8, r.now));
     assertRamp(intervals(r), 1500);  // Restart from slow speed, no stale ramp.
   }
+}
+
+void highSpeedProfiles() {
+  for (uint16_t cruise : {uint16_t(800), uint16_t(1000), uint16_t(1200)}) {
+    Rotor r; mega::Config c = r.bench.config();
+    c.intervalUs = cruise; c.acceleration = 800;
+    assert(r.bench.configure(c)); assert(r.bench.arm()); assert(r.bench.step(4096, r.now));
+    const std::vector<uint32_t> times = intervals(r);
+    assert(times.size() == 4096); assertRamp(times, cruise);
+    assert(times[2048] == cruise);
+  }
+  Rotor gentle, quick;
+  mega::Config c = gentle.bench.config(); c.intervalUs = 1500; c.acceleration = 400;
+  assert(gentle.bench.configure(c)); assert(gentle.bench.arm()); assert(gentle.bench.step(91, gentle.now));
+  c.acceleration = 6000;
+  assert(quick.bench.configure(c)); assert(quick.bench.arm()); assert(quick.bench.step(91, quick.now));
+  const std::vector<uint32_t> slow = intervals(gentle), fast = intervals(quick);
+  assertRamp(slow, 1500); assertRamp(fast, 1500);
+  assert(slow[45] > 1500 && fast[45] == 1500);
+}
+
+void runManual(mega::Bench& b, uint32_t& now, bool* seen = nullptr) {
+  for (uint32_t guard = 0; b.busy() && guard < 30000; ++guard) {
+    assert(b.manual() && !b.homed());
+    assert(b.mode() == mega::Mode::Moving || b.mode() == mega::Mode::Settle ||
+        b.mode() == mega::Mode::Pause);
+    if (seen && b.mode() == mega::Mode::Settle) seen[b.index()] = true;
+    now += 5000;
+    b.tick(now, (now / 15000) % 2);  // Disconnected/noisy Hall cannot affect manual moves.
+  }
+  assert(!b.busy() && !b.coils() && !b.error() && b.manual() && !b.homed());
+}
+
+void manualAllTargetsAndWrap() {
+  for (uint16_t revolution : {uint16_t(4076), uint16_t(4096)}) {
+    mega::Bench b;
+    mega::Config c; c.revolution = revolution;
+    if (revolution == 4076) c.direction = -1;
+    assert(b.configure(c));
+    uint32_t now = 0;
+    for (uint8_t from = 0; from < 45; ++from) {
+      for (uint8_t to = 0; to < 45; ++to) {
+        assert(b.setCurrent(from));
+        assert(b.positioned() && b.manual() && !b.homed() && !b.armed() && !b.coils());
+        assert(b.index() == from && !b.goTo(to, now));
+        assert(b.arm()); assert(b.goTo(to, now));
+        runManual(b, now);
+        const int start = mega::Bench::positionFor(revolution, from);
+        const int end = mega::Bench::positionFor(revolution, to);
+        assert(b.steps() == static_cast<uint32_t>((end - start + revolution) % revolution));
+        assert(b.index() == to && b.armed());
+      }
+    }
+    // Consecutive targets must use the newly reached flap, with no SET between.
+    assert(b.setCurrent(0)); assert(b.arm());
+    uint32_t accumulated = 0;
+    for (uint8_t target = 1; target <= 45; ++target) {
+      assert(b.goTo(target % 45, now)); runManual(b, now);
+      accumulated += b.steps();
+      assert(b.index() == target % 45);
+    }
+    assert(accumulated == revolution && b.index() == 0);
+  }
+  for (uint16_t revolution : {uint16_t(1000), uint16_t(20000)}) {
+    mega::Bench b; mega::Config c; c.revolution = revolution;
+    assert(b.configure(c)); assert(b.setCurrent(44)); assert(b.arm());
+    uint32_t now = UINT32_MAX - 10000;
+    assert(b.goTo(0, now)); runManual(b, now);
+    assert(b.steps() == revolution - mega::Bench::positionFor(revolution, 44));
+  }
+}
+
+void manualCycleAndInvalidation() {
+  for (uint8_t start : {uint8_t(0), uint8_t(17), uint8_t(44)}) {
+    mega::Bench b; mega::Config c; c.revolution = 4076;
+    assert(b.configure(c)); assert(b.setCurrent(start)); assert(b.arm());
+    uint32_t now = 0;
+    bool seen[45] = {};
+    assert(b.cycle(now)); runManual(b, now, seen);
+    for (bool visited : seen) assert(visited);
+    assert(b.index() == start && b.steps() == 4076);
+    assert(b.goTo((start + 1) % 45, now));
+    assert(!b.setCurrent(0));  // A direct core call cannot relabel a moving rotor.
+    b.tick(now += 10000, false);
+    b.stop();
+    assert(!b.positioned() && !b.manual() && !b.homed() && !b.armed() && !b.coils());
+    assert(b.arm() && !b.goTo(0, now));
+    assert(b.setCurrent(30)); assert(!b.setCurrent(45)); assert(b.index() == 30);
+    assert(b.arm()); assert(b.step(1, now));
+    assert(!b.positioned());
+    while (b.busy()) b.tick(now += 5000, true);
+    assert(b.setCurrent(0));
+    c.intervalUs = 800; assert(b.configure(c));
+    assert(!b.positioned() && !b.armed());
+    assert(b.setCurrent(0)); assert(b.arm()); assert(b.led(now));
+    assert(!b.positioned()); b.stop();
+  }
+  Rotor r;
+  assert(r.bench.setCurrent(3)); r.home();
+  assert(r.bench.homed() && !r.bench.manual());  // Explicit HOME restores sensor mode.
+}
+
+void displayValues() {
+  uint8_t index = 255;
+  assert(mega::indexFor("BLANK", index) && index == 0);
+  assert(mega::indexFor("SPACE", index) && index == 0);
+  assert(mega::indexFor("AE", index) && index == 27);
+  assert(mega::indexFor("OE", index) && index == 28);
+  assert(mega::indexFor("UE", index) && index == 29);
+  assert(mega::indexFor("0", index) && index == 30);
+  assert(mega::indexFor("9", index) && index == 39);
+  for (uint8_t slot = 1; slot < 45; ++slot) {
+    const char glyph[] = {mega::characterFor(slot), 0};
+    assert(mega::indexFor(glyph, index) && index == slot);
+  }
+  for (const char* invalid : {"", "10", "AB", "_", "/", "UNKNOWN"})
+    assert(!mega::indexFor(invalid, index));
+  assert(!mega::indexFor(nullptr, index));
+  assert(mega::characterFor(45) == 0);
 }
 
 void pinAllocation() {
@@ -308,5 +427,6 @@ int main() {
   bootAndStop(); homingAndForwardWrap(); hallFaultsAndDebounce(); measureAndLatch();
   fullCycleAndRounding(); schedulingAndLimits(); phaseConfigurationAndLeds(); pinAllocation();
   accelerationProfiles(); rampedDisplayAndSlowReference(); rampLimitsAndImmediateStops();
-  puts("PASS bench: 11 suites (motion, homing, faults, latch, cycle, timing, phases, pins, ramps, reference, ramp stops)");
+  highSpeedProfiles(); manualAllTargetsAndWrap(); manualCycleAndInvalidation(); displayValues();
+  puts("PASS bench: 15 suites (motion, homing, faults, latch, cycle, timing, phases, pins, ramps, reference, ramp stops, fast cruise, manual targets, manual cycle, values)");
 }

@@ -8,10 +8,11 @@
 4. [KY-003 的 3.39V 量測與鎖存排查](mega2560/hall-diagnostics.md)
 5. [軟體驗證與實機紀錄](mega2560/validation.md)
 6. [VS Code F5 建置、燒錄、串列除錯與主機中斷點](mega2560/vscode.md)
+7. [磁鐵尚未到貨：手動定位目前字元，再指定目標](mega2560/README.md#無磁鐵手動定位與指定字元)
 
 ![單顆測試接線](mega2560/wiring-single.svg)
 
-`mega2560/unit_test/unit_test.ino` 一次只操作選定的一顆。提供 WATCH、LED、STEP、REV、HOME、MEASURE、FLAP、GOTO、CYCLE 與校準命令。定距移動會自動慢速起步、加速與減速；SPEED 設巡航速度、ACCEL 設加減速，詳見[調速操作](mega2560/README.md#加減速與調速)。開機不動作，先 ARM 才能輸出；設定只在 RAM，重開機恢復預設。十顆排程、TEXT、EEPROM、Cardputer 網路／本地輸入及 RTC 留待後續重構。
+`mega2560/unit_test/unit_test.ino` 一次只操作選定的一顆。沒有磁鐵時用 `SET A` 記錄目前顯示 A、`ARM` 後用 `SHOW 5` 前進到數字5，後續目標會依更新後的位置計算；手動模式跨圈也不使用霍爾。另提供 WATCH、LED、STEP、REV、HOME、MEASURE、FLAP、GOTO、CYCLE 與校準命令。定距移動自動加減速；SPEED 設巡航間隔（800–30000µs）、ACCEL 設加減速，詳見[調速操作](mega2560/README.md#加減速與調速)。開機不動作，先 ARM 才能輸出；設定只在 RAM，重開機恢復預設。十顆排程、多字元 TEXT、EEPROM、Cardputer 網路／本地輸入及 RTC 留待後續重構。
 
 **尚未完成實物驗證。** 先只接 U0；馬達電源須有實體切斷開關。移動中送任何非換行字元會停止並釋放線圈，不能取代切斷 12V 或保證硬體故障時關閉。
 

@@ -17,14 +17,19 @@ void off() {
     for (int p = 0; p < 4; ++p) assert(fakePins[mega::kMotorPins[u][p]] == LOW);
 }
 
+void finish() {
+  for (uint32_t i = 0; bench.busy() && i < 100000; ++i) poll();
+  assert(!bench.busy() && !bench.error()); off();
+}
+
 int main() {
   setup(); off(); assert(!bench.armed());
-  assert(Serial.output.find("SPEED 1500..30000") != std::string::npos);
-  assert(Serial.output.find("ACCEL 100..2000") != std::string::npos);
+  assert(Serial.output.find("SPEED 800..30000") != std::string::npos);
+  assert(Serial.output.find("ACCEL 100..6000") != std::string::npos);
   send("SPEED 1500\nACCEL 600\nSTATUS\n"); off();
   assert(bench.config().intervalUs == 1500 && bench.config().acceleration == 600);
   assert(Serial.output.find("SPEED=1500 ACCEL=600") != std::string::npos);
-  send("SPEED 1499\nSPEED 30001\nACCEL 0\nACCEL 99\nACCEL 2001\nACCEL -1\nACCEL 65536\n");
+  send("SPEED 799\nSPEED 30001\nACCEL 0\nACCEL 99\nACCEL 6001\nACCEL -1\nACCEL 65536\n");
   assert(bench.config().intervalUs == 1500 && bench.config().acceleration == 600);
   send("STEP 10\n"); off(); assert(!bench.busy());
   send("ARM\r\nSTEP 100\r\n");
@@ -65,5 +70,33 @@ int main() {
   assert(bench.busy() && bench.coils());
   send("ACCEL 2000\n"); off();
   assert(!bench.busy() && !bench.armed() && bench.config().acceleration == 400);
-  puts("PASS adapter: boot, CRLF, abort, parser limits, SPEED/ACCEL, configuration, isolation, WATCH");
+  send("UNIT 0\nSPEED 800\nACCEL 6000\nSET A\n"); off();
+  assert(bench.manual() && !bench.homed() && !bench.armed() && bench.index() == 1);
+  assert(Serial.output.find("reference=MANUAL value=A index=1") != std::string::npos);
+  send("SHOW 5\n"); assert(!bench.busy()); off();
+  send("ARM\nSHOW 5\r\n"); finish();
+  assert(bench.manual() && bench.index() == 35);
+  assert(bench.steps() == mega::Bench::positionFor(4096, 35) - mega::Bench::positionFor(4096, 1));
+  assert(Serial.output.find("reference=MANUAL value=5 index=35") != std::string::npos);
+  fakePins[mega::kHallPins[0]] = LOW;  // Manual wrapping ignores a permanently active Hall.
+  send("SHOW B\n"); finish();
+  assert(bench.index() == 2 && bench.manual());
+  assert(bench.steps() == 4096 - mega::Bench::positionFor(4096, 35) + mega::Bench::positionFor(4096, 2));
+  send("SHOW BLANK\n"); finish(); assert(bench.index() == 0 && bench.manual());
+  send("set 9\narm\nshow 0\n"); finish(); assert(bench.index() == 30);
+  send("SETINDEX 0\n"); off(); assert(bench.index() == 0 && !bench.armed());
+  send("SET 0\n"); off(); assert(bench.index() == 30);  // Digit zero, not blank.
+  send("SETINDEX 45\nSETINDEX 256\nSETINDEX 65536\nSET 10\nSET\nSHOW\nSHOW AB\n");
+  assert(bench.index() == 30 && bench.manual() && !bench.busy()); off();
+  send("SET AE\nARM\nSHOW UE\n"); finish(); assert(bench.index() == 29);
+  send("FLAP\n"); finish(); assert(bench.index() == 30 && bench.manual());
+  send("GOTO 44\n"); finish(); assert(bench.index() == 44);
+  send("CYCLE\n"); finish(); assert(bench.index() == 44 && bench.steps() == 4096);
+  send("SHOW A\n"); assert(bench.busy());
+  send("SET 9\n"); off();  // Busy SET is discarded after immediate stop.
+  assert(!bench.positioned() && !bench.armed() && bench.index() == 44);
+  send("STATUS\n"); assert(Serial.output.find("reference=NONE value=UNKNOWN") != std::string::npos);
+  send("SET BLANK\nSPEED 1000\n"); assert(!bench.positioned() && !bench.armed());
+  send("SET BLANK\nUNIT 1\n"); assert(!bench.positioned() && !bench.armed());
+  puts("PASS adapter: boot, CRLF, abort, parser limits, SPEED/ACCEL, configuration, isolation, WATCH, SET/SHOW values, manual wrap/cycle, invalidation");
 }

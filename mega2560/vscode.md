@@ -12,7 +12,7 @@
 
 若原本已開著串列監控，先 Ctrl+C 或停止原工作階段，釋放 COM3 再燒錄。其他程式也可能占用 COM 埠。F5 的 COM 提示只會選埠，不會替你確認裝置身分；可先選「查詢連接埠」。
 
-加減速版上傳後，`STATUS` 應包含預設 `SPEED=5000 ACCEL=400`，HELP 的 SPEED 範圍為1500–30000。定距移動會自動加減速；依[調速操作](README.md#加減速與調速)先測 SPEED 3000，再逐步調快。改 SPEED／ACCEL 會解除 ARM 並讓位置失效。
+手動定位版上傳後，HELP應列出 `SET value`／`SHOW value`、`SPEED 800..30000`、`ACCEL 100..6000`；STATUS預設包含 `reference=NONE value=UNKNOWN`、`SPEED=5000 ACCEL=400`。沒有磁鐵時依[手動定位](README.md#無磁鐵手動定位與指定字元)，先SET目前字元、ARM，再SHOW目標。SPEED／ACCEL會解除ARM並讓位置失效，修改後重新SET、ARM。定距移動仍自動加減速；更快速度見[調速操作](README.md#加減速與調速)。
 
 ## F5 選單
 
@@ -64,6 +64,8 @@ Ctrl+Shift+P → **Tasks: Run Task／工作: 執行工作** 可找到：重新�
 | COM3 Access denied／被占用 | 關閉原串列監控；避免同時用兩個視窗開同一埠 |
 | 串列有選單但馬達不轉 | 先 STATUS；U0 為 D22／24／26／28；核對12V馬達電源、共地與插頭後才 ARM／STEP |
 | 命令正常完成、ULN閃但馬達嗡叫 | 關12V後先查四相是否插錯腳；若接線正確再評估 ORDER、方向及機構負載 |
-| Settings disarm／位置失效 | 改設定後重新 ARM；顯示操作前重新 HOME |
+| Settings disarm／位置失效 | 手動模式重新SET眼前字元、ARM；霍爾模式重新ARM、HOME |
+| homed=0但reference=MANUAL | 正常，表示位置由SET宣告；可ARM後SHOW，不需霍爾 |
+| SHOW 0與GOTO 0結果不同 | SHOW 0指定數字0；GOTO 0指定索引0空白頁，空白可用SHOW BLANK |
 
 VS Code 的[工作任務](https://code.visualstudio.com/docs/debugtest/tasks)與[偵錯配置](https://code.visualstudio.com/docs/debugtest/debugging-configuration)是本整合使用的標準入口。
