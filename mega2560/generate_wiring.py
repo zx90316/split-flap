@@ -46,7 +46,7 @@ def single():
     s.box(45, 110, 1190, 49, '#fff1f2', '#fecdd3')
     s.text(65, 141, '12V 不接 Mega、Hall 或 GPIO；VIN／DC 圓孔不接電。先關馬達分支，再拔 USB。', 20, '#b42334')
     s.box(65, 210, 330, 440, '#eaf2ff', '#93b4f5')
-    s.text(88, 250, 'Arduino Mega 2560', 25, weight='bold')
+    s.text(88, 250, 'Mega2560 Pro／Mega', 25, weight='bold')
     s.text(88, 282, '預設 U0；其他相位全部 LOW', 17)
     s.box(95, 176, 225, 40, '#dbeafe', '#93b4f5')
     s.text(112, 202, 'USB ← 電腦（5V＋資料）', 16)
@@ -57,9 +57,9 @@ def single():
         s.text(778, y + 6, f'IN{i+1}', 20)
         s.wire([(395, y), (760, y)], PHASES[i], 4)
         s.dot(395, y, PHASES[i]); s.dot(760, y, PHASES[i])
-    s.text(505, 291, '4P：Mega 端公 → ULN 端母', 17)
-    s.text(88, 335, '同一排：22 / 24 / 26 / 28', 15)
-    s.text(88, 365, '不是 22 / 23 / 24 / 25', 15)
+    s.text(505, 291, '4P：Pro 公排針與 ULN 公針使用母母線', 16)
+    s.text(88, 335, '邏輯腳：22 / 24 / 26 / 28', 15)
+    s.text(88, 365, '依板上印字，不猜實體排位', 15)
     s.text(88, 405, '只驅動 ULN 的輸入', 16)
     s.text(88, 434, '不直接供電給馬達線圈', 16)
     s.box(1080, 300, 155, 165, '#fff7ed', '#edc28b')
@@ -106,7 +106,7 @@ def single():
 
 def ten():
     s = Svg(1440, 1190, '十字元接線規劃：40 路相位＋10 路 Hall', '支援 1～10 位同時翻轉；只啟用已接組別。擴充前量控制 5V 負載、12V 總電流與壓降。')
-    s.text(55, 134, 'Mega 2560（標準母排）', 23, weight='bold')
+    s.text(55, 134, 'Mega2560 Pro／Mega', 23, weight='bold')
     s.text(580, 134, 'ULN2003 ×10', 23, weight='bold')
     s.text(865, 134, '12V 馬達 ×10', 23, weight='bold')
     s.text(1155, 134, 'KY-003 ×10', 23, weight='bold')
@@ -114,7 +114,7 @@ def ten():
     for u, pins in enumerate(PINS):
         y = 188 + u * 76
         s.text(65, y + 25, f'U{u}: ' + ' / '.join('D' + str(p) for p in pins), 18, weight='bold')
-        s.text(65, y + 53, f'Hall S{u} → A{u}      相位線為 4P 公對母', 15, GREEN)
+        s.text(65, y + 53, f'Hall S{u} → A{u}    Pro 公排針：4P 母母線', 15, GREEN)
         s.box(590, y, 205, 56, '#fff7ed', '#edc28b')
         s.text(608, y + 23, f'U{u} · IN1 / 2 / 3 / 4', 16)
         s.text(610, y + 47, '+12V', 15, RED)
@@ -197,7 +197,7 @@ def hall_board():
         ('綠實線：正面絕緣跨線', GREEN), ('紅／灰虛線：背面母線', BLACK),
         ('綠線只焊 S 和輸出端', BLACK), ('其餘跨孔保留絕緣', BLACK),
         ('3P 線：兩端元件均公針', BLACK), ('才使用母對母', BLACK),
-        ('8P／2P 線接 Mega 端', BLACK), ('須用公頭插入母排', BLACK),
+        ('8P／2P 線接 Mega 端', BLACK), ('Pro 公針用母頭；標準板用公頭', BLACK),
         ('只測 U0：先焊 U0 即可', BLACK), ('不必一次焊完十組', BLACK)]
     for i, (text, color) in enumerate(legend): s.text(944, 199 + i * 33, text, 16, color)
     s.text(55, 758, '背面看板時左右會鏡像：以孔號及導通量測為準，不能把這張元件面直接當背面焊線圖。', 20)

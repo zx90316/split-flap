@@ -1,6 +1,6 @@
-# Mega 2560：先把一個字元接好、轉好
+# Mega2560 Pro／Mega 2560：先把一個字元接好、轉好
 
-使用已有的 **Mega 2560＋ULN2003＋12V 28BYJ-48＋KY-003**，以電腦 USB 下指令。軟體支援 1～10 任意位數、多位並行文字更新與 EEPROM 保存，實機目前已回報 U0 通過；先只接 U0，再擴充其餘位置。[多位設定](multi-unit.md)說明 DIGITS／UNITS。新增的 [ESP32-CAM 手機控制台](../esp32cam/README.md)使用 Serial1；網頁版供電／電平轉換另依該接線圖。
+現行採新購 **Mega2560 Pro CH340G＋ULN2003＋12V 28BYJ-48＋KY-003**，也相容原標準 Mega，以電腦 USB 或 [NodeMCU ESP-32S 手機控制台](../esp32cam/README.md)下指令。兩種 Mega 的邏輯腳與韌體相同，實體排位／公母頭不同，依板上印字接線。新板 EEPROM 不含舊校準，先依[搬移指南](../hardware/purchased-2026-10-26.md)還原。軟體支援 1～10 任意位數、多位並行文字更新與 EEPROM 保存；原 U0 的實機紀錄不代表新板已驗收。網頁版電源／UART 依[新硬體逐線表](../esp32cam/wiring.md)。
 
 磁鐵尚未到貨時，可先用[手動定位與指定字元](#無磁鐵手動定位與指定字元)；這個模式不需要霍爾回饋。
 
@@ -13,7 +13,7 @@
 | 從 | 接到 | 說明 |
 | --- | --- | --- |
 | 電腦 USB | Mega USB | 提供控制 5V 與串列；VIN、DC 圓孔、外部 5V 輸入均不接 |
-| Mega D22／D24／D26／D28 | U0 ULN 已確認的 IN1／IN2／IN3／IN4 | 同一排相鄰四針，一條 4P；不是 D22–D25 |
+| Mega D22／D24／D26／D28 | U0 ULN 已確認的 IN1／IN2／IN3／IN4 | 邏輯腳號；Pro 上不保證相鄰，依印字個別對接 |
 | KY-003 S | Mega A0 | 可經 3P 分線座；程式使用 INPUT_PULLUP |
 | KY-003 +／− | Mega 5V／GND | 依實板查針序；不接 12V |
 | 隔離式 12V 電源 + | 保險絲 → 主開關 → 馬達分支開關 → ULN 馬達正端／COM | 不接 Mega；保險絲依負載、導線、接點、浪湧選定 |
@@ -22,7 +22,7 @@
 
 IN1–IN4 是線束位置名稱，實際相序由板子走線與馬達決定。**斷電查明 ULN E/GND、COM、四路輸出和插座映射後才接電。** ULN 的「+」是馬達正電源，不要因為叫 VCC 就接邏輯 5V。未用輸入保持關閉。參考 [TI 資料表](https://www.ti.com/lit/ds/symlink/uln2003a.pdf)，但模組走線及 LED 的 12V 相容性仍須實測。
 
-標準 Mega 是**母排插座**，ULN 訊號通常是公針，因此馬達線通常買 **4P 公對母**。對話早期的「全部母對母」不適用標準 Mega；改過排針的板子依實物選型。選同一外殼的多 P 線，或確認相鄰單針頭可固定成一束。
+新購 Pro 若為**焊好公排針**，接 ULN 公針用母對母線，四根依邏輯腳個別對接，不假設 Pro 四針連續。原標準 Mega 是母排，則用公對母線。Hall 分線板到 Pro 端也用母頭；依到貨實物選型及固定。
 
 重設、上電或 USB 拔除時，GPIO 會回到高阻態。先拔馬達驗證 ULN 不會誤導通；必要時各相在 ULN 端補下拉，10kΩ 是量測起點。GPIO 與 watchdog 都不能取代**實體馬達電源切斷**。關機先關馬達分支，再拔 USB。
 
@@ -32,12 +32,12 @@ IN1–IN4 是線束位置名稱，實際相序由板子走線與馬達決定。*
 
 | 品項 | 現在只測單顆 | 十字元規劃／備品 |
 | --- | --- | --- |
-| Mega 2560、USB 資料線 | 各 1 | 各 1；標準板 USB-B，依實物確認 |
+| Mega2560 Pro／Mega、USB 資料線 | 各 1 | 各 1；Pro 板上 USB 接頭依到貨確認 |
 | 12V 馬達、ULN、KY-003、字元機構 | 各 1 | 各 10；翻頁片 45×10 |
-| 4P 公對母相位線 | 1 條 | 用 10，建議買 12 |
+| 4P 相位線（Pro 用母母；標準板公母） | 1 條 | 用 10，建議備 12；邏輯腳不一定連續 |
 | 3P 母對母 Hall 線 | 1 條 | 用 10，建議買 12；兩端元件都是公針時 |
 | 短 1P 跳線 | S／5V／GND 各 1，另備共地線 | 按佈局；不能作馬達主幹 |
-| 8P、2P 公對母 Hall 訊號線 | 不必，U0 可用一條 1P 訊號線 | 各 1；分線板到 Mega |
+| 8P、2P Hall 訊號線（Pro 端母頭） | 不必，U0 可用一條 1P 訊號線 | 各 1；分線板到 Mega |
 | 洞洞板、40P 公排針 | 試做分線座，各 1 | 初估 5×7cm 兩片、排針用 2 排備第 3 排；先試排 |
 | 12V 電源、保險絲與座、端子台 | 各 1 組 | 電流依實測及啟動峰值選，不直接照抄「3A」保險絲 |
 | 直流主開關、馬達分支開關 | 各 1 | 各 1，確認直流負載額定值 |
@@ -70,7 +70,7 @@ IN1–IN4 是線束位置名稱，實際相序由板子走線與馬達決定。*
 
 D22–D53 是雙排，同排編號跳 2，**不要跨兩排插 4P**。U9 避開 D7／D8 間非 2.54mm 間距，使用 D8–D11。以 [Arduino 官方腳位圖](https://docs.arduino.cc/resources/pinouts/A000067-full-pinout.pdf)對照實物；本目錄示意圖不是等比例外觀。
 
-D0／D1 留給 USB，D18 TX1／D19 RX1 已用於 [ESP32-CAM 封包通訊](../esp32cam/protocol.md)，需經 5V／3.3V 電平轉換。D20 SDA／D21 SCL 預留 RTC，目前不使用。沒有 MCP 的 SDA/SCL/RESET 接線；Mega 的 RESET 鍵仍存在。
+D0／D1 留給 USB，D18 TX1／D19 RX1 已用於 [NodeMCU ESP-32S 封包通訊](../esp32cam/protocol.md)，需經 5V／3.3V 電平轉換。D20 SDA／D21 SCL 預留 RTC，目前不使用。沒有 MCP 的 SDA/SCL/RESET 接線；Mega 的 RESET 鍵仍存在。
 
 ## Hall 分線洞洞板逐孔配置
 
@@ -150,7 +150,7 @@ arduino-cli compile --fqbn arduino:avr:mega:cpu=atmega2560 mega2560/unit_test
 | `SPEED ALL n`／`ACCEL ALL n` | 套用所有啟用U，解除這些U的ARM與位置；單獨SPEED／ACCEL只改選中U |
 | `POLARITY LOW`／`POLARITY HIGH` | 有效電位，不會把鎖存改成非鎖存 |
 
-SPEED／ACCEL 保留位置與 ARM；圈步數、偏移、方向、相序及極性實際變更時，解除對應 U 的 ARM、使位置失效。USB 修改先作用於 RAM；閒置時 `SAVE` 保存整份安裝／十組校準，`LOAD` 只套用有變更的參數，保留未受影響位置。網頁「套用並保存」直接保存。重開機載入有效 EEPROM，否則使用預設；Mega 不保存位置或 ARM；ESP32-CAM 另保存最後字元供重開後確認。UNIT 切換保留各 U 狀態；DIGITS／UNITS 真正變更時解除全部 ARM，仍在清單的 U 保留位置，新加入的 U 須確認字元。這是**八狀態半步序列**，不能直接填原 Nano `STEPS=2038` 全步數；每片位置按絕對比例取整，避免累積誤差。
+SPEED／ACCEL 保留位置與 ARM；圈步數、偏移、方向、相序及極性實際變更時，解除對應 U 的 ARM、使位置失效。USB 修改先作用於 RAM；閒置時 `SAVE` 保存整份安裝／十組校準，`LOAD` 只套用有變更的參數，保留未受影響位置。網頁「套用並保存」直接保存。重開機載入有效 EEPROM，否則使用預設；Mega 不保存位置或 ARM；NodeMCU ESP-32S 另保存最後字元供重開後確認。UNIT 切換保留各 U 狀態；DIGITS／UNITS 真正變更時解除全部 ARM，仍在清單的 U 保留位置，新加入的 U 須確認字元。這是**八狀態半步序列**，不能直接填原 Nano `STEPS=2038` 全步數；每片位置按絕對比例取整，避免累積誤差。
 
 索引沿原版：0空白，1–26 A–Z，27 Ä，28 Ö，29 Ü，30–39 數字0–9，40 `:`、41 `.`、42 `-`、43 `?`、44 `!`；使用者已確認實際安裝此45片順序。SET／SHOW以ASCII輸入 `AE`／`OE`／`UE`，也接受同格位的 `$`／`&`／`#`；空白用BLANK或SPACE。整串TEXT每位用一個ASCII字元，空白可用 `_`，三個特殊格用 `$`／`&`／`#`，詳見多位操作。
 
@@ -219,4 +219,4 @@ STEP 4096
 | U0 | 1234 | 1 | 4096（設定值） | 0 | 800 | 800 | LOW（設定）；釋放待磁鐵驗證 | 2026-10-25 使用者回報手動定位數輪無偏移 |
 | U1–U9 | 各顆記錄 |  |  |  |  |  |  |  |
 
-軟體與實機邊界見[既有紀錄](validation.md)及[新增通訊驗證](../esp32cam/validation.md)。多位文字、HOME ALL、CYCLE ALL 採並行排程；EEPROM 與 ESP32-CAM 通訊已實作，Cardputer／外接 RTC 尚未整合。保留的[舊 ESP32／MCP 模擬](../docs/esp32/README.md)是不同架構。
+軟體與實機邊界見[既有紀錄](validation.md)及[新增通訊驗證](../esp32cam/validation.md)。多位文字、HOME ALL、CYCLE ALL 採並行排程；EEPROM 與 NodeMCU ESP-32S 通訊已實作，Cardputer／外接 RTC 尚未整合。保留的[舊 ESP32／MCP 模擬](../docs/esp32/README.md)是不同架構。

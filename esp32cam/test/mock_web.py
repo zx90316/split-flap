@@ -18,7 +18,7 @@ GLYPHS = [' ', *'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'Ä', 'Ö', 'Ü', *'0123456789', '
 
 
 def verify_package(data):
-    if len(data) < 320 or data[:8] != b'SFCAM01\0' or data[48:64] != b'splitflap-cam-v1':
+    if len(data) < 320 or data[:8] != b'SFESP01\0' or data[48:64] != b'splitflap-32s-v1':
         raise ValueError('只接受本專案的 .sffw 檔案。')
     size, protocol = struct.unpack('<II', data[8:16])
     if protocol != 1 or size > 1966080 or size != len(data) - 64:
@@ -72,7 +72,7 @@ class Model:
 
     def state(self):
         self.advance()
-        return dict(firmware='1.1.0-mock', protocol=1, boot=self.boot, nextRequest=self.next_request, csrf=self.csrf,
+        return dict(firmware='1.2.0-mock', hardware='NodeMCU ESP-32S', protocol=1, boot=self.boot, nextRequest=self.next_request, csrf=self.csrf,
                     displayMemoryOk=True,
                     connected=self.connected, protocolMismatch=False, uncertain=False, maintenance=self.maintenance, storageOk=True,
                     networkEditable=not self.pending and not self.maintenance,

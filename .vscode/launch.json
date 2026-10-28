@@ -213,7 +213,7 @@
       }
     },
     {
-      "name": "ESP32-CAM: 準備環境",
+      "name": "ESP32-S: 準備環境",
       "type": "debugpy",
       "request": "launch",
       "program": "${workspaceFolder}/esp32cam/tools/dev.py",
@@ -230,12 +230,12 @@
       },
       "internalConsoleOptions": "neverOpen",
       "presentation": {
-        "group": "3-ESP32-CAM",
+        "group": "3-ESP32-S",
         "order": 10
       }
     },
     {
-      "name": "ESP32-CAM: 檢查環境",
+      "name": "ESP32-S: 檢查環境",
       "type": "debugpy",
       "request": "launch",
       "program": "${workspaceFolder}/esp32cam/tools/dev.py",
@@ -252,12 +252,12 @@
       },
       "internalConsoleOptions": "neverOpen",
       "presentation": {
-        "group": "3-ESP32-CAM",
+        "group": "3-ESP32-S",
         "order": 11
       }
     },
     {
-      "name": "ESP32-CAM: 查詢連接埠",
+      "name": "ESP32-S: 查詢連接埠",
       "type": "debugpy",
       "request": "launch",
       "program": "${workspaceFolder}/esp32cam/tools/dev.py",
@@ -274,12 +274,12 @@
       },
       "internalConsoleOptions": "neverOpen",
       "presentation": {
-        "group": "3-ESP32-CAM",
+        "group": "3-ESP32-S",
         "order": 12
       }
     },
     {
-      "name": "ESP32-CAM: 建置韌體",
+      "name": "ESP32-S: 建置韌體",
       "type": "debugpy",
       "request": "launch",
       "program": "${workspaceFolder}/esp32cam/tools/dev.py",
@@ -296,19 +296,19 @@
       },
       "internalConsoleOptions": "neverOpen",
       "presentation": {
-        "group": "3-ESP32-CAM",
+        "group": "3-ESP32-S",
         "order": 13
       }
     },
     {
-      "name": "ESP32-CAM: 建置＋燒錄＋串列監看",
+      "name": "ESP32-S: 建置＋燒錄＋串列監看",
       "type": "debugpy",
       "request": "launch",
       "program": "${workspaceFolder}/esp32cam/tools/dev.py",
       "args": [
         "upload-monitor",
         "--port",
-        "${input:esp32CamPort}"
+        "${input:esp32Port}"
       ],
       "cwd": "${workspaceFolder}",
       "console": "integratedTerminal",
@@ -320,19 +320,19 @@
       },
       "internalConsoleOptions": "neverOpen",
       "presentation": {
-        "group": "3-ESP32-CAM",
+        "group": "3-ESP32-S",
         "order": 14
       }
     },
     {
-      "name": "ESP32-CAM: 串列監看",
+      "name": "ESP32-S: 串列監看",
       "type": "debugpy",
       "request": "launch",
       "program": "${workspaceFolder}/esp32cam/tools/dev.py",
       "args": [
         "monitor",
         "--port",
-        "${input:esp32CamPort}"
+        "${input:esp32Port}"
       ],
       "cwd": "${workspaceFolder}",
       "console": "integratedTerminal",
@@ -344,12 +344,12 @@
       },
       "internalConsoleOptions": "neverOpen",
       "presentation": {
-        "group": "3-ESP32-CAM",
+        "group": "3-ESP32-S",
         "order": 15
       }
     },
     {
-      "name": "ESP32-CAM: 全部模擬測試",
+      "name": "ESP32-S: 全部模擬測試",
       "type": "debugpy",
       "request": "launch",
       "program": "${workspaceFolder}/esp32cam/tools/dev.py",
@@ -366,12 +366,12 @@
       },
       "internalConsoleOptions": "neverOpen",
       "presentation": {
-        "group": "3-ESP32-CAM",
+        "group": "3-ESP32-S",
         "order": 16
       }
     },
     {
-      "name": "ESP32-CAM: 開啟網頁模擬器",
+      "name": "ESP32-S: 開啟網頁模擬器",
       "type": "debugpy",
       "request": "launch",
       "program": "${workspaceFolder}/esp32cam/tools/dev.py",
@@ -388,7 +388,7 @@
       },
       "internalConsoleOptions": "neverOpen",
       "presentation": {
-        "group": "3-ESP32-CAM",
+        "group": "3-ESP32-S",
         "order": 17
       }
     },
@@ -401,7 +401,7 @@
       "cwd": "${workspaceFolder}",
       "console": "internalConsole",
       "stopAtEntry": true,
-      "preLaunchTask": "ESP32-CAM: 建置主機偵錯",
+      "preLaunchTask": "ESP32-S: 建置主機偵錯",
       "symbolSearchPath": "${workspaceFolder}/esp32cam/test/.build",
       "requireExactSource": true,
       "presentation": {
@@ -410,7 +410,7 @@
       }
     },
     {
-      "name": "ESP32-CAM: 手機網頁流程測試",
+      "name": "ESP32-S: 手機網頁流程測試",
       "type": "debugpy",
       "request": "launch",
       "program": "${workspaceFolder}/esp32cam/tools/dev.py",
@@ -427,7 +427,7 @@
       },
       "internalConsoleOptions": "neverOpen",
       "presentation": {
-        "group": "3-ESP32-CAM",
+        "group": "3-ESP32-S",
         "order": 19
       }
     }
@@ -436,14 +436,14 @@
     {
       "id": "megaPort",
       "type": "promptString",
-      "description": "輸入已確認的 Mega COM 埠（先以查詢連接埠確認；燒錄前關閉馬達12V分支）",
+      "description": "Mega2560 Pro／Mega 的 COM 埠；先查詢，拔外部 5V 與板間 UART，馬達關閉",
       "default": "COM3"
     },
     {
-      "id": "esp32CamPort",
+      "id": "esp32Port",
       "type": "promptString",
       "default": "COM4",
-      "description": "輸入已確認的 CP2102 COM 埠（不是 Mega COM3）；GPIO0 接 GND 後 RESET；馬達分支關閉"
+      "description": "NodeMCU ESP-32S 板上 USB 的 COM 埠；先查詢，拔外部 5V 與板間 UART，馬達關閉"
     }
   ]
 }

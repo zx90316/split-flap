@@ -1,18 +1,18 @@
 # 在 VS Code 建置、燒錄與偵錯 Mega
 
-適用目前的 Windows 開發環境。以「檔案 → 開啟資料夾」開啟 **repo 根目錄**，讓 VS Code 載入根目錄的 `.vscode/launch.json` 與 `tasks.json`。不要只開單一 `.ino` 或 `mega2560/` 子資料夾。
+適用目前的 Windows 開發環境與新購 Mega2560 Pro CH340G，也相容原標準 Mega。以「檔案 → 開啟資料夾」開啟 **repo 根目錄**，讓 VS Code 載入根目錄的 `.vscode/launch.json` 與 `tasks.json`。不要只開單一 `.ino` 或 `mega2560/` 子資料夾。
 
 ## 平常最常用的操作
 
 1. **Ctrl+Shift+B**：建置韌體。這個操作不開 COM 埠、不燒錄。
 2. **Ctrl+Shift+D**：開「執行與偵錯」，在上方下拉選單選 **MEGA: 建置＋燒錄＋串列除錯**，再按 **F5**。
-3. 輸入已確認的連接埠，目前預設 **COM3**。燒錄時先關馬達12V分支，保持 Mega USB 連接、共地接好。
+3. 輸入已確認的新板連接埠，**COM3 僅為範例**。先關馬達／控制電源、拔 Mega 外部 5V 與板間四條 UART 訊號線，再接板上 USB 資料線。詳見[供電切換](../esp32cam/wiring.md#usb-燒錄與供電切換)。
 4. 自動完成建置、上傳、讀回驗證，成功後以 **115200** 開啟串列監控。任何一步失敗都停止，不會拿舊韌體繼續燒錄。
 5. 串列終端每行按 Enter 送出。可先輸入 `STATUS`；要轉動時依[單顆指南](README.md)確認供電，再分別送 `ARM`、`STEP 500`。不會自動送 ARM 或移動命令。
 
 若原本已開著串列監控，先 Ctrl+C 或停止原工作階段，釋放 COM3 再燒錄。其他程式也可能占用 COM 埠。F5 的 COM 提示只會選埠，不會替你確認裝置身分；可先選「查詢連接埠」。
 
-上傳後 HELP 列出 `DIGITS 1..10`、`UNITS`、`SETTEXT`／`TEXT`、`SPEED [ALL] 800..30000` 及 `SAVE`／`LOAD`。開機載入有效 EEPROM 配置；無紀錄才是 `DIGITS=1 UNITS=0`、`SPEED=5000 ACCEL=400`，所有位置均未知、未 ARM。單顆依[手動定位](README.md#無磁鐵手動定位與指定字元)操作；多顆依[1～10 位操作](multi-unit.md)。USB 修改後以 SAVE 保存；LOAD 或重啟不會恢復位置／ARM。ESP32-CAM 的獨立建置與燒錄選項見[手機控制指南](../esp32cam/README.md)。
+上傳後 HELP 列出 `DIGITS 1..10`、`UNITS`、`SETTEXT`／`TEXT`、`SPEED [ALL] 800..30000` 及 `SAVE`／`LOAD`。開機載入有效 EEPROM 配置；無紀錄才是 `DIGITS=1 UNITS=0`、`SPEED=800 ACCEL=800`，所有位置均未知、未 ARM。**新 Mega Pro 的 EEPROM 不含舊板校準，需匯入備份或手動還原。**單顆依[手動定位](README.md#無磁鐵手動定位與指定字元)操作；多顆依[1～10 位操作](multi-unit.md)。USB 修改後以 SAVE 保存；LOAD 或重啟不會恢復位置／ARM。NodeMCU ESP-32S 的板上 USB 建置與燒錄選項見[手機控制指南](../esp32cam/README.md)。
 
 ## F5 選單
 

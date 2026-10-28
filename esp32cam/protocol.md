@@ -60,6 +60,12 @@ USB 轉動期間任何非換行字元仍依原行為停止並丟棄整行；USB 
 
 外部 request 必須等於 nextRequest；相同 request／相同內容回既有 job，不再次動作。快取外的已退役 request 拒絕。多頁同時操作若撞號，顯示錯誤，需刷新後由使用者重新下指令；前端不自動重送動作。
 
+設定備份仍使用 schema 1 與 `device=splitflap-esp32cam`，保留舊系統安裝／校準的匯入相容性。此欄位是沿用的備份格式識別；目前硬體名稱由 `/api/state` 的 `hardware=NodeMCU ESP-32S` 回報。設定匯入仍需完整驗證，不能恢復位置或 ARM。
+
 ## OTA 封裝
 
-64-byte header：magic `SFCAM01\0`（8）、映像長度 uint32、協定 uint32、SHA-256（32）、專案 tag `splitflap-cam-v1`（16）。後接 app `.bin`，大小最多 1,966,080 bytes；晶片必須 ESP32。上傳開始、資料寫入、結束與最終 HTTP handler 均需有效的 Mega 停止狀態。長度／SHA-256、完整 HTTP 請求與 SDK 映像驗證通過，才選取新分割區；多檔、截斷、失聯或 USB 重新啟用都中止更新。開機後自動模式保持暫停。
+NodeMCU ESP-32S 1.2.0 的 64-byte header：magic `SFESP01\0`（8）、映像長度 uint32、協定 uint32、SHA-256（32）、專案 tag `splitflap-32s-v1`（16）。後接 app `.bin`，大小最多 1,966,080 bytes；晶片必須 ESP32。工具輸出 `esp32cam/dist/splitflap-esp32s.sffw`。
+
+舊 CAM 的 `SFCAM01\0`／`splitflap-cam-v1` 更新檔會拒絕，即使映像晶片同樣是 ESP32。設定備份的舊 device 欄位不影響此 OTA 硬體檢查。
+
+上傳開始、資料寫入、結束與最終 HTTP handler 均需有效的 Mega 停止狀態。長度／SHA-256、完整 HTTP 請求與 SDK 映像驗證通過，才選取新分割區；多檔、截斷、失聯或 USB 重新啟用都中止更新。開機後自動模式保持暫停。

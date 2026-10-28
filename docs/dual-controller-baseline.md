@@ -1,5 +1,7 @@
 # 雙主控 1.1.0 基準封存
 
+**歷史基準是提交 `e65f30e`。** 2026-10-26 後續依使用者新購硬體，`esp32-purchased-bom` 已開始遷移至 1.2.0 的 Mega2560 Pro＋NodeMCU ESP-32S。下文描述封存當時的舊硬體；需要舊 CAM 版本時以此提交為準，不以分支名稱推定內容。[現行操作指南](../esp32cam/README.md)與[新購硬體紀錄](../hardware/purchased-2026-10-26.md)是新版入口。
+
 日期：2026-10-26（Asia/Taipei）。穩定分支：`esp32-purchased-bom`。此分支保留 Mega 2560＋ESP32-CAM 雙主控、P011 UART 電平轉換及現有 USB／網頁單板更新流程。
 
 已完成：1～10 位與非連續映射、並行翻頁、SPEED 800／ACCEL 800 預設、加減速、手動定位、45 字元、字元歷史、差異套用設定、手機網頁／時鐘／日期、登入、Wi-Fi、設定備份及 ESP32 OTA。操作見 [ESP32-CAM 指南](../esp32cam/README.md)，建置與測試結果見 [驗證紀錄](../esp32cam/validation.md)。

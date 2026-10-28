@@ -128,6 +128,7 @@ def upload(port):
     # A failed compile raises before upload. Never upload a stale binary.
     compile_firmware()
     print(f'MEGA：寫入並驗證 {port}；請保持馬達 12V 分支關閉。', flush=True)
+    print('接電腦 USB 前，拔 Mega 外部 5V 與板間四條 UART 訊號線；外部 5V 不與 USB 並接。', flush=True)
     run([arduino_cli(), 'upload', '--fqbn', FQBN, '--port', port,
          '--input-dir', project_path('mega2560/.build'), '--verify', '--no-color',
          ROOT / 'mega2560/unit_test'])

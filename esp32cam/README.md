@@ -1,56 +1,44 @@
-# ESP32-CAM 手機翻頁控制台
+# NodeMCU ESP-32S＋Mega2560 Pro 手機翻頁控制台
 
-雙主控 1.1.0 已整理為 [穩定基準](../docs/dual-controller-baseline.md)，保留於 `esp32-purchased-bom`；單主控在獨立分支開發。
+目前為 **1.2.0 新硬體版**：NodeMCU ESP-32S 提供手機網頁、Wi-Fi、時鐘／日期、設定保存與 ESP32 OTA；Mega2560 Pro 負責 1～10 位並行步進、手動／Hall 定位與 EEPROM 校準。沿用現有 P011 電平轉換及 LM2596，不使用 MCP23017。
 
-後續更新研究：[Mega＋ESP32 單一 USB／單包網頁更新可行性](dual-update-research.md)。這是設計研究，現行更新方式仍依本頁操作。
+源碼目錄沿用 `esp32cam/`，但本頁與工具現在針對 **classic ESP32／ESP-WROOM-32 的 NodeMCU ESP-32S**；不適用已損壞的 ESP32-CAM、C3 或 S3。舊硬體實測與 1.1.0 基準保留於[歷史紀錄](../docs/dual-controller-baseline.md)。單主控與雙板統一更新文件仍屬獨立研究，未混入本次實作。
 
-另一候選：[ESP32-CAM＋MCP23017 單主控研究](single-controller-research.md)，使用現有六片中的四片、只需維護一份韌體；高速排程及實板驗收尚未完成，現版仍為下述雙板架構。
+**[新購硬體與設定搬移](../hardware/purchased-2026-10-26.md) · [逐線表](wiring.md) · [正常接線圖](wiring-runtime.svg) · [板上 USB 燒錄圖](wiring-flashing.svg) · [驗證紀錄](validation.md)**
 
-AI-Thinker ESP32-CAM 提供繁體中文手機網頁，Mega 2560 負責 1～10 位步進、定位與保護。所有網頁內建在韌體，無外部網站、CDN 或 SD 卡依賴。相機與閃光燈停用。
+## 這次改了什麼
 
-**需更新兩板韌體。舊 Mega 沒有 Serial1 封包介面，不能直接使用此控制台。** 軟體編譯、主機模擬與瀏覽器測試見 [驗證紀錄](validation.md)；實際接線、兩板 UART、OTA 及多顆機構仍需依文末實機驗收確認。
+- 改用 NodeMCU ESP-32S 板上 USB 燒錄；不再接外部 CP2102 或 GPIO0 跳線。移除 CAM 專用 GPIO32／GPIO4 操作，PSRAM 關閉。
+- 使用 4MB、DIO／40MHz、`min_spiffs` 的 OTA 配置；預設建置會產生 `dist/splitflap-esp32s.sffw`。新板識別拒絕舊 CAM 更新檔，USB／OTA 都不能選舊 `splitflap-esp32cam` 產物。
+- Mega Pro 沿用 ATmega2560 邏輯腳位及正式韌體；板子排針位置、公母頭及 USB 接頭依實物重新接，不照標準 Mega 的插座位置搬接。
+- 保留 800／800 預設、各位同時起步／各自停止、任意 1～10 位／非連續映射、字元歷史、登入、離線資源及原有通訊保護。速度／加速度變更不清除可信位置與 ARM。
+- 四張設定頁內建 SVG、VS Code F5、BOM 與供電切換步驟同步更新。已購保險絲座不預設兩路 5A；0.5mm 銅芯直徑線不作馬達共用主幹。
+- DIP 暫列備用低電流設定零件；不接 GPIO、不切馬達主電流。使用者確認繼電器維持選配，本版仍需合適的手動馬達開關。
 
-## 1.1.0 更新
+## 先完成接線與搬移
 
-Mega 預設 SPEED=800、ACCEL=800；所有啟用位置同時開始翻轉，各自到位停止，相同字元不轉。文字、HOME ALL、CYCLE ALL 均並行；STOP、失聯或任一位故障會停止整批。
+![正常運作](wiring-runtime.svg)
 
-調整速度／加速度不清除字元、定位或 ARM。保存整份校準只更新有差異的內容；涉及圈步數、偏移、方向、相序或極性的位才需要重新確認，其他位置保留。新增／刪除／重排安裝清單會解除轉動許可，保留仍在清單中的位置基準。
+12V 在 F1／總開關後分兩路：馬達支路經獨立手動開關供 ULN；控制支路經 LM2596 調至 **5.0V**，再經 F2 供兩板及 5V 周邊。全部共地，+12V／+5V 正極分開。
 
-最後完成的字元會依 U0～U9 自動寫入 ESP32 NVS，設定變更、頁面關閉或設備重開都不清空。重開、STOP／失聯或定位失效後，頁面以虛線框顯示上次記錄，選單預填；核對實物後按「確認字元並允許轉動」即可一次完成 SETTEXT＋ARM，不必重輸整串。歷史值不當成實際位置或自動啟動依據。
+- 兩塊新板先各自只接 USB 驗證。外部 5V 要接已核對用途的 5V 電源腳；NodeMCU 若只印 VIN，先確認其為可用的 5V 輸入，不送入 12V。兩板 3V3 都不接 5V。
+- **任一板接電腦 USB 前，關電並拔該板外部 5V 與板間四條 UART 訊號線。**現有 P011 不假設單側斷電隔離。接線／復原順序見[逐線表](wiring.md#usb-燒錄與供電切換)。
+- UART 沿用：GPIO13→A0／B0→Mega D19；Mega D18→B1／A1→GPIO14。VCCA=ESP 3V3、VCCB=Mega 5V，115200、8N1。
+- **新板不會自動取得舊板設定。**新 Mega Pro 須匯入原校準，或依[搬移紀錄](../hardware/purchased-2026-10-26.md#到貨與設定搬移)手動還原。原 U0 的 OFFSET=273 已有現場確認；其他位不可照抄。新 ESP32 從 USB ACCESS 取得新登入資料，重新設定 Wi-Fi；字元仍需核對實物後建立定位。
+- 四個 KF301 是需焊接的 PCB 端子，不是完成的十路配電板；DIP 不代替直流電源開關。配件數量與限制見[已購清單](../hardware/purchased-2026-10-26.md)。
 
-「允許已選位置轉動」就是 ARM ALL：只授權安裝清單內的位，按下不會立刻轉、不會一直通電；收到 TEXT／SHOW 等動作才輸出相位，完成後線圈關閉。一般調速及再次送出文字不需要重按。
+## VS Code：準備、建置與板上 USB 燒錄
 
-「裝置設定 → 完整接線圖」內建四張可放大的 SVG：正常電源／UART、CP2102、十組馬達／Hall、Hall 分線板，無外部網站依賴。
+在 repo 根目錄開啟 VS Code，安裝 Python、C/C++ 擴充套件；[Mega VS Code 指南](../mega2560/vscode.md)提供 Arduino CLI／AVR／主機測試工具準備方式。
 
-**本次需更新 Mega 與 ESP32-CAM 兩板。** Mega EEPROM 新版會將舊版中仍為 5000／400 的組別遷移至 800／800，其餘自訂值不更改；首次轉存沿用雙槽防斷電寫入。已有新版紀錄則完整尊重使用者保存值。沒有新增硬體模組。
+1. F5 選 **ESP32-S: 準備環境**，固定 Arduino-ESP32 **3.3.12**；現有 Mega 的任務保留。
+2. 依供電切換表拆外部 5V／UART，關馬達電源，Mega Pro 用板上 USB 接電腦。先查埠，再選 **MEGA: 建置＋燒錄＋串列除錯**；板型仍是 `arduino:avr:mega:cpu=atmega2560`。若商品沒有 bootloader，需另行處理，不能僅靠 CH340G 上傳。
+3. NodeMCU ESP-32S 也拆外部 5V／UART，以板上 USB 資料線接電腦。F5 選 **ESP32-S: 查詢連接埠**，使用其新 COM 埠，不沿用舊 CP2102 的 COM4。
+4. F5 選 **ESP32-S: 建置＋燒錄＋串列監看**。通常自動重設燒錄；停在 Connecting 時按住 BOOT、按一下 EN／RESET，開始寫入再放開 BOOT。完成後若未啟動，按 EN／RESET；不接 GPIO0 跳線。
+5. 串列 115200，`ACCESS` 查看新 Wi-Fi／登入資料；`STATUS` 看 Mega 連線。尚未恢復 UART 時顯示 offline 是正常的。
+6. 結束監看、拔 USB、確認控制電源關閉，再接回外部穩壓 5V／UART；兩板同時供電。取得 `Mega=connected` 後先還原設定、定位與 ARM，再測 U0。
 
-## 先完成接線
-
-[正常運作完整圖](wiring-runtime.svg) · [CP2102 燒錄完整圖](wiring-flashing.svg) · [逐線表與電源切換](wiring.md)
-
-![正常運作接線](wiring-runtime.svg)
-
-12V 電源在主開關後分兩路：一路經馬達分支開關供 ULN，另一路經 LM2596 調至 **5.0V** 供控制板。先空載調整、量極性，再接板並量 Wi-Fi 負載下的 5V。馬達支路關閉時，控制板仍有電。
-
-- ESP32-CAM 的 **5V** 腳接降壓器；不是 3V3，也不是標示可能可切換的 VCC。
-- Mega 的 **5V 腳**接同一顆 LM2596 已量測的穩壓 5.0V，正常運作時拔除 Mega USB；不接 VIN／DC 圓孔。接電腦 USB 燒錄前，先關電源、拔 Mega 外部 5V 與板間四條 UART 訊號線；完整切換順序見 [接線表](wiring.md#mega-改接電腦燒錄)。沿用現有電源與跳線，不需要 USB 電源小板。
-- 兩板 UART 改用現有 **P011：8 路分立 MOS 電平轉換板**，只用 A0／B0、A1／B1。VCCA 接 ESP32 3V3、VCCB 接 Mega 5V，全部共地；GPIO13→A0／B0→D19，D18→B1／A1→GPIO14。其餘六路不接，沒有 OE，也不新增電平模組或去耦電容採購。
-- 現有板的 MOS 型號／上拉尚未實測，不假設單側斷電隔離。兩板都供電才接 UART；切換供電或單板測試前，先拔 A0、A1、B0、B1 四條訊號線。韌體維持 115200，先短線確認兩板連線穩定，再開馬達支路；這次接線修訂不需要重刷韌體。
-- CP2102 只接 TXD→U0R、RXD←U0T、GND，**5V／3V3／VCC 不接**。需為 3.3V UART 邏輯；部分轉接板的供電跳帽不會改變訊號電壓，依實板量測。
-
-## VS Code：第一次安裝與燒錄
-
-在 repo 根目錄開啟 VS Code；既有 Mega 的 F5 選項保留。
-
-1. F5 選 **ESP32-CAM: 準備環境**。下載固定 Arduino-ESP32 3.3.12、支援 OTA 的板型設定及主機測試用 cJSON。Mega 工具尚未安裝時，先依 [Mega VS Code 指南](../mega2560/vscode.md)準備 Arduino CLI／AVR／主機偵錯工具。
-2. 依 [Mega 電源切換順序](wiring.md#mega-改接電腦燒錄)，先關馬達與控制電源、拔板間四條 UART 訊號線及 Mega 外部 5V，才接電腦 USB。F5 選 **MEGA: 建置＋燒錄＋串列除錯**，確認埠是 Mega，更新本版 Mega 韌體。上傳後預設關閉馬達，會載入有效的 EEPROM 配置；完成後依接線表復原供電。
-3. CP2102 USB 接電腦。F5 選 **ESP32-CAM: 查詢連接埠**，記下 CP2102 的 COM；它和 Mega 的 COM 不同，不能照抄預設 COM4。
-4. ESP32-CAM 仍由 LM2596 供電。**GPIO0 接 GND，按 RESET**，F5 選 **ESP32-CAM: 建置＋燒錄＋串列監看**，輸入 CP2102 的埠。
-5. 上傳成功後 **移除 GPIO0→GND 跳線，再按 RESET**。監看視窗選 115200、換行；輸入 `ACCESS` 查看設備 Wi-Fi 與登入資料。`STATUS` 查看兩板連線。CP2102 未接自動重設線，這些手動步驟不可省略。
-
-![CP2102 燒錄接線](wiring-flashing.svg)
-
-主要 F5 功能包括準備／檢查環境、建置、燒錄＋監看、串列監看、全部模擬測試、本機網頁模擬器。`主機中斷點: ESP32↔Mega 通訊與網頁命令` 可檢查通訊控制核心；CP2102 提供燒錄與串列紀錄，沒有實板硬體中斷點功能。
+![兩板 USB 燒錄](wiring-flashing.svg)
 
 等效指令：
 
@@ -61,15 +49,21 @@ python esp32cam/tools/dev.py ports
 python esp32cam/tools/dev.py upload-monitor --port COM4
 ```
 
-編譯不開啟 COM 埠。每次燒錄都先重新建置，失敗不會上傳舊檔；監看只在成功上傳後開啟。ESP32 上傳速率 115200，板型為 `esp32:esp32:esp32cam:PartitionScheme=min_spiffs`。
+COM4 僅為範例，必須換成這塊 NodeMCU 的埠。建置不開啟 COM；燒錄前重建，失敗即停，不上傳舊檔。監看只在上傳成功後開始。這次兩板仍各自 USB 更新，網頁 OTA 僅更新 ESP32。
+
+ESP32 建置 FQBN：
+
+```text
+esp32:esp32:esp32:PartitionScheme=min_spiffs,FlashSize=4M,FlashMode=dio,FlashFreq=40,PSRAM=disabled
+```
+
+使用可指定 OTA 分割的 ESP32 Dev Module 相容板型，GPIO 以數字配置。新 NodeMCU 預期為 4MB ESP-WROOM-32，到貨後核對；沒有宣稱此相容設定已完成實板驗收。
 
 ### Windows 找不到 COM
 
-COM 來自 **CP2102 的 USB**；ESP32-CAM 只有外接 5V，不會自行出現 COM。先關閉外部電源、拔掉 CP2102 到 ESP32 的全部跳線，只讓 CP2102 接電腦 USB。裝置管理員若有「CP2102 USB to UART Bridge Controller」黃色驚嘆號／錯誤碼 28，需安裝 [Silicon Labs CP210x VCP 驅動](https://www.silabs.com/software-and-tools/usb-to-uart-bridge-vcp-drivers)。安裝需 Windows 管理員權限；只使用原廠或 Microsoft 官方簽章套件。
+COM 來自兩塊板子各自內建的 USB-UART。先只接一塊板、使用資料線，查裝置管理員；依實際 VID/PID 與 USB-UART 晶片安裝官方簽章驅動。Mega Pro 選項標示 CH340G；NodeMCU 晶片型號到貨核對，不因舊 CP2102 驅動已安裝就假設新板一定相同。
 
-成功後重新執行「查詢連接埠」，看到 `COMx ... Serial Port (USB) Unknown` 即可；`Unknown` 是未辨識 Arduino 板型，不是驅動失敗。ESP32 RESET、GPIO0 或是否已燒韌體都不影響 CP2102 本身的 COM 列舉。
-
-重新接線前確認 ESP32 上明確標示的 **5V** 腳與 GND，**不要把 5V 接另一個 VCC 或 3V3 腳**。不同相容板的 VCC 用途可能不同；沒有清楚 5V 標示時先核對正反面照片／原理圖。閃光 LED 的亮度不能當作供電電壓量測。
+`Serial Port (USB) Unknown` 表示工具未辨識 Arduino 型號，不等於驅動失敗。查不到埠先檢查線材／USB／驅動；BOOT 只影響 ESP32 下載模式，不影響 USB-UART 本身的列舉。
 
 ## 手機第一次連線
 
@@ -78,9 +72,9 @@ COM 來自 **CP2102 的 USB**；ESP32-CAM 只有外接 5V，不會自行出現 C
 3. 到「裝置設定 → 網路與登入」填家用 Wi-Fi，保存後手機改連同一個家用網路。**不需要先連接 Mega，也不需要定位／ARM。** 可開 `http://splitflap.local/`，或用串列 `STATUS`／網頁顯示的 STA IP。
 4. 設備直連網路會保留，家用 Wi-Fi 斷線時仍可直連。密碼不寫進 repo、狀態 JSON 或匯出檔。
 
-若忘記密碼，在 CP2102 串列輸入 `ACCESS`。`NETWORK RESET` 會先請求停止，重設 Wi-Fi／登入密碼；不清除 Mega 校準。更換網路設定會暫停自動顯示，需要手動重新啟動。
+若忘記密碼，在板上 USB 串列輸入 `ACCESS`。`NETWORK RESET` 會先請求停止，重設 Wi-Fi／登入密碼；不清除 Mega 校準。更換網路設定會暫停自動顯示，需要手動重新啟動。
 
-歷史修正：ESP32 韌體 **1.0.1** 修正「Mega 尚未連線時，保存網路設定按鈕被停用」的問題，該單一修正不需更新 Mega；本頁的 **1.1.0 功能需更新兩板**，既有 Wi-Fi／登入密碼保留。連線中的 Mega 正在運動、保存或監看，以及 ESP32 正在處理工作／OTA 時，仍需等待或停止後再保存網路設定。
+歷史修正：ESP32 韌體 **1.0.1** 修正「Mega 尚未連線時，保存網路設定按鈕被停用」的問題，該單一修正不需更新 Mega；1.1.0 的功能需配合 Mega 封包韌體；1.2.0 換新板時，網路與登入須重新設定。連線中的 Mega 正在運動、保存或監看，以及 ESP32 正在處理工作／OTA 時，仍需等待或停止後再保存網路設定。
 
 ## 沒有磁鐵：先測一位，再擴充
 
@@ -112,7 +106,7 @@ Hall／HOME／MEASURE／CYCLE、LED 相序檢查及單顆 STEP／SHOW 都在「�
 - **Mega EEPROM**：有版本／CRC 的雙槽，保存顯示順序和十組校準。逐 byte 寫入，最後寫提交標記；上一份有效設定保留。無有效資料時只啟用 U0。開機不 ARM、不 HOME；只有首次舊版設定遷移會轉存新版記錄。
 - **ESP32 NVS**：保存 Wi-Fi／登入、顯示偏好及最後完成字元。每次字元有變化且全組停止後保存 13-byte 版本／CRC 記錄；相同字元不重寫，失敗限速重試。未完成動作不覆寫歷史；不保存「正在運作」、可信定位或 ARM。重開後由使用者確認歷史值才建立新的手動定位。
 - **匯出／匯入**：JSON 備份安裝、校準與顯示偏好；不含密碼、位置或 ARM。整份資料驗證成功才接受，保存完成後重新定位。先保存 Mega，再保存 ESP32 偏好；兩板都成功才回報完成。若第二步儲存失敗會回報故障，Mega 已保存的設定保留，修復後重新匯入。
-- **OTA**：先按「停止並準備更新」，等 Mega 回覆且狀態確認全關，再上傳 `esp32cam/dist/splitflap-esp32cam.sffw`。包含專案識別、協定、映像長度、ESP32 chip ID 與 SHA-256 驗證；失敗／中斷不選取未驗證映像。更新成功後重開機，重新定位與 ARM。
+- **OTA**：先按「停止並準備更新」，等 Mega 回覆且狀態確認全關，再上傳 `esp32cam/dist/splitflap-esp32s.sffw`。包含專案識別、協定、映像長度、ESP32 chip ID 與 SHA-256 驗證；失敗／中斷不選取未驗證映像。更新成功後重開機，重新定位與 ARM。
 
 `.sffw` 是完整性封裝，不是數位簽章；只使用本專案建置的檔案。管理介面以裝置密碼與 Digest／CSRF 保護，適用現場直連或可信任區網，不提供公網遠端服務。OTA 更新 ESP32，Mega 仍由 USB 上傳。
 
@@ -125,7 +119,7 @@ python esp32cam/tools/dev.py mock-web
 # 開 http://127.0.0.1:8765/，模擬器登入 admin / MockPassword123；不接硬體。
 ```
 
-另有 F5 **ESP32-CAM: 手機網頁流程測試**，在隔離的 Chrome 視窗驗證手機操作、設定備份、斷線／重啟與 OTA 錯檔／重試，不連接硬體、不讀取個人瀏覽器資料。需要 Node.js、已安裝的 Chrome 與 Playwright；一般建置／燒錄不需要這些工具。首次使用可執行：
+另有 F5 **ESP32-S: 手機網頁流程測試**，在隔離的 Chrome 視窗驗證手機操作、設定備份、斷線／重啟與 OTA 錯檔／重試，不連接硬體、不讀取個人瀏覽器資料。需要 Node.js、已安裝的 Chrome 與 Playwright；一般建置／燒錄不需要這些工具。首次使用可執行：
 
 ```powershell
 npm --prefix esp32cam/test install

@@ -397,7 +397,7 @@
       }
     },
     {
-      "label": "ESP32-CAM: 準備環境",
+      "label": "ESP32-S: 準備環境",
       "type": "process",
       "command": "${command:python.interpreterPath}",
       "args": [
@@ -424,7 +424,7 @@
       }
     },
     {
-      "label": "ESP32-CAM: 檢查環境",
+      "label": "ESP32-S: 檢查環境",
       "type": "process",
       "command": "${command:python.interpreterPath}",
       "args": [
@@ -451,7 +451,7 @@
       }
     },
     {
-      "label": "ESP32-CAM: 查詢連接埠",
+      "label": "ESP32-S: 查詢連接埠",
       "type": "process",
       "command": "${command:python.interpreterPath}",
       "args": [
@@ -478,7 +478,7 @@
       }
     },
     {
-      "label": "ESP32-CAM: 建置韌體",
+      "label": "ESP32-S: 建置韌體",
       "type": "process",
       "command": "${command:python.interpreterPath}",
       "args": [
@@ -505,14 +505,14 @@
       }
     },
     {
-      "label": "ESP32-CAM: 建置＋燒錄",
+      "label": "ESP32-S: 建置＋燒錄",
       "type": "process",
       "command": "${command:python.interpreterPath}",
       "args": [
         "${workspaceFolder}/esp32cam/tools/dev.py",
         "upload",
         "--port",
-        "${input:esp32CamPort}"
+        "${input:esp32Port}"
       ],
       "options": {
         "cwd": "${workspaceFolder}",
@@ -534,14 +534,14 @@
       }
     },
     {
-      "label": "ESP32-CAM: 建置＋燒錄＋串列監看",
+      "label": "ESP32-S: 建置＋燒錄＋串列監看",
       "type": "process",
       "command": "${command:python.interpreterPath}",
       "args": [
         "${workspaceFolder}/esp32cam/tools/dev.py",
         "upload-monitor",
         "--port",
-        "${input:esp32CamPort}"
+        "${input:esp32Port}"
       ],
       "options": {
         "cwd": "${workspaceFolder}",
@@ -563,14 +563,14 @@
       }
     },
     {
-      "label": "ESP32-CAM: 串列監看",
+      "label": "ESP32-S: 串列監看",
       "type": "process",
       "command": "${command:python.interpreterPath}",
       "args": [
         "${workspaceFolder}/esp32cam/tools/dev.py",
         "monitor",
         "--port",
-        "${input:esp32CamPort}"
+        "${input:esp32Port}"
       ],
       "options": {
         "cwd": "${workspaceFolder}",
@@ -592,7 +592,7 @@
       }
     },
     {
-      "label": "ESP32-CAM: 全部模擬測試",
+      "label": "ESP32-S: 全部模擬測試",
       "type": "process",
       "command": "${command:python.interpreterPath}",
       "args": [
@@ -619,7 +619,7 @@
       }
     },
     {
-      "label": "ESP32-CAM: 產生接線圖",
+      "label": "ESP32-S: 產生接線圖",
       "type": "process",
       "command": "${command:python.interpreterPath}",
       "args": [
@@ -646,7 +646,7 @@
       }
     },
     {
-      "label": "ESP32-CAM: 開啟網頁模擬器",
+      "label": "ESP32-S: 開啟網頁模擬器",
       "type": "process",
       "command": "${command:python.interpreterPath}",
       "args": [
@@ -673,7 +673,7 @@
       }
     },
     {
-      "label": "ESP32-CAM: 建置主機偵錯",
+      "label": "ESP32-S: 建置主機偵錯",
       "type": "process",
       "command": "${command:python.interpreterPath}",
       "args": [
@@ -700,7 +700,7 @@
       }
     },
     {
-      "label": "ESP32-CAM: 手機網頁流程測試",
+      "label": "ESP32-S: 手機網頁流程測試",
       "type": "process",
       "command": "${command:python.interpreterPath}",
       "args": [
@@ -731,14 +731,14 @@
     {
       "id": "megaPort",
       "type": "promptString",
-      "description": "輸入已確認的 Mega COM 埠（先以查詢連接埠確認；燒錄前關閉馬達12V分支）",
+      "description": "Mega2560 Pro／Mega 的 COM 埠；先查詢，拔外部 5V 與板間 UART，馬達關閉",
       "default": "COM3"
     },
     {
-      "id": "esp32CamPort",
+      "id": "esp32Port",
       "type": "promptString",
       "default": "COM4",
-      "description": "輸入已確認的 CP2102 COM 埠（不是 Mega COM3）；GPIO0 接 GND 後 RESET；馬達分支關閉"
+      "description": "NodeMCU ESP-32S 板上 USB 的 COM 埠；先查詢，拔外部 5V 與板間 UART，馬達關閉"
     }
   ]
 }

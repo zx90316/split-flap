@@ -19,8 +19,7 @@ static const char* stageName(uint8_t stage) {
 }
 void App::begin() {
   Serial.begin(115200);
-  // AI-Thinker only: power down the unused camera and keep its flash LED off.
-  digitalWrite(32, HIGH); pinMode(32, OUTPUT); digitalWrite(4, LOW); pinMode(4, OUTPUT);
+  // NodeMCU ESP-32S has no camera. Leave unrelated GPIOs untouched.
   // Enable the RF entropy source before generating per-device passwords and session nonces.
   WiFi.persistent(false); WiFi.setHostname("splitflap"); WiFi.mode(WIFI_AP_STA); WiFi.setAutoReconnect(true);
   storageOk_ = store_.begin(settings_);
@@ -36,7 +35,8 @@ void App::begin() {
   sntp_set_time_sync_notification_cb(ntpCallback); configTime(0, 0, "pool.ntp.org", "time.cloudflare.com");
   const char* headers[] = {"X-CSRF-Token", "Origin", "X-OTA-Ticket"}; server_.collectHeaders(headers, 3);
   routes(); server_.begin(); mbedtls_md_init(&hash_);
-  Serial.println("Split-Flap ESP32-CAM 1.1.0. UART2 RX=14 TX=13; Mega Serial1 115200.");
+  Serial.printf("Split-Flap %s %s. UART2 RX=%u TX=%u; Mega Serial1 115200.\n",
+                kHardwareName, kFirmwareVersion, kUartRx, kUartTx);
   Serial.println("ACCESS: show device Wi-Fi and admin credentials. STATUS | NETWORK RESET | HELP");
   if (store_.fresh() || !storageOk_) printAccess();
   if (!storageOk_) Serial.println("FAULT: NVS unavailable; settings are not durable.");
@@ -379,7 +379,8 @@ void App::finishOta() {
 }
 void App::state() {
   const State s = bridge_.snapshot(); cJSON* o = cJSON_CreateObject();
-  str(o, "firmware", "1.1.0"); num(o, "protocol", sf::kVersion); num(o, "boot", s.boot); num(o, "nextRequest", s.nextRequest); str(o, "csrf", csrf_.c_str());
+  str(o, "firmware", kFirmwareVersion); str(o, "hardware", kHardwareName);
+  num(o, "protocol", sf::kVersion); num(o, "boot", s.boot); num(o, "nextRequest", s.nextRequest); str(o, "csrf", csrf_.c_str());
   flag(o, "displayMemoryOk", displayMemoryOk_);
   flag(o, "connected", s.connected && s.valid && uint32_t(millis() - s.updatedAt) <= 2000);
   flag(o, "networkEditable", canConfigureNetwork(s, bridge_.pending(), pendingSettingsJob_ != 0));

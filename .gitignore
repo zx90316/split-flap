@@ -15,3 +15,4 @@ esp32cam/.build/
 esp32cam/test/.build/
 esp32cam/dist/
 esp32cam/test/node_modules/
+.codex-remote-attachments/

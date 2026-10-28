@@ -1,6 +1,6 @@
 # Mega 2560 驗證紀錄
 
-日期：2026-10-25（Asia/Taipei）。軟體驗證與使用者回報的實機進度分列，尚未完成完整機構驗收。
+更新日期：2026-10-26（Asia/Taipei）。軟體驗證、串列實機測試與使用者回報的實機進度分列，尚未完成完整機構驗收。
 
 ## 使用者回報的實機進度
 
@@ -40,6 +40,28 @@ U0 armed=1 homed=0 reference=MANUAL value=Z index=26 REVSTEPS=4096 OFFSET=0 SPEE
 完整兩板、字元保存與手機頁面結果見 [整合驗證](../esp32cam/validation.md)。本版並行機構、負載／壓降、實際失聯與保存斷電驗收仍待現場執行。
 
 2026-10-26 後續：使用者回報現版「實際測試通過，目前完美運行」，記為現場運行通過；沒有另提供位數／逐項負載、Hall 或斷電驗收紀錄。後續單 USB／單包雙板更新為 [設計研究](../esp32cam/dual-update-research.md)，目前未修改本版韌體。
+
+## 2026-10-26：U0 磁鐵歸零初測
+
+使用者確認只有 U0 裝好磁鐵。本次直接經 COM5（USB-SERIAL CH340）操作既有 `Mega panel + ESP32 link v1` 韌體；只選取、ARM 及轉動 U0，未燒錄兩板、未操作 ESP32、未寫入 EEPROM。安裝設定仍為 `DIGITS=4 UNITS=0,1,2,3`，U1～U3 均未 ARM 或轉動。
+
+U0 實際讀回參數為 `REVSTEPS=4096 OFFSET=0 SPEED=800 ACCEL=799 DIR=1 ORDER=1234 POLARITY=LOW`。HOME／MEASURE 使用韌體固定的至少 5000µs 半步間隔。
+
+| 操作 | 串列實測結果 |
+| --- | --- |
+| `WATCH` | 啟動馬達前曾讀到 `A0 raw=LOW U0=1`，之後回 `HIGH U0=0`；未同步記錄實物操作，不單憑此段判定磁鐵／感測器類型 |
+| 第一次 `HOME` | 約 1.1 秒後 `DONE coils off`；`homed=1 reference=HALL value=BLANK index=0 error=none` |
+| 在剛歸零位置再次 `HOME` | 約 21.7 秒後再次完成且 `homed=1 reference=HALL error=none`；通過先離開有效磁區、再找新觸發邊緣的流程 |
+| `MEASURE` 三個完整圈 | 4094、4098、4096 半步；平均 4096，最大差 4 半步，高於本文件初驗目標的 2 半步；量測完成時韌體 `error=none` |
+| 測試結束 | 主機因量測差超過初驗目標而停止後續測項，送出 `OFF`，收到 `OK ALL stopped; disarmed, positions invalid`，並關閉 COM5 |
+
+初測結論：**U0 的霍爾歸零流程已連續完成兩次；圈步數平均支持保留 4096，重複性目標尚未通過。** 初測未修改 `REVSTEPS` 或 `OFFSET`。MEASURE 及最後 OFF 會清除定位，因此測試結束時不保留 `homed=1`。原始串列紀錄保留於本機忽略目錄 `mega2560/.build/hall-home-u0-2026-10-26.log`。
+
+使用者隨後回覆實物停在 `-`（第 42 格），確認 `OFFSET=0` 尚未對準空白頁。依既有順序 `- → ? → ! → 空白`，三格估值為 `4096 - positionFor(4096, 42) = 273` 半步；這是依字元推估，仍需目視確認翻片完整落下。
+
+後續只暫設 U0 `OFFSET 273`，重新 `ARM`，連續執行兩次 `HOME`，分別約 23.1／21.7 秒後完成；兩次均回報 `homed=1 reference=HALL value=BLANK index=0 OFFSET=273 error=none`。**使用者確認「空白，翻片完整落下」後，已執行 SAVE 保存，再以 LOAD／STATUS ALL 核對 U0 OFFSET=273。** U1～U3 仍未 ARM，設定未變；完成後 `OFF` 並釋放 COM5，位置與 ARM 均不保留。保存核對沒有轉動馬達，未另做斷電重開驗收。
+
+圈步數維持 4096；本次校準未重做三圈量測，不改變上方最大差 4 半步的結果。後續串列紀錄為 `mega2560/.build/hall-offset-u0-2026-10-26.log`，保存／重新載入紀錄為 `mega2560/.build/hall-offset-u0-save-2026-10-26.log`。
 
 ## 可重複的軟體檢查
 
@@ -86,6 +108,7 @@ VS Code 配置驗證未包含互動式中斷點／單步操作；本次未再次
 單顆上傳與試轉的使用者回報見上方；已勾選項目僅代表所述範圍，未勾選代表該整項仍未完整驗收。
 
 - [x] U0手動定位：使用者回報SPEED 800／ACCEL 800／REVSTEPS 4096下測試數輪皆無偏移；SHOW Z與STATUS確認MANUAL、Z／26、error=none。
+- [x] U0磁鐵歸零與空白頁：OFFSET=273時連續兩次HOME完成，使用者確認空白且翻片完整落下；已SAVE並LOAD核對。三圈步數差4半步，重複性目標仍待改善，未擴大到其他U。
 - [ ] 多位版實機：逐顆確認U1～U9後，測試實際使用的DIGITS位數、UNITS映射、SETTEXT／TEXT、全組停止與部分完成後重新定位；其餘位尚未由使用者回報通過。
 - [ ] 盤點Mega、ULN、12V馬達、Hall、線材的實際型號、數量、針序、公母頭與額定值。
 - [ ] 驗證12V極性、保險絲、可及的馬達實體切斷、端子及主幹線規、共地回流。

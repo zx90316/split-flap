@@ -115,9 +115,20 @@ void jsonApi() {
   }
   json = cJSON_Parse("{\"op\":\"UNITS\",\"value\":[7,0,2]}");
   assert(cam::commandPayload(json, 3, cam::Align::Left, payload, n) && n == 6 && payload[3] == 7); cJSON_Delete(json);
-  uint8_t header[64] = {}; memcpy(header, "SFCAM01", 8); sf::put32(header + 8, 123456); sf::put32(header + 12, 1); memcpy(header + 48, "splitflap-cam-v1", 16); uint32_t size;
+  uint8_t header[64] = {}; memcpy(header, "SFESP01", 8); sf::put32(header + 8, 123456); sf::put32(header + 12, 1); memcpy(header + 48, "splitflap-32s-v1", 16); uint32_t size;
   assert(cam::otaHeader(header, 1966080, size) && size == 123456);
+  memcpy(header + 48, "splitflap-cam-v1", 16);
+  assert(!cam::otaHeader(header, 1966080, size));
+  memcpy(header + 48, "splitflap-32s-v1", 16);
+  memcpy(header, "SFCAM01", 8);
+  assert(!cam::otaHeader(header, 1966080, size));
+  memcpy(header, "SFCAM01", 8); memcpy(header + 48, "splitflap-cam-v1", 16);
+  assert(!cam::otaHeader(header, 1966080, size));
+  memcpy(header, "SFESP01", 8); memcpy(header + 48, "splitflap-32s-v1", 16);
+  sf::put32(header + 12, 2); assert(!cam::otaHeader(header, 1966080, size));
+  sf::put32(header + 12, 1);
   header[0] ^= 1; assert(!cam::otaHeader(header, 1966080, size)); header[0] ^= 1;
+  sf::put32(header + 8, 255); assert(!cam::otaHeader(header, 1966080, size));
   sf::put32(header + 8, 1966081); assert(!cam::otaHeader(header, 1966080, size));
   puts("PASS production JSON parser: UTF-8, exact/manual lengths, bad ranges/types, whole-config validation and OTA header");
 }

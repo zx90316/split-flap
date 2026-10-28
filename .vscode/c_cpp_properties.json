@@ -40,7 +40,7 @@
       "cppStandard": "c++11"
     },
     {
-      "name": "ESP32-CAM",
+      "name": "ESP32-S",
       "compilerPath": "${workspaceFolder}/.tools/arduino-data/packages/esp32/tools/esp-x32/2601/bin/xtensa-esp32-elf-g++.exe",
       "compileCommands": "${workspaceFolder}/esp32cam/.build/compile_commands.json",
       "includePath": [
@@ -52,8 +52,8 @@
         "ARDUINO=10819",
         "ARDUINO_ARCH_ESP32",
         "ESP32",
-        "BOARD_HAS_PSRAM",
-        "F_CPU=240000000L"
+        "F_CPU=240000000L",
+        "CONFIG_IDF_TARGET_ESP32=1"
       ],
       "cStandard": "c11",
       "cppStandard": "c++17"

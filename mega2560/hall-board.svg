@@ -582,7 +582,7 @@
 <text x="944" y="463" font-size="16" font-weight="normal" text-anchor="start" style="fill:#334155">3P 線：兩端元件均公針</text>
 <text x="944" y="496" font-size="16" font-weight="normal" text-anchor="start" style="fill:#334155">才使用母對母</text>
 <text x="944" y="529" font-size="16" font-weight="normal" text-anchor="start" style="fill:#334155">8P／2P 線接 Mega 端</text>
-<text x="944" y="562" font-size="16" font-weight="normal" text-anchor="start" style="fill:#334155">須用公頭插入母排</text>
+<text x="944" y="562" font-size="16" font-weight="normal" text-anchor="start" style="fill:#334155">Pro 公針用母頭；標準板用公頭</text>
 <text x="944" y="595" font-size="16" font-weight="normal" text-anchor="start" style="fill:#334155">只測 U0：先焊 U0 即可</text>
 <text x="944" y="628" font-size="16" font-weight="normal" text-anchor="start" style="fill:#334155">不必一次焊完十組</text>
 <text x="55" y="758" font-size="20" font-weight="normal" text-anchor="start">背面看板時左右會鏡像：以孔號及導通量測為準，不能把這張元件面直接當背面焊線圖。</text>

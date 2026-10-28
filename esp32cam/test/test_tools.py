@@ -51,6 +51,9 @@ class WorkflowTest(unittest.TestCase):
         self.assertIn('dtr=off', commands[3])
         self.assertIn('rts=off', commands[3])
         self.assertIn('PartitionScheme=min_spiffs', dev.FQBN)
+        self.assertIn('PSRAM=disabled', dev.FQBN)
+        self.assertIn('FlashSize=4M', dev.FQBN)
+        self.assertNotIn(':esp32cam:', dev.FQBN)
         package.assert_called_once()
 
     @patch.object(dev.shared, 'arduino_cli', return_value='arduino-cli')
@@ -111,11 +114,27 @@ class ArtifactsTest(unittest.TestCase):
     def test_ota_rejects_wrong_protocol_project_and_too_large(self):
         image = bytearray(256)
         image[0] = 0xe9
-        data = b'SFCAM01\0' + struct.pack('<II', len(image), 2) + hashlib.sha256(image).digest() + b'splitflap-cam-v1' + image
+        data = b'SFESP01\0' + struct.pack('<II', len(image), 1) + hashlib.sha256(image).digest() + b'splitflap-32s-v1' + image
+        self.assertEqual(mock.verify_package(data), image)
+        oversized = bytearray(1966081)
+        oversized[0] = 0xe9
+        cases = {
+            'protocol': data[:12] + struct.pack('<I', 2) + data[16:],
+            'project': data[:48] + b'another-device-x' + data[64:],
+            'magic': b'SFCAM01\0' + data[8:],
+            'oversize': (b'SFESP01\0' + struct.pack('<II', len(oversized), 1) + hashlib.sha256(oversized).digest()
+                         + b'splitflap-32s-v1' + oversized),
+        }
+        for reason, invalid in cases.items():
+            with self.subTest(reason=reason), self.assertRaises(ValueError):
+                mock.verify_package(invalid)
+
+    def test_old_cam_package_is_rejected_even_with_valid_esp32_image(self):
+        image = bytearray(256)
+        image[0] = 0xe9
+        data = b'SFCAM01\0' + struct.pack('<II', len(image), 1) + hashlib.sha256(image).digest() + b'splitflap-cam-v1' + image
         with self.assertRaises(ValueError):
             mock.verify_package(data)
-        with self.assertRaises(ValueError):
-            mock.verify_package(data[:48] + b'another-device-x' + data[64:])
 
     def test_embedded_page_is_exact_current_source(self):
         header = (ROOT / 'esp32cam/controller/web_assets.h').read_text(encoding='utf-8')

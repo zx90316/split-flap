@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-only
 #pragma once
 #include <SplitFlapLink.h>
+#include "board_profile.h"
 #include <stdio.h>
 #include <time.h>
 
@@ -60,8 +61,8 @@ inline bool formatTime(int64_t unixTime, int16_t offsetMinutes, const char* mode
 }
 static const size_t kOtaHeaderSize = 64;
 inline bool otaHeader(const uint8_t* header, uint32_t maxSize, uint32_t& imageSize) {
-  if (memcmp(header, "SFCAM01", 8) || sf::get32(header + 12) != sf::kVersion ||
-      memcmp(header + 48, "splitflap-cam-v1", 16)) return false;
+  if (memcmp(header, kOtaMagic, 8) || sf::get32(header + 12) != sf::kVersion ||
+      memcmp(header + 48, kOtaProject, 16)) return false;
   imageSize = sf::get32(header + 8); return imageSize >= 256 && imageSize <= maxSize;
 }
 }

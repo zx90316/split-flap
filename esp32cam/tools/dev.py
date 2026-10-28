@@ -1,6 +1,9 @@
 #!/usr/bin/env python3
 # SPDX-License-Identifier: GPL-3.0-only
-"""ESP32-CAM build/upload/test entry point. Never arms a motor."""
+"""NodeMCU ESP-32S build/upload/test entry point. Never arms a motor.
+
+The esp32cam directory is retained so existing scripts and source links keep working.
+"""
 import argparse
 import hashlib
 import importlib.util
@@ -16,7 +19,8 @@ ROOT = Path(__file__).resolve().parents[2]
 SPEC = importlib.util.spec_from_file_location('mega_dev_shared', ROOT / 'mega2560/tools/dev.py')
 shared = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(shared)
-FQBN = 'esp32:esp32:esp32cam:PartitionScheme=min_spiffs'
+FQBN = ('esp32:esp32:esp32:PartitionScheme=min_spiffs,FlashSize=4M,'
+        'FlashMode=dio,FlashFreq=40,PSRAM=disabled')
 CORE = 'esp32:esp32@3.3.12'
 INDEX = 'https://espressif.github.io/arduino-esp32/package_esp32_index.json'
 BUILD = ROOT / 'esp32cam/.build'
@@ -34,16 +38,17 @@ def package(image=None, destination=None):
     if len(binary) < 256 or len(binary) > 1966080 or binary[0] != 0xE9 or binary[12:14] != b'\0\0':
         raise ValueError('不是適用於 ESP32／min_spiffs 的映像。')
     digest = hashlib.sha256(binary).digest()
-    header = b'SFCAM01\0' + struct.pack('<II', len(binary), 1) + digest + b'splitflap-cam-v1'
+    header = b'SFESP01\0' + struct.pack('<II', len(binary), 1) + digest + b'splitflap-32s-v1'
     assert len(header) == 64
     destination.mkdir(parents=True, exist_ok=True)
-    result = destination / 'splitflap-esp32cam.sffw'
+    result = destination / 'splitflap-esp32s.sffw'
     result.write_bytes(header + binary)
-    shutil.copyfile(image, destination / 'splitflap-esp32cam.bin')
-    metadata = {'device': 'splitflap-esp32cam', 'board': FQBN, 'core': CORE, 'protocol': 1,
-                'firmware': '1.1.0', 'size': len(binary), 'sha256': digest.hex()}
+    shutil.copyfile(image, destination / 'splitflap-esp32s.bin')
+    metadata = {'device': 'splitflap-esp32s', 'hardware': 'NodeMCU ESP-32S', 'board': FQBN,
+                'core': CORE, 'protocol': 1, 'firmware': '1.2.0', 'psram': False,
+                'size': len(binary), 'sha256': digest.hex()}
     (destination / 'firmware.json').write_text(json.dumps(metadata, indent=2) + '\n', encoding='utf-8')
-    print(f'ESP32-CAM：網頁更新檔 {result} ({len(binary)} bytes, SHA-256 {digest.hex()[:16]}…)')
+    print(f'ESP32-S：網頁更新檔 {result} (映像 {len(binary)} bytes，封裝 {len(header) + len(binary)} bytes，SHA-256 {digest.hex()[:16]}…)')
     return result
 
 
@@ -59,14 +64,15 @@ def compile_firmware(clean=False):
 
 def upload(port):
     compile_firmware()
-    print('ESP32-CAM：關閉馬達 12V 分支；保留控制 5V。GPIO0→GND 後按 RESET。', flush=True)
+    print('ESP32-S：關閉馬達 12V；拔該板外部 5V 與板間四條 UART 訊號線，再用板上 USB 接電腦。', flush=True)
+    print('通常自動進入燒錄；若停在 Connecting，按住 BOOT，連線開始後放開。', flush=True)
     run([shared.arduino_cli(), 'upload', '--fqbn', FQBN, '--port', port, '--input-dir', BUILD,
          '--upload-property', 'upload.speed=115200', '--verify', '--no-color', ROOT / 'esp32cam/controller'])
-    print('燒錄完成：移除 GPIO0→GND 跳線，再按 RESET，才能啟動正式韌體。', flush=True)
+    print('燒錄完成；若未自動啟動，按 EN／RESET。無需 CP2102 或 GPIO0 跳線。', flush=True)
 
 
 def monitor(port):
-    print('ESP32-CAM：115200，輸入 ACCESS 顯示 Wi-Fi／登入資料，STATUS 看連線。Ctrl+C 結束。', flush=True)
+    print('ESP32-S：115200，輸入 ACCESS 顯示 Wi-Fi／登入資料，STATUS 看連線。Ctrl+C 結束。', flush=True)
     run([shared.arduino_cli(), 'monitor', '--port', port, '--config', 'baudrate=115200',
          '--config', 'dtr=off', '--config', 'rts=off', '--no-color'])
 
@@ -126,13 +132,13 @@ def main(argv=None):
             test_web()
         return 0
     except (FileNotFoundError, ValueError) as error:
-        print(f'ESP32-CAM：{error}', file=sys.stderr)
+        print(f'ESP32-S：{error}', file=sys.stderr)
         return 1
     except subprocess.CalledProcessError as error:
-        print(f'ESP32-CAM：操作失敗（代碼 {error.returncode}）；後續步驟停止。', file=sys.stderr)
+        print(f'ESP32-S：操作失敗（代碼 {error.returncode}）；後續步驟停止。', file=sys.stderr)
         return error.returncode if error.returncode > 0 else 1
     except KeyboardInterrupt:
-        print('\nESP32-CAM：操作已結束。', flush=True)
+        print('\nESP32-S：操作已結束。', flush=True)
         return 130
 
 

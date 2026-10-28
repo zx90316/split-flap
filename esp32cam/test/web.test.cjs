@@ -33,6 +33,8 @@ async function main() {
     await page.getByRole('textbox',{name:'密碼',exact:true}).fill('MockPassword123');
     await Promise.all([page.waitForURL(url+'/'),page.getByRole('button',{name:'登入',exact:true}).click()]);
     await page.locator('#connection').filter({hasText:'Mega 已連線'}).waitFor();
+    assert.equal((await api()).hardware,'NodeMCU ESP-32S');
+    await page.locator('#hardwareLabel').filter({hasText:'NodeMCU ESP-32S'}).waitFor();
     await control({connected:false});await page.reload();
     await page.locator('#connection').filter({hasText:'Mega 尚未連線'}).waitFor();
     await page.getByRole('button',{name:'裝置設定',exact:true}).click();
@@ -145,9 +147,11 @@ async function main() {
     console.log('PASS browser Wi-Fi form, export/import, invalid atomic config, link reconnect and reboot without ARM');
 
     await page.getByRole('button',{name:'韌體更新',exact:true}).click();
-    const good=path.join(ROOT,'esp32cam/dist/splitflap-esp32cam.sffw');const bytes=await fs.readFile(good);
+    const good=path.join(ROOT,'esp32cam/dist/splitflap-esp32s.sffw');const bytes=await fs.readFile(good);
     const corrupt=Buffer.from(bytes);corrupt[100]^=1;const corruptPath=path.join(BUILD,'corrupt.sffw');await fs.writeFile(corruptPath,corrupt);
     const partialPath=path.join(BUILD,'partial.sffw');await fs.writeFile(partialPath,bytes.subarray(0,bytes.length-17));
+    const cam=Buffer.from(bytes);cam.write('SFCAM01\0',0,'ascii');cam.write('splitflap-cam-v1',48,'ascii');
+    const camPath=path.join(BUILD,'old-cam.sffw');await fs.writeFile(camPath,cam);
     async function prepare(file) {
       await page.locator('#prepareUpdate').click();await toast('Mega 已確認停止');
       await page.locator('#firmwareFile').setInputFiles(file);
@@ -161,6 +165,8 @@ async function main() {
     await prepare(corruptPath);await page.locator('#uploadUpdate').click();await toast('SHA-256 不符');
     assert.equal((await api()).boot,boot);
     await page.screenshot({path:path.join(BUILD,'ui-ota-rejected.jpg'),type:'jpeg',quality:85});
+    await prepare(camPath);await page.locator('#uploadUpdate').click();await toast('只接受本專案');
+    assert.equal((await api()).boot,boot);
     await prepare(good);await page.locator('#uploadUpdate').click();await toast('設備已重新啟動');
     assert.equal((await api()).units.some(u=>u.armed),false);
     await page.getByRole('button',{name:'顯示',exact:true}).click();

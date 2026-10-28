@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-only
 #pragma once
 #include <Arduino.h>
+#include "board_profile.h"
 #include "bridge_engine.h"
 
 namespace cam {
@@ -9,7 +10,7 @@ class Bridge {
   void begin() {
     lock_ = xSemaphoreCreateMutex();
     uart_.setRxBufferSize(1024); uart_.setTxBufferSize(512);
-    uart_.begin(115200, SERIAL_8N1, 14, 13);
+    uart_.begin(115200, SERIAL_8N1, kUartRx, kUartTx);
     engine_.begin(esp_random());
     xTaskCreatePinnedToCore(task, "mega-link", 8192, this, 2, &task_, 0);
   }
