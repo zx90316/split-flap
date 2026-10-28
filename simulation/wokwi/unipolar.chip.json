@@ -1,0 +1,17 @@
+{
+  "name": "ULN2003 + rotor + KY003 LOGIC",
+  "author": "Split-flap project",
+  "pins": [
+    "IN1",
+    "IN2",
+    "IN3",
+    "IN4",
+    "GND",
+    "COMMON_12V",
+    "HALL"
+  ],
+  "display": {
+    "width": 96,
+    "height": 96
+  }
+}

@@ -1,63 +1,34 @@
-# Split-Flap
-<img src="https://media.prusaprinters.org/media/prints/69464/images/757807_e77ddd2d-72e7-44ac-a8ae-af2382483195/thumbs/inside/1920x1440/jpg/titlepic.webp" alt="Image of Split-Flap" width="600"/>
-3D-files here: https://www.prusaprinters.org/prints/69464-split-flap-display
+# Split-Flap · NodeMCU ESP-32S＋Mega2560 Pro（1～10 位可選）
 
-## Notable Forks
-As I'm not actively maintaining and developing the code further, here are some forks:
-- https://github.com/JonnyBooker/split-flap
-  
-## General
-The display's electronics use one esp01 as the master and up to 16 arduinos as slaves. The esp handles the webinterface and communicates to the units via I2C. Each unit is resposible for setting the zero position of the drum on startup and displaying any letter the master send its way.
+**現行硬體改為新購 Mega2560 Pro CH340G＋NodeMCU ESP-32S。** 手機網頁、Wi-Fi、時鐘／日期、設定保存及 ESP32 OTA 由 NodeMCU 提供，Mega Pro 直接控制 ULN2003／KY-003，所有需更新的位置同時翻頁。兩板各自使用板上 USB 燒錄，沿用現有 P011 轉換板與 LM2596。
 
-Assemble everything according to the instruction manual.
+**[新硬體快速開始](esp32cam/README.md) · [已購清單與設定搬移](hardware/purchased-2026-10-26.md) · [正常供電／UART](esp32cam/wiring-runtime.svg) · [兩板 USB 燒錄](esp32cam/wiring-flashing.svg) · [驗證紀錄](esp32cam/validation.md)**
 
-### PCB
-Gerber files are in the pcb folder. You need one per unit. Populate components according to the instruction manual on prusaprinters.
-### Unit
-Each split-flap unit consists of an arduino nano mounted on a custom pcb. It controls a 28BYJ-48 stepper motor via a ULN2003 driver chip. The drum with the flaps is homed with a KY003 hall sensor and a magnet mounted to the drum.
+源碼目錄仍叫 `esp32cam/`，目前目標已改為 NodeMCU ESP-32S（4MB、無 PSRAM）；舊 CAM 更新檔不相容。新板 EEPROM／NVS 不會自動繼承舊板設定，先依搬移指南還原校準，再重新定位及 ARM。購買清單是待出貨紀錄，新板尚未實機驗收。
 
-Upload the arduino sketch "unit.ino" in the unit folder to each unit's arduino nano. Before that set the offset with the "eeprom write offset" sketch. 
+1. **[從單顆測試開始：接線、硬體清單、燒錄與操作](mega2560/README.md)**
+2. [單顆接線圖](mega2560/wiring-single.svg)／[十字元接線規劃](mega2560/wiring-ten.svg)／[Hall 洞洞板逐孔配置](mega2560/hall-board.svg)
+3. [目前 BOM](hardware/project-bom.csv)／[暫不使用及未來選配](hardware/optional-parts.csv)
+4. [KY-003 的 3.39V 量測與鎖存排查](mega2560/hall-diagnostics.md)
+5. [軟體驗證與實機紀錄](mega2560/validation.md)
+6. [VS Code F5 建置、燒錄、串列除錯與主機中斷點](mega2560/vscode.md)
+7. [磁鐵尚未到貨：手動定位目前字元，再指定目標](mega2560/README.md#無磁鐵手動定位與指定字元)
+8. **[1～10位安裝配置、整串文字控制與功能完成度](mega2560/multi-unit.md)**
 
-#### set zero position offset
-The zero position (or blank flaps position in this case) is attained by driving the stepper to the hall sensor and step a few steps forward. This offset is individual to every unit and needs to be saved to the arduino nano's EEPROM.
+![單顆測試接線](mega2560/wiring-single.svg)
 
-I wrote a simple sketch to set the offset. Upload the "EEPROM_Write_Offset.ino" sketch and open the serial monitor with 115200 baudrate. It will tell you the current offset and you can enter a new offset. It should be around 100. You may need to upload the "unit.ino" sketch and see if the offset is correct. Repeat until the blank flap is showing every time the unit homes.
+`mega2560/unit_test/unit_test.ino` 開機不轉動，有效 EEPROM 會載入安裝／校準，否則只啟用 U0。`DIGITS 1..10` 啟用前 N 位，`UNITS 0,2,7` 指定順序；未啟用輸出保持 LOW。各位保留獨立設定，USB `SAVE`／`LOAD` 或網頁可持久化；ESP32 另保存最後完成字元，重開後核對實物並確認才建立定位及允許轉動。調速／加速度保留目前定位與 ARM。無磁鐵可 SET／SHOW，或 SETTEXT／ARM ALL／TEXT；跨圈按步數前進。文字、HOME ALL／CYCLE ALL 同時開始，定距移動自動加減速，預設 SPEED 800µs／ACCEL 800半步/s²，SPEED 可調 800–30000µs。網頁 UART 使用獨立的 Serial1 封包／心跳，查狀態不會停止馬達。Cardputer 與外接 RTC 尚未整合；現有接線無法自動偵測插拔，僅啟用實際接上的組別。手機設定頁內含四張離線接線圖。
 
-#### set unit address
-Every units address is set by a DIP switch. They need to be set ascending from zero in binary.
-This is how my 10 units are set, 1 means switch is in the up-position:
-| Unit 1  | Unit 2 | Unit 3 | Unit 4 | Unit 5 | Unit 6 | Unit 7 | Unit 8 | Unit 9 | Unit 10 |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| 0000 | 0001 | 0010 | 0011 | 0100 | 0101 | 0110 | 0111 | 1000 | 1001 |
+**U0手動定位已回報數輪無偏移：SPEED 800、ACCEL 800、REVSTEPS 4096。U0磁鐵歸零已初驗，空白頁 OFFSET=273 已保存。** [實機紀錄](mega2560/validation.md)保留STATUS與驗證範圍；三圈量測平均4096半步、最大差4半步，重複性目標及完整系統驗收仍待完成。先只接 U0；馬達電源須有實體切斷開關。移動中送任何非換行字元會停止並釋放線圈，不能取代切斷 12V 或保證硬體故障時關閉。
 
-#### ESP01
-To upload the sketch to the ESP01 you need to install a few things to your arduino IDE.
+## 既有 ESP32 與來源
 
-- Install the esp8266 board to your Arduino IDE https://randomnerdtutorials.com/how-to-install-esp8266-board-arduino-ide/
-- Install the arduino esp8266 littleFS plugin to use the file system of the ESP01, you can follow this tutorial: https://randomnerdtutorials.com/install-esp8266-nodemcu-littlefs-arduino/
-- Install the following libraries:
-	- ESPAsyncWebServer https://github.com/me-no-dev/ESPAsyncWebServer/archive/master.zip
-	- ESPAsyncTCP https://github.com/me-no-dev/ESPAsyncTCP/archive/master.zip
-	- Arduino_JSON from the library manager
-	- NTPClient from the library manager
-	- ezTime from the library manager
+原 ESP32 韌體、MCP 接線、Wokwi 模擬保留，入口為 **[ESP32 文件](docs/esp32/README.md)** 與[原 ESP32 BOM](hardware/esp32-project-bom.csv)。其 INIT／ENABLE／HOME ALL 命令、GPIO／MCP 表及模擬驗收不適用 Mega 測試程式。
 
-To upload sketches to the ESP01 you can either use an Arduino https://create.arduino.cc/projecthub/pratikdesai/how-to-program-esp8266-esp-01-module-with-arduino-uno-598166 or you can buy a dedicated programmer. I highly recommend getting a programmer as it makes uploading programs onto the ESP01 much faster.
+機構延續 David Königsmann 設計，以 [JonnyBooker/split-flap 的 0c6ef692](https://github.com/JonnyBooker/split-flap/tree/0c6ef692ac6a5d21a9bc858fa79ecbe816530d8d) 為主要參考，保留每字元 45 片與原字元順序。沿革見[參考比對](docs/esp32/upstream-reference.md)，GitHub fork parent 未更動。
 
-Open the sketch "ESPMaster.ino" in the ESPMaster folder, change your board to "Generic ESP8266 Module", choose the correct COM-port and click Tools->ESP8266 LittleFS Data Upload. This uploads the website onto the ESP01's file system.
-##### change sketch values
-Modify the sketch where it says 
-`// REPLACE WITH YOUR NETWORK CREDENTIALS
-const char* ssid = "SSID";
-const char* password = "12345678901234567890";`
-and insert your network's credentials.
+- [原組裝 PDF](Instructions/SplitFlapInstructions.pdf)／[歷史 README](Instructions/README.upstream.md)
+- 原始 `unit/`、`ESPMaster/`、`EEPROM_Write_Offset/`、`PCB/` 留存，不適用新 Mega 配線。
+- [3D 檔來源](https://www.printables.com/model/69464-split-flap-display)：repo 未包含 STL，未修改磁鐵孔或 Hall 固定孔。
 
-Also change the `timezoneString` to your time zone. You can find the TZ database names here: https://en.wikipedia.org/wiki/List_of_tz_database_time_zones
-
-You can also modify the date and clock format easily by using this table: https://github.com/ropg/ezTime#datetime
-
-##### final upload
-Now you only need to upload the sketch and you are done. Stick the ESP01 onto the first unit's PCB and navigate to the IP-address the ESP01 is getting assigned from your router.
-
-##### common mistakes
-If the ESP is not talking to the units correctly, check the UNITSAMOUNT in the ESPMaster.ino. The amount of units connected has to match.
+授權維持 [GPL-3.0](LICENSE)，外部機構與 3D 檔依原發布頁授權。
