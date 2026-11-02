@@ -35,7 +35,9 @@ class Model:
         self.schema = {'units': [0], 'calibration': [dict(revolution=4096, offset=0, speed=800, accel=800,
                        direction=1, order='1234', activeLow=True) for _ in range(10)]}
         self.display = dict(mode='text', clockFormat='HH:MM', dateFormat='YYYY-MM-DD', timezone=480,
-                            align=0, running=False, reason='請先定位並啟用。', timeValid=False, timeSource='none', unix=0)
+                            align=0, running=False, reason='請先歸零校準或記錄目前字元。', timeValid=False, timeSource='none', unix=0,
+                            weekdayFormat='SHORT', leadingZero=True, limited=False, windowStart=0, windowEnd=0,
+                            autoRecovery=False, itemIndex=0, items=[dict(mode='clock',format='HH:MM',text='',seconds=30,align=0)])
         self.units = [dict(unit=i, enabled=i == 0, armed=False, index=0, target=0, mode=0, reference='NONE',
                           rawHigh=True, hall=False, steps=0, remaining=0, measured=[], error='', rememberedIndex=None) for i in range(10)]
         self.boot = 1234567
@@ -50,6 +52,11 @@ class Model:
         self.admin_password = 'MockPassword123'
         self.session = secrets.token_hex(12)
         self.csrf = 'mock-csrf-token'
+        self.sessions = set()
+        self.workflow = dict(active=False,calibrating=False,calibrated=False,recovering=False,step=0,steps=0,message='待命',jogReadyMask=0)
+        self.original = None
+        self.recovery_chosen = False
+        self.resume_display = False
 
     def advance(self):
         if self.pending and time.monotonic() >= self.pending[0]:
@@ -57,10 +64,8 @@ class Model:
             self.pending = None
             callback()
             job['stage'] = 'done'
+            self.workflow['active'] = False
         self.display['unix'] = int(time.time()) if self.display['timeValid'] else 0
-        for unit in self.units:
-            if unit['reference'] != 'NONE' and not unit['mode']:
-                unit['rememberedIndex'] = unit['index']
 
     def stop(self):
         if self.pending:
@@ -68,14 +73,15 @@ class Model:
         self.pending = None
         for unit in self.units:
             unit.update(mode=0, armed=False, reference='NONE', remaining=0)
+        self.workflow['active'] = False
         self.display.update(running=False, reason='已停止，請重新定位。')
 
     def state(self):
         self.advance()
-        return dict(firmware='1.2.0-mock', hardware='NodeMCU ESP-32S', protocol=1, boot=self.boot, nextRequest=self.next_request, csrf=self.csrf,
-                    displayMemoryOk=True,
+        return dict(firmware='1.3.0-mock', hardware='NodeMCU ESP-32S', protocol=1, boot=self.boot, nextRequest=self.next_request, csrf=self.csrf,
+                    displayMemoryOk=True, workflow=self.workflow,
                     connected=self.connected, protocolMismatch=False, uncertain=False, maintenance=self.maintenance, storageOk=True,
-                    networkEditable=not self.pending and not self.maintenance,
+                    networkEditable=not self.pending and not self.maintenance and not self.workflow['calibrating'],
                     ageMs=0, digits=len(self.schema['units']), selected=0, busy=bool(self.pending), saving=False,
                     watching=False, usbLocked=False, error='', mega=self.schema, units=self.units, jobs=self.jobs[-16:],
                     display=self.display, network=self.network, otaReady=self.ota_ready, otaError='')
@@ -130,13 +136,15 @@ class Model:
         elif op in {'SET', 'SETINDEX', 'SHOW', 'GOTO'}:
             value = body['value']
             values = [int(value) if isinstance(value, int) else GLYPHS.index(value.upper())]
-        if op == 'ARM':
+        if op in {'ARM','UNITS','DIGITS'}:
+            job.update(stage='rejected',error='invalid')
+        elif op == 'ARM':
             for u in targets:
                 self.units[u]['armed'] = True
             job['stage'] = 'done'
         elif op in {'SETTEXT', 'SET', 'SETINDEX'}:
             for u, value in zip(targets, values):
-                self.units[u].update(index=value, target=value, reference='MANUAL', armed=False)
+                self.units[u].update(index=value, target=value, reference='MANUAL', armed=False,rememberedIndex=value)
             job['stage'] = 'done'
         elif op in {'SAVE', 'LOAD', 'UNIT', 'WATCH'}:
             job['stage'] = 'done'
@@ -146,7 +154,11 @@ class Model:
             job['stage'] = 'done'
         else:
             needs_position = op in {'TEXT', 'SHOW', 'GOTO', 'FLAP', 'CYCLE'}
-            if any(not self.units[u]['armed'] or needs_position and self.units[u]['reference'] == 'NONE' for u in targets):
+            for u in targets:
+                self.units[u]['armed'] = True
+                if self.workflow['calibrated'] and self.units[u]['reference'] == 'NONE':
+                    self.units[u]['reference'] = 'HALL'
+            if any(needs_position and self.units[u]['reference'] == 'NONE' for u in targets):
                 job.update(stage='rejected', error='not_ready')
             else:
                 if values is None:
@@ -157,6 +169,8 @@ class Model:
                 def complete():
                     for u, value in zip(targets, values):
                         self.units[u].update(index=value, target=value, mode=0, remaining=0, steps=91)
+                        if op in {'TEXT','SHOW','GOTO','FLAP'}:
+                            self.units[u]['rememberedIndex'] = value
                         if op == 'HOME':
                             self.units[u]['reference'] = 'HALL'
                 self.pending = (time.monotonic() + 0.7, complete, job)
@@ -170,27 +184,32 @@ def handler_for(model):
         def log_message(self, *args):
             pass
 
-        def send_json(self, data, code=200):
+        def send_json(self, data, code=200, cookie=None):
             value = json.dumps(data, ensure_ascii=False).encode()
             self.send_response(code)
             self.send_header('Content-Type', 'application/json; charset=utf-8')
             self.send_header('Content-Length', str(len(value)))
             self.send_header('Cache-Control', 'no-store')
+            if cookie is not None:
+                self.send_header('Set-Cookie', cookie)
             self.end_headers()
             self.wfile.write(value)
 
         def logged_in(self):
-            return f'MockSession={model.session}' in self.headers.get('Cookie', '')
+            return any(f'SFSession={token}' in self.headers.get('Cookie', '').split('; ') for token in model.sessions)
 
         def do_GET(self):
             path = urlparse(self.path).path
-            if path == '/mock/login':
-                data = '<!doctype html><html lang="zh-Hant"><meta charset="utf-8"><meta name="viewport" content="width=device-width"><title>模擬器登入</title><h1>翻頁控制台 · 測試登入</h1><p>此為瀏覽器測試用登入頁，正式韌體使用瀏覽器 Digest 登入。</p><form method="post"><label>帳號<input name="username" autocomplete="username"></label><label>密碼<input name="password" type="password" autocomplete="current-password"></label><button>登入</button></form></html>'.encode()
+            if path == '/':
+                page = (ROOT / 'esp32cam/web/index.html').read_bytes()
                 self.send_response(200)
-                self.send_header('Content-Type', 'text/html; charset=utf-8')
-                self.send_header('Content-Length', str(len(data)))
+                self.send_header('Content-Type','text/html; charset=utf-8')
+                self.send_header('Content-Length',str(len(page)))
                 self.end_headers()
-                self.wfile.write(data)
+                self.wfile.write(page)
+                return
+            if path == '/api/session':
+                self.send_json(dict(authenticated=self.logged_in(),csrf=model.csrf if self.logged_in() else ''))
                 return
             if not self.logged_in():
                 if path.startswith('/api/'):
@@ -205,8 +224,8 @@ def handler_for(model):
                 if path == '/api/state':
                     self.send_json(model.state())
                 elif path == '/api/config':
-                    self.send_json(dict(schema=1, device='splitflap-esp32cam', mega=model.schema,
-                                        display={k: model.display[k] for k in ['mode', 'clockFormat', 'dateFormat', 'timezone', 'align']}))
+                    self.send_json(dict(schema=2, device='splitflap-esp32s', mega=dict(digits=len(model.schema['units']),calibration=model.schema['calibration']),
+                                        display={k:v for k,v in model.display.items() if k not in {'running','reason','timeValid','timeSource','unix'}}))
                 elif path == '/':
                     page = (ROOT / 'esp32cam/web/index.html').read_bytes()
                     self.send_response(200)
@@ -229,16 +248,14 @@ def handler_for(model):
         def do_POST(self):
             path = urlparse(self.path).path
             data = self.rfile.read(min(int(self.headers.get('Content-Length', 0)), 2100000))
-            if path == '/mock/login':
-                values = parse_qs(data.decode())
-                if values.get('username') == ['admin'] and values.get('password') == [model.admin_password]:
-                    self.send_response(303)
-                    self.send_header('Set-Cookie', f'MockSession={model.session}; HttpOnly; SameSite=Strict; Path=/')
-                    self.send_header('Location', '/')
-                    self.send_header('Content-Length', '0')
-                    self.end_headers()
+            if path == '/api/login':
+                values = json.loads(data)
+                if values.get('username') == 'admin' and values.get('password') == model.admin_password:
+                    token = secrets.token_hex(16)
+                    model.sessions.add(token)
+                    self.send_json(dict(authenticated=True,csrf=model.csrf),cookie=f'SFSession={token}; HttpOnly; SameSite=Strict; Path=/; Max-Age=34560000')
                 else:
-                    self.send_json({'error': '登入失敗'}, 401)
+                    self.send_json({'error':'帳號或密碼不正確。'},401)
                 return
             if not self.logged_in():
                 self.send_json({'error': 'login_required'}, 401)
@@ -265,12 +282,17 @@ def handler_for(model):
                         return
                     body = json.loads(data or b'{}')
                     model.advance()
-                    if path == '/api/command':
+                    if path == '/api/logout':
+                        model.sessions = {t for t in model.sessions if f'SFSession={t}' not in self.headers.get('Cookie','')}
+                        self.send_json({},cookie='SFSession=; Path=/; Max-Age=0')
+                    elif path == '/api/command':
                         self.send_json(model.command(body), 202)
                     elif path == '/api/config':
                         settings = copy.deepcopy(body['mega'])
-                        units = settings['units']
-                        if body.get('schema') != 1 or not 1 <= len(units) <= 10 or len(set(units)) != len(units) or any(type(u) is not int or not 0 <= u <= 9 for u in units) or len(settings['calibration']) != 10:
+                        units = settings.get('units',list(range(settings.get('digits',1))))
+                        settings['units'] = units
+                        settings.pop('digits',None)
+                        if body.get('schema') not in {1,2} or units != list(range(len(units))) or not 1 <= len(units) <= 10 or len(set(units)) != len(units) or any(type(u) is not int or not 0 <= u <= 9 for u in units) or len(settings['calibration']) != 10:
                             raise ValueError('整份設定驗證失敗。')
                         for c in settings['calibration']:
                             if not 1000 <= c['revolution'] <= 20000 or not 0 <= c['offset'] < c['revolution'] or not 800 <= c['speed'] <= 30000 or not 100 <= c['accel'] <= 6000 or sorted(c['order']) != list('1234'):
@@ -284,6 +306,7 @@ def handler_for(model):
                                 physical = u['unit']
                                 if any(previous['calibration'][physical][key] != settings['calibration'][physical][key] for key in geometry):
                                     u.update(reference='NONE', armed=False)
+                                    model.workflow['calibrated'] = False
                                 if changed_map:
                                     u['armed'] = False
                                     if physical not in previous['units'] or physical not in units:
@@ -301,19 +324,64 @@ def handler_for(model):
                             raise ValueError('時間無效。')
                         model.display.update(timeValid=True, timeSource='phone', unix=body['unix'])
                         self.send_json({})
+                    elif path == '/api/calibration':
+                        action=body['action']
+                        if action == 'start' and model.workflow['calibrating']:
+                            raise ValueError('已在校準中。')
+                        if action != 'start' and not model.workflow['calibrating']:
+                            raise ValueError('請先開始校準。')
+                        job,repeated=model.new_job(body,'CALIBRATION')
+                        if not repeated:
+                            if action == 'start':
+                                model.original=copy.deepcopy(model.schema)
+                                model.workflow['calibrating']=True
+                                model.workflow['jogReadyMask']=(1<<len(model.schema['units']))-1
+                            model.workflow.update(active=True,message='校準處理中')
+                            def complete():
+                                if action in {'start','finish'}:
+                                    for u in model.schema['units']:
+                                        model.units[u].update(reference='HALL',index=0,armed=True)
+                                elif action in {'preview','jog'}:
+                                    c=model.schema['calibration'][body['unit']]
+                                    c['offset']=body['value'] if action=='preview' else (c['offset']+body['value'])%c['revolution']
+                                elif action == 'cancel':
+                                    model.schema=model.original
+                                    model.workflow['calibrating']=False
+                                if action == 'finish':
+                                    model.workflow.update(calibrated=True,calibrating=False)
+                                    if not model.recovery_chosen:
+                                        model.display['autoRecovery']=True
+                                        model.recovery_chosen=True
+                                model.workflow['message']='偏移已永久保存，校準完成。' if action=='finish' else '歸零／微調完成，請確認空白頁後保存。'
+                            model.pending=(time.monotonic()+0.5,complete,job)
+                        self.send_json({'id':job['id']},202)
                     elif path == '/api/preferences':
+                        if body.get('autoRecovery') and not model.workflow['calibrated']:
+                            raise ValueError('請先完成校準。')
+                        if 'autoRecovery' in body:
+                            model.recovery_chosen=True
+                        model.display.update({k:v for k,v in body.items() if k not in {'run','boot','request'}})
+                        if 'run' in body:
+                            model.display['running']=body['run']
+                            model.resume_display=body['run']
                         if body.get('run'):
-                            if len(model.schema['units']) < 4 or not model.display['timeValid'] or any(not model.units[u]['armed'] or model.units[u]['reference'] == 'NONE' for u in model.schema['units']):
-                                raise ValueError('請先定位、啟用並校時。')
-                        model.display.update(body)
-                        model.display['running'] = body.get('run', False)
-                        model.display['reason'] = '自動顯示執行中。' if body.get('run') else '自動顯示已暫停。'
-                        self.send_json({})
+                            for u in model.schema['units']:
+                                if model.units[u]['reference']=='NONE' and not model.workflow['calibrated']:
+                                    raise ValueError('請先定位或校準。')
+                                model.units[u].update(armed=True,reference='HALL' if model.workflow['calibrated'] else 'MANUAL')
+                            job,_=model.new_job(body,'START');job['stage']='done'
+                            self.send_json({'id':job['id']},202)
+                        else:
+                            self.send_json({})
+                        model.display['reason']='自動顯示執行中。' if model.display['running'] else '自動顯示已暫停。'
                     elif path == '/api/network':
                         if model.pending or model.maintenance:
                             raise ValueError('busy')
                         model.display['running'] = False
                         model.network.update(ssid=body['ssid'], connected=bool(body['ssid']), staIp='192.168.1.50')
+                        if body.get('adminPassword'):
+                            model.admin_password=body['adminPassword']
+                            model.sessions.clear()
                         self.send_json({'message': '模擬網路設定已保存。'})
                     elif path == '/api/ota/prepare':
                         model.stop()
@@ -334,6 +402,12 @@ def handler_for(model):
                             model.boot += 1
                             model.next_request = 1
                             model.jobs = []
+                            if body.get('powerOn') and model.display['autoRecovery'] and model.workflow['calibrated']:
+                                for u in model.schema['units']:
+                                    model.units[u].update(reference='HALL',armed=True,index=model.units[u]['rememberedIndex'] or 0)
+                                model.display['running']=model.resume_display
+                        if body.get('expireSessions'):
+                            model.sessions.clear()
                         self.send_json({})
                     else:
                         self.send_json({'error': 'not_found'}, 404)

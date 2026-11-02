@@ -4,6 +4,8 @@
 #include "../../esp32cam/controller/bridge_engine.h"
 #include "../../esp32cam/controller/display_memory.h"
 #include "../../esp32cam/controller/json_helpers.h"
+#include "../controller/action_flow.h"
+#include "../controller/ota_guard.h"
 #include <assert.h>
 #include <stdio.h>
 #include <deque>
@@ -38,12 +40,14 @@ struct Wire {
 struct System {
   Memory memory; mega::Panel panel; mega::Remote<Memory> mega;
   cam::BridgeEngine esp; FakeSerial espUart, megaUart; Wire up, down;
-  uint32_t ms = 0; bool cut = false, cutUp = false;
+  uint32_t ms = 0; bool cut = false, cutUp = false, simulatedMarkers = false;
   System() : mega(panel, memory) { mega.begin(); esp.begin(0x98341912); run(450); assert(esp.state().connected && esp.state().valid); }
   void run(uint32_t count) {
     while (count--) {
       ++ms; esp.tick(espUart, ms); up.pipe(espUart, megaUart, ms, cut || cutUp, 64);
-      panel.tick(ms * 1000, 0x3ff); mega.poll(megaUart, ms, ms * 1000, 0x3ff);
+      uint16_t raw = 0x3ff;
+      if (simulatedMarkers) for (uint8_t u=0;u<panel.digits();++u) if (ms >= 5000 + uint32_t(u)*350) raw &= ~(1U<<u);
+      panel.tick(ms * 1000, raw); mega.poll(megaUart, ms, ms * 1000, raw);
       down.pipe(megaUart, espUart, ms, cut, 1024);
       uint8_t energized = 0;
       for (uint8_t u = 0; u < 10; ++u) if (panel.unit(u).coils()) { assert(panel.enabled(u)); ++energized; }
@@ -238,4 +242,111 @@ void persistentGlyphs() {
   sf::put16(record + 11, sf::crc16(record, 11)); assert(!memory.decode(record, sizeof(record)));
   puts("PASS durable glyph history: all 45 characters, physical mapping, CRC/range rejection, no mid-motion or unknown-position overwrite");
 }
-int main() { display(); jsonApi(); endToEnd(); networkProvisioning(); persistentGlyphs(); }
+
+void actionFlows() {
+  System sys; sys.done(sys.submit(sf::Op::SetIndex,0,{0}));
+  uint8_t key[]={uint8_t(sf::Op::Goto),0,1}; uint32_t parent=0; bool created=false;
+  assert(sys.esp.reserve(key,sizeof(key),sys.esp.state().nextRequest,parent,created)==sf::Error::None&&created);
+  const uint32_t request=sys.esp.state().nextRequest-1;
+  cam::ActionFlow flow; flow.begin(cam::Purpose::Action,parent,sys.esp.state().session);
+  flow.add(sf::Op::Arm,0); flow.add(key,sizeof(key));
+  for(unsigned i=0;i<15000&&!flow.finished();++i){flow.tick(sys.esp,sys.esp.state(),sys.ms);sys.run(1);}
+  assert(flow.finished()&&flow.error()==sf::Error::None&&sys.panel.unit(0).index()==1);
+  const uint8_t resolvedAfterHome[]={uint8_t(sf::Op::Goto),0,2};
+  assert(flow.add(resolvedAfterHome,sizeof(resolvedAfterHome))&&!flow.finished());
+  for(unsigned i=0;i<15000&&!flow.finished();++i){flow.tick(sys.esp,sys.esp.state(),sys.ms);sys.run(1);}
+  assert(flow.finished()&&flow.error()==sf::Error::None&&sys.panel.unit(0).index()==2);
+  sys.esp.complete(parent,sf::Error::None); uint32_t replay=0;
+  assert(sys.esp.reserve(key,sizeof(key),request,replay,created)==sf::Error::None&&!created&&replay==parent);
+  key[2]=2; assert(sys.esp.reserve(key,sizeof(key),request,replay,created)==sf::Error::Invalid);
+  for (int i=0;i<20;++i) {
+    const uint8_t arm[]={uint8_t(sf::Op::Arm),0}; uint32_t wire=0;
+    assert(sys.esp.submit(arm,sizeof(arm),0,sys.ms,wire)==sf::Error::None);sys.done(wire);
+  }
+  key[2]=1;
+  assert(sys.esp.reserve(key,sizeof(key),request,replay,created)==sf::Error::None&&!created&&replay==parent);
+  System hall; hall.done(hall.submit(sf::Op::Digits,sf::kAll,{4})); hall.simulatedMarkers=true;
+  assert(hall.esp.reserve(key,sizeof(key),hall.esp.state().nextRequest,parent,created)==sf::Error::None);
+  flow.begin(cam::Purpose::Recovery,parent,hall.esp.state().session); flow.add(sf::Op::Arm); flow.add(sf::Op::Home);
+  const uint8_t restoredText[]={uint8_t(sf::Op::Text),sf::kAll,4,1,2,3,4};
+  flow.add(restoredText,sizeof(restoredText));
+  for(unsigned i=0;i<20000&&!flow.finished();++i){flow.tick(hall.esp,hall.esp.state(),hall.ms);hall.run(1);}
+  assert(flow.finished()&&flow.error()==sf::Error::None);
+  for(uint8_t u=0;u<4;++u) assert(hall.panel.unit(u).homed()&&hall.panel.unit(u).index()==u+1);
+  System stopped; assert(stopped.esp.reserve(key,sizeof(key),1,parent,created)==sf::Error::None);
+  flow.begin(cam::Purpose::CalStart,parent,stopped.esp.state().session);flow.add(sf::Op::Arm);flow.add(sf::Op::Home);flow.add(key,sizeof(key));
+  for(unsigned i=0;i<1500;++i){flow.tick(stopped.esp,stopped.esp.state(),stopped.ms);stopped.run(1);}
+  stopped.esp.complete(parent,sf::Error::Stopped);flow.clear();stopped.done(stopped.submit(sf::Op::Stop,sf::kAll));
+  for(unsigned i=0;i<3000;++i){flow.tick(stopped.esp,stopped.esp.state(),stopped.ms);stopped.run(1);}
+  assert(!stopped.panel.unit(0).armed()&&!stopped.panel.unit(0).coils()&&!flow.active());
+  System missing; assert(missing.esp.reserve(key,sizeof(key),1,parent,created)==sf::Error::None);
+  flow.begin(cam::Purpose::CalStart,parent,missing.esp.state().session); flow.add(sf::Op::Arm); flow.add(sf::Op::Home); flow.add(key,sizeof(key));
+  for(unsigned i=0;i<50000&&!flow.finished();++i){flow.tick(missing.esp,missing.esp.state(),missing.ms);missing.run(1);}
+  assert(flow.finished()&&flow.error()!=sf::Error::None&&!missing.panel.unit(0).armed());
+  assert(!missing.panel.unit(0).positioned());
+  System loss; assert(loss.esp.reserve(key,sizeof(key),1,parent,created)==sf::Error::None);
+  flow.begin(cam::Purpose::Recovery,parent,loss.esp.state().session); flow.add(sf::Op::Arm);flow.add(sf::Op::Home);
+  for(unsigned i=0;i<1500;++i){flow.tick(loss.esp,loss.esp.state(),loss.ms);loss.run(1);}
+  loss.cut=true;
+  for(unsigned i=0;i<4000&&!flow.finished();++i){flow.tick(loss.esp,loss.esp.state(),loss.ms);loss.run(1);}
+  assert(flow.finished()&&flow.error()==sf::Error::LinkLost);
+  loss.run(2500);assert(!loss.panel.unit(0).armed());
+  puts("PASS production action sequencing over UART, automatic ARM, duplicate prevention, four Hall markers then restore, STOP cancels remaining steps, Hall failure, link loss");
+}
+void otaFlashRecovery() {
+  using Guard = cam::OtaGuard;
+  using Result = Guard::Result;
+  System sys; const uint32_t stop = sys.submit(sf::Op::Stop, sf::kAll); sys.done(stop);
+  assert(sys.esp.maintenance(true));
+  Guard guard; guard.begin(sys.esp.state(), stop);
+  assert(guard.check(sys.esp.state(), sys.ms) == Result::Ready);
+  // After each simulated physical Flash write, no further write is permitted
+  // until the production bridge has assembled another entire UART snapshot.
+  for (int i = 0; i < 20; ++i) {
+    const uint32_t serial = sys.esp.state().snapshotSerial;
+    guard.afterWrite(sys.esp.state(), sys.ms);
+    assert(guard.check(sys.esp.state(), sys.ms) == Result::Waiting);
+    for (unsigned wait = 0; wait < 2500 && sys.esp.state().snapshotSerial == serial; ++wait) {
+      assert(guard.check(sys.esp.state(), sys.ms) == Result::Waiting); sys.run(1);
+    }
+    assert(sys.esp.state().snapshotSerial != serial);
+    assert(guard.check(sys.esp.state(), sys.ms) == Result::Ready);
+    assert(!sys.panel.unit(0).armed() && !sys.panel.unit(0).coils());
+  }
+  const cam::State good = sys.esp.state();
+  cam::State delayed = good;
+  uint32_t now = good.updatedAt + 1600;
+  assert(guard.check(delayed, now) == Result::Waiting);
+  assert(guard.check(delayed, now + 2499) == Result::Waiting);
+  assert(guard.check(delayed, now + 2500) == Result::Timeout);
+  guard.begin(good, stop); guard.afterWrite(good, now);
+  delayed.updatedAt = now + 400; ++delayed.snapshotSerial;
+  assert(guard.check(delayed, now + 400) == Result::Ready);
+  // A stale timestamp cannot conceal a real state change, even while waiting.
+  for (unsigned fault = 0; fault < 12; ++fault) {
+    cam::State changed = good; guard.begin(good, stop); guard.afterWrite(good, sys.ms);
+    switch (fault) {
+      case 0: changed.connected = false; break;
+      case 1: ++changed.session; break;
+      case 2: changed.uncertain = true; break;
+      case 3: changed.maintenance = false; break;
+      case 4: changed.panel.busy = true; break;
+      case 5: changed.panel.saving = true; break;
+      case 6: changed.panel.watching = true; break;
+      case 7: changed.panel.usbLocked = true; break;
+      case 8: ++changed.panel.usbRevision; break;
+      case 9: ++changed.panel.configRevision; break;
+      case 10: changed.units[9].armed = true; break;
+      case 11: for (auto& job : changed.jobs) if (job.id == stop) job.stage = uint8_t(sf::Stage::Fault); break;
+    }
+    const Result result = guard.check(changed, sys.ms);
+    assert(result != Result::Ready && result != Result::Waiting && result != Result::Timeout);
+  }
+  // Millisecond rollover must not extend the bounded snapshot wait.
+  delayed = good; delayed.updatedAt = 0xfffffff0U;
+  guard.begin(delayed, stop); guard.afterWrite(delayed, 0xfffffff0U);
+  assert(guard.check(delayed, 100) == Result::Waiting);
+  assert(guard.check(delayed, 2484) == Result::Timeout);
+  puts("PASS OTA: fresh full UART snapshot after every Flash write; bounded stale-state wait; immediate link/STOP/USB/config abort; millis rollover");
+}
+int main() { otaFlashRecovery(); actionFlows(); display(); jsonApi(); endToEnd(); networkProvisioning(); persistentGlyphs(); }

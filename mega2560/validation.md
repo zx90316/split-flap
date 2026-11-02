@@ -1,6 +1,16 @@
 # Mega 2560 驗證紀錄
 
-更新日期：2026-10-26（Asia/Taipei）。軟體驗證、串列實機測試與使用者回報的實機進度分列，尚未完成完整機構驗收。
+更新日期：2026-10-31（Asia/Taipei）。軟體驗證、串列實機測試與使用者回報的實機進度分列，尚未完成完整機構驗收。
+
+## 2026-10-31：P011 冒煙後複測
+
+使用者回報 P011 VCCB 供電處短路冒煙，事故當時 Mega 是以 5V 接 VIN。隔離 P011、外部電源及全部外接線後，只接 Mega USB；COM5 正式開機選單及三次 `STATUS ALL` 均正常，U0 `armed=0 homed=0 reference=NONE error=none`。確認主晶片於 USB 供電下仍能運行；D18／D19、其他 I/O 及 VIN 穩壓路徑尚未測試。沒有重新燒錄、改設定或運動。詳見[事故後主控檢查](../esp32cam/validation.md)。
+
+## 2026-10-31：新 Mega2560 Pro USB 初驗
+
+新板換 USB 線後於本機 `COM5` 正常列舉；唯讀取得 ATmega2560 簽章 `1E 98 01`，115200 Wiring／STK500v2 bootloader 通訊成功。正式韌體重建、USB 燒錄並啟用驗證成功；容量仍為 Flash 32,110 bytes、全域 RAM 2,360 bytes。燒錄前後各備份 4,096-byte EEPROM，兩份皆為 `0xFF`、雜湊一致，沒有改寫或匯入校準。
+
+開機顯示正式選單，兩次 `STATUS ALL` 回覆 `DIGITS=1 UNITS=0`、U0 `armed=0 homed=0 reference=NONE error=none`；目前為預設 `REVSTEPS=4096 OFFSET=0 SPEED=800 ACCEL=800 DIR=1 ORDER=1234 POLARITY=LOW`。舊 U0 的 OFFSET=273 等校準尚未搬移；本次沒有 ARM 或運動，也未驗證 Hall、板間 UART 或外部供電。兩板完整紀錄與驗收邊界見 [新板 USB 初驗](../esp32cam/validation.md#2026-10-31新板-usb-燒錄與開機初驗)。
 
 ## 使用者回報的實機進度
 

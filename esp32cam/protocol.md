@@ -40,32 +40,42 @@ Ping／Pong 每 500ms；Query 與狀態分頁不影響運動。Mega 的收送每
 
 單位回報 enabled、模式、定位來源、索引、目標、ARM、原始／去抖 Hall、步數／剩餘、三筆量測、校準及錯誤。記錄值是韌體估計；手動模式無法證實硬體存在或漏步。
 
-只有遠端 ARM／運動／WATCH 所取得的控制，才受 Mega 的兩秒心跳租期保護。租期到期停止全組、解除 ARM 與定位；同 session 遲到的命令也會拒絕，須 STOP／Claim 或重新握手。即使只有 ESP32→Mega 這一路斷線、ESP32 仍收到狀態，也會顯示不確定並停止自動模式。ESP32 的 UART 工作獨立 FreeRTOS task，不受網頁／OTA HTTP 等待影響。手機關閉頁面不會停止心跳。
+只有遠端 ARM／運動／WATCH 所取得的控制，才受 Mega 的兩秒心跳租期保護。租期到期停止全組、解除 ARM 與定位；同 session 遲到的命令也會拒絕，須 STOP／Claim 或重新握手。即使只有 ESP32→Mega 這一路斷線、ESP32 仍收到狀態，也會顯示不確定並停止自動模式。ESP32 的 UART 工作使用獨立 FreeRTOS task，可在一般 HTTP 等待期間工作；Flash 擦寫仍可能暫停任務／中斷，不能視為 UART 絕不中斷的保證。手機關閉頁面不會停止心跳。
 
 USB 轉動期間任何非換行字元仍依原行為停止並丟棄整行；USB 人工控制使網頁進入 UsbOverride，自動顯示暫停。USB STATUS／HELP 在閒置時不接管。恢復時按「接管網頁控制」（Claim），解除 ARM 與定位，再由使用者重新設定。ESP32 未連接時，USB 調機可獨立使用。
 
-## Web API
+## Web API（ESP32 1.3.0）
 
-所有控制、設定與更新使用 Digest 驗證；POST 額外要求 `X-CSRF-Token`，有 Origin 時必須符合目前 Host。憑證／CSRF 在 upload START 即檢查，不能只在上傳完成 handler 才驗證。
+首頁公開載入；控制、設定、接線圖與 OTA 使用持久 `SFSession` Cookie。沒有 Digest 或 `WWW-Authenticate`。Cookie 為 HttpOnly／SameSite=Strict／Path=/，目前 HTTP 區網服務不使用 Secure 屬性。每個登入使用 32 字元隨機值，NVS 僅保存 SHA-256 摘要，8 個獨立槽，滿時替換最舊槽。開頁更新 Cookie 保存期限；登出撤銷本槽，改密碼撤銷全部槽。登入連續失敗 5 次限制一分鐘。
 
-- `GET /api/state`：連線、軟體記錄、校準、工作、網路、顯示與 OTA 就緒狀態，含本次 ESP boot、nextRequest、csrf、networkEditable、displayMemoryOk。每個 unit 的 rememberedIndex 為最後保存字元（0～44 或 null），獨立於目前 reference；歷史不會自動恢復定位或 ARM。不包含密碼。網路設定依 networkEditable 啟用，不要求 Mega 連線；其他馬達控制仍要求 Mega 就緒。
-- `POST /api/command`：`{boot, request, op, unit, value?, align?}`。op 使用既有命令名稱；例 `TEXT`／`SETTEXT` 的 value 是 Unicode 文字，送 Mega 前轉 0～44 索引。SHOW／SET 亦可用 glyph 或 index。
-- `GET /api/config`：schema1、device、mega、display 的備份。
-- `POST /api/config`：加上 boot／request，整份驗證後送 Mega ApplyConfig 並持久化；若含 display，等待 Mega 完成後保存 ESP32 NVS，兩者成功才回 job=done。NVS 失敗回 fault／storage，保留已保存的 Mega 設定，須重新匯入。
-- `POST /api/network`：ssid，可選 password、apPassword、adminPassword；省略密碼欄位表示保留。
-- `POST /api/preferences`：mode、run、clockFormat／dateFormat、timezone（分鐘）、align。只傳 run=false 可暫停而不取消已接受工作。
-- `POST /api/time`：`{unix: secondsUTC}`，支援 2024～2099 年。
-- `POST /api/ota/prepare`：boot／request，取得 STOP job 與一次性 ticket；等 otaReady 後使用。
-- `POST /api/update`：multipart 上傳 `.sffw`，須有 CSRF 與 `X-OTA-Ticket`。
+已登入 POST 要求 `X-CSRF-Token`，有 Origin 時須符合 Host。登入僅接受 JSON，同樣驗證 Origin。OTA 在 upload START 與最終 handler 都檢查登入／CSRF／ticket；登入失效回 JSON 401，不觸發瀏覽器彈窗。
 
-外部 request 必須等於 nextRequest；相同 request／相同內容回既有 job，不再次動作。快取外的已退役 request 拒絕。多頁同時操作若撞號，顯示錯誤，需刷新後由使用者重新下指令；前端不自動重送動作。
+- `GET /api/session`：`authenticated`；已登入另回 csrf 並延長 Cookie。
+- `POST /api/login`：`{username:"admin",password}`，成功設定 Cookie 並回 csrf。
+- `POST /api/logout`：撤銷目前 Cookie。
+- `GET /api/state`：原連線、校準、工作、網路、顯示與 OTA 狀態；增加 workflow 的 active、calibrating、calibrated、recovering、step、steps、jogReadyMask、message，以及每位 calibrated。rememberedIndex 獨立於 reference，不以歷史直接建立可信位置。state 仍保留 mega.units 供診斷；新版控制只接受連續排列。
+- `POST /api/command`：`{boot,request,op,unit,value?,align?}`。位數外的單元拒絕。網頁不接受 ARM／DIGITS／UNITS，安裝設定統一走 config。動作由 ESP32 組成有界流程，按需 ARM、HOME，再執行目標；USB／Mega 協定的 ARM 不變。
+- `POST /api/calibration`：`{boot,request,action,unit?,value?}`。action 為 start、preview、jog、finish、cancel；preview 的 value 是絕對偏移，jog 僅接受 1／10／100。所有操作回 parent job。preview／jog 只改 Mega RAM；finish 全部 HOME 成功後 ApplyConfig 保存，再記錄 ESP32 校準；cancel 恢復原設定。
+- `GET /api/config`：schema 2、device=`splitflap-esp32s`、mega=`{digits,calibration[10]}`、display。無位置、憑證或校準確認標記。
+- `POST /api/config`：加入 boot／request，支援 schema 2 或連續排列的 schema 1；舊 device=`splitflap-esp32cam` 仍可匯入。非連續清單拒絕。先存 Mega，再存 ESP32；後者失敗回 fault/storage。
+- `POST /api/network`：ssid，可選 password、apPassword、adminPassword。省略密碼欄位保留。
+- `POST /api/preferences`：mode=`text|clock|date|weekday|carousel`；clockFormat、dateFormat、weekdayFormat、timezone（分鐘）、align、leadingZero、limited、windowStart／windowEnd（當地分鐘）、autoRecovery；items 為 1～8 筆 `{mode,format,text,seconds,align}`。只傳 run=false 可暫停；run=true 另需 boot／request，回準備流程 job。保存模式與開始分開。
+- `POST /api/time`：`{unix:secondsUTC}`，2024～2099。
+- `POST /api/ota/prepare`：boot／request，取得 STOP job 與一次性 ticket；等 otaReady。
+- `POST /api/update`：multipart `.sffw`，CSRF 與 `X-OTA-Ticket`。
 
-設定備份仍使用 schema 1 與 `device=splitflap-esp32cam`，保留舊系統安裝／校準的匯入相容性。此欄位是沿用的備份格式識別；目前硬體名稱由 `/api/state` 的 `hardware=NodeMCU ESP-32S` 回報。設定匯入仍需完整驗證，不能恢復位置或 ARM。
+外部 request 必須等於 nextRequest；同 ID／同內容回既有結果，不重複動作；退役或不同內容拒絕。多頁撞號需由使用者重新操作，前端不自動重送。八筆外部結果與八筆內部結果分開，避免時鐘更新擠掉手機的流程結果。
+
+流程每個子命令只送一次，等待 Done 與更新後的完整狀態快照，再送下一步。失聯、換 session、USB 接管、子命令失敗或 185 秒子命令逾時中止；STOP 可取消流程。無一般動作排隊。
+
+復電僅在 ESP_RESET 原因為正常上電、已開復電功能、全部校準簽章符合且 NVS 正常時執行。最多等連線 30 秒；校準簽章涵蓋圈步數、偏移、方向、相序、極性，不涵蓋速度／加速度。顯示歷史只由完成的顯示工作更新，校準／HOME／測試不覆寫；動態畫面保存最多每分鐘一次。秒數採完成後計算最新目標，不積壓過期工作。
 
 ## OTA 封裝
 
-NodeMCU ESP-32S 1.2.0 的 64-byte header：magic `SFESP01\0`（8）、映像長度 uint32、協定 uint32、SHA-256（32）、專案 tag `splitflap-32s-v1`（16）。後接 app `.bin`，大小最多 1,966,080 bytes；晶片必須 ESP32。工具輸出 `esp32cam/dist/splitflap-esp32s.sffw`。
+NodeMCU ESP-32S 1.2.0～1.3.0 共用的 64-byte header：magic `SFESP01\0`（8）、映像長度 uint32、協定 uint32、SHA-256（32）、專案 tag `splitflap-32s-v1`（16）。後接 app `.bin`，大小最多 1,966,080 bytes；晶片必須 ESP32。工具輸出 `esp32cam/dist/splitflap-esp32s.sffw`。
 
 舊 CAM 的 `SFCAM01\0`／`splitflap-cam-v1` 更新檔會拒絕，即使映像晶片同樣是 ESP32。設定備份的舊 device 欄位不影響此 OTA 硬體檢查。
 
-上傳開始、資料寫入、結束與最終 HTTP handler 均需有效的 Mega 停止狀態。長度／SHA-256、完整 HTTP 請求與 SDK 映像驗證通過，才選取新分割區；多檔、截斷、失聯或 USB 重新啟用都中止更新。開機後自動模式保持暫停。
+上傳開始、資料寫入、結束與最終 HTTP handler 均需有效的 Mega 停止狀態。長度／SHA-256、完整 HTTP 請求與 SDK 映像驗證通過，才選取新分割區；多檔、截斷、失聯或 USB 重新啟用都中止更新。OTA 引起的軟體重啟後不自動轉動；下次正常上電才依復電設定恢復。
+
+1.3.1 在 `Update.progress()` 增加後暫停下一次寫入，等待 bridge 組成新的完整快照（`snapshotSerial` 增加且年齡 ≤1500ms）。最多等待 2500ms，等待時 `delay(2)` 讓 UART 任務處理接收；過期快照不能放行寫入。連線／session／維護鎖改變、STOP 確認遺失、busy／saving／watching／任一 ARM、USB 或配置 revision 改變都立即中止，不以等待掩蓋實際狀態變更。完整快照逾時、通訊中斷與停止狀態改變分別回報原因。

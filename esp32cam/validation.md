@@ -1,5 +1,121 @@
 # NodeMCU ESP-32S＋Mega2560 Pro 驗證與實機驗收
 
+## 2026-11-01：舊版 OTA 中止與 1.3.1 修正
+
+使用者回報 1.2.0 在開始上傳約 1～3 秒後出現「更新期間 Mega 失聯或停止狀態已改變」。關閉其他控制頁後，以 mDNS 確認實板位址為 `192.168.68.62`（`splitflap.local`），先前 `.66` 已屬其他設備。使用目前管理密碼正常驗證，不記錄密碼或登入憑證。
+
+- 更新前連續 20 次讀取：1.2.0、Mega 在線、最大快照年齡 445ms，停止／未 ARM、無忙碌、儲存、監看、不確定或 USB 接管。現場為 **10 位 U0～U9**，保留使用者設定。
+- 封裝／SHA-256 校驗及正常 STOP 確認後，以 2048 bytes／60ms 單次慢速上傳 1.3.0。傳輸約 32 秒到 100%，最終 HTTP 400 回覆同一錯誤；**不代表刷入成功，沒有自動重試**。
+- 更新後仍是 1.2.0、boot 不變，Mega 在線、停止、未 ARM、無不確定狀態。十組配置與備份一致，已保存最後顯示歷史；未發送 ARM／HOME／顯示／校準命令。
+- 舊版將完整快照年齡 >1500ms 與真正失聯合併成同一錯誤。Flash 擦寫會影響任務／UART 接收，為本次軟體調查方向；沒有失敗瞬間快照，不能宣稱已證實唯一原因。參考 [Espressif SPI Flash concurrency](https://docs.espressif.com/projects/esp-idf/en/stable/esp32/api-reference/peripherals/spi_flash/spi_flash_concurrency.html)。
+- 1.3.1 在每次實際 Flash 寫入後等待新的完整狀態，最多 2500ms；未收到時不繼續寫入。真斷線／換 session／停止狀態改變／USB 或配置改變仍立即中止，並提供不同錯誤訊息。沒有放寬 1500ms 的可寫入狀態新鮮度。
+
+| 驗證 | 結果與範圍 |
+| --- | --- |
+| OTA 正式 guard＋雙板 UART 模擬 | 通過；20 次寫入後新完整快照、短暫過期恢復、2500ms 逾時、12 種中止狀態及 millis 溢位 |
+| 動作／通訊／儲存回歸 | 全部通過，包含前節 1.3.0 功能 |
+| Python 工具／HTTP fixture | 15 項通過；加入慢速工具登入、STOP ticket、有效／錯誤封裝與模擬上傳 |
+| 正式建置 | Flash 1,084,425／1,966,080 bytes；全域 RAM 56,824／327,680 bytes |
+| 1.3.1 最終產物 | app 1,084,576 bytes；封裝 1,084,640 bytes；SHA-256 `b3439e8f9f3b332a9b05cd81276b72c24d08e4bdedc23a7e2c4965e388bc6f98`；`.bin`、封裝與 metadata 一致 |
+| 現場狀態 | **尚未安裝 1.3.1**；等待 ESP32 外部電源／UART 分離後單獨接 USB。新版實際 OTA、頁面登入及馬達功能仍待實板驗收 |
+
+本機證據（忽略版本控制）：`.tools/ota-recovery-2026-11-01/` 保存前後配置／狀態與字元歷史；`.tools/ota-20261101T141320Z/` 保存本次單次上傳結果。工具不保存密碼、CSRF 或 ticket。USB 更新不需清除 NVS；完成後須比對十位配置與歷史，再由使用者恢復正常外部接線。
+
+## 2026-11-01：1.3.0 網頁、校準與復電流程
+
+本次完成程式與電腦驗證，**尚未刷入實板、未下發實體馬達動作**。原 1.2.1 的 Digest 修補由頁面登入完整取代；下方 1.2.1 紀錄為先前版本歷史，不是目前待部署產物。
+
+- 位數固定 U0～U(N−1)，移除網頁 ARM／自訂排列；顯示與測試自動準備。
+- 歸零、偏移數字預覽、前進 1／10／100、確認保存、取消復原均由 ESP32 流程執行；只在確認後永久保存。全部停止／失聯／霍爾失敗不接續後續動作。
+- 首次完成全部校準後開啟復電恢復；正常上電等待 Mega、歸零，再依當下時間／最後畫面恢復。OTA／異常重啟不自動轉動。校準與測試不覆蓋正常顯示歷史。
+- 時鐘含 12／24 小時、秒數、日期、英文星期；最多 8 項時間／文字輪播、停留秒數、跨午夜顯示時段。忙碌時跳過過期時間；動態畫面最多每分鐘保存一次。
+- 頁面登入使用獨立持久 Cookie；無 Digest challenge。401 停止輪詢，保留草稿，不重送動作。
+- 保留舊版網路與管理密碼，遷移 v2 設定；匯出 schema 2，支援連續清單的 schema 1，非連續清單拒絕。
+
+| 驗證 | 結果與範圍 |
+| --- | --- |
+| 正式動作核心＋雙板 UART 模擬 | 通過；自動 ARM、四位依序取得 Hall 後恢復文字、後續時間目標延後計算、STOP 取消剩餘動作、缺失 Hall、失聯、重複請求、外部結果不被 20 次內部命令擠掉 |
+| 既有通訊／運動回歸 | 通過；45 字元、1～10 位、並行、丟 ACK／DONE／命令、斷線／重連、USB／OTA 鎖、十位慢速並行 |
+| 新顯示／儲存／登入核心 | 通過；午夜／中午／閏日、格式寬度、跨午夜時段、v1→v2 密碼保留、CRC／失敗寫入、校準簽章、輪播 JSON、持久登入與單獨登出 |
+| Python 工具／HTTP fixture | 14 項通過；封裝、內嵌頁面、驗證／CSRF、連續配置、OTA 錯檔／ticket |
+| 手機／桌面網頁 | 9 組流程通過，390×844／1100×900 無溢出、無 JS 例外；含多瀏覽器登入、失效暫停、草稿保留、完整偏移流程、1／5／10 位、輪播、備份、模擬復電／OTA |
+| 正式 ESP32 建置 | Flash 1,083,901／1,966,080 bytes；全域 RAM 56,792／327,680 bytes；Arduino-ESP32 3.3.12 |
+| 最終更新產物 | app 1,084,048 bytes；封裝 1,084,112 bytes；SHA-256 `d96fc43b9f660d39ac5b1fe109dc4ffc65638d720faff2abcbede40414be5718` |
+| 最終產物核對 | `.sffw` 長度／協定／SHA、`.bin`、metadata 及內嵌網頁源碼一致 |
+| 實板驗收 | 待更新；不能將模擬器成功當成實際供電、馬達、霍爾或 Flash 驗收 |
+
+建置與測試命令：`python esp32cam/tools/dev.py build`、`python esp32cam/test/run.py`、`python -m unittest discover -s esp32cam/test -p test_*.py`、`python esp32cam/tools/dev.py test-web`。測試過程曾修正一筆低於支援年份下限的測試資料，最終回歸全部通過。
+
+截圖與瀏覽器結果在 `test/.build/v130-mobile-settings.png`、`v130-desktop-clock.png`、`browser-results.json`，使用本機模擬資料。沒有新建串列監看、裝置背景輪詢或實板更新。
+
+現場驗收順序：用既有停止／準備更新流程刷入 1.3.0 → 重新開頁並登入 → 確認位數 → U0 歸零／偏移／保存 → 文字與停止 → 正常斷電復電恢復 → 多位及時鐘輪播。第一次更新後不自動運動；首次全部校準確認後才開啟復電功能。
+
+
+## 2026-10-31：1.2.1 修正反覆登入
+
+使用者回報登入後仍頻繁出現瀏覽器登入視窗。確認 Arduino-ESP32 3.3.12 的 WebServer 僅保存一組 nonce／opaque，而每次 `requestAuthentication` 都重生兩者。其他客戶端的未登入請求因而使既有登入失效；舊頁面每秒重試，會持續觸發登入視窗。本次背景唯讀觀察也觸發此問題，已停止；觀察只收到 36 次無通訊錯誤的進度回報，沒有完成十分鐘驗收。
+
+- 正式 `DigestServer` 為本次開機保留同一組 challenge，仍由原 WebServer 檢查目前管理密碼；重開機產生新 token。
+- 頁面在 HTTP 401 時先處理登入失效，再解析資料；停止背景輪詢與可見性重試、清除 OTA ticket，顯示「重新登入」。每次手動重試只發出一個查詢，成功後恢復操作；文字／JSON 兩類 401 都涵蓋。
+- 固定核心及板型不變，版本升為 1.2.1；僅需更新 ESP32。
+
+| 驗證 | 結果 |
+| --- | --- |
+| 正式核心／Digest 回歸 | 既有通訊／顯示核心通過；正式 challenge policy 連續 32 次拒絕請求仍保留其他客戶端 token，重開機則產生新 token |
+| 工具／HTTP fixture | 14 項通過；含封裝、資源一致性、設定與 OTA 流程 |
+| 網頁 | 八組手機／桌面流程全部通過，無 JS 例外；文字及 JSON 401 都停止自動查詢，手動重試失敗後仍保持暫停，成功後恢復 |
+| 正式 ESP32 建置 | Flash 1,073,609／1,966,080 bytes，全域 RAM 53,944／327,680 bytes |
+| 更新產物 | app 1,073,760 bytes；`.sffw` 1,073,824 bytes；SHA-256 `8356f9d6c12e872e51048371c8682c408104c1b3e2f15f4f4966485b3c28c679` |
+| 實板更新 | 更新檔已準備，等待關閉控制頁後透過 Wi-Fi OTA 更新與雙客戶端實測 |
+
+更新前讀到的現場狀態：ESP32 1.2.0、Mega 已連線，無錯誤／協定不符／不確定狀態；NVS 與字元保存狀態正常。只啟用 U0，未 ARM、未定位、自動顯示暫停；`REVSTEPS=4096 OFFSET=0 SPEED=800 ACCEL=800 DIR=1 ORDER=1234 POLARITY=LOW`。舊 U0 的 OFFSET=273 尚未搬移。使用者確認目前兩板外部供電各接 5V 腳，現場狀態正常，後續聚焦登入與功能驗收。
+
+## 2026-10-31：P011 冒煙後的主控存活檢查
+
+使用者回報 P011 的 VCCB 供電處短路冒煙，VCCB 接 LM2596 標稱 5V、VCCA 接 ESP32 3V3；事故當時 Mega 是以 5V 接 VIN。後續使用者確認 P011、ESP32、Mega、LM2596 OUT− 四者共地，並於輸出與主控／P011 分離後量得 LM2596 OUT+ 對 OUT− 為 5V。實際短路兩端、模組腳序、事故當下極性與瞬態尚未釐清，不將上述接法直接判定為事故原因。
+
+檢查前，使用者已將外部電源、馬達 12V、P011 的全部電源／訊號線及其他外接線與兩塊主控分離。使用者回報兩板本體沒有焦味；斷電量測 Mega 5V–GND 初讀 169、複測無限大，ESP32 5V–GND／3V3–GND 均無限大。這些電阻讀值只作為上電前篩查，不能證明所有元件完好。
+
+| 事故後檢查 | 結果 |
+| --- | --- |
+| Mega 單獨 USB／COM5 | 正式韌體開機選單正常；三次 `STATUS ALL` 均回覆 U0 `armed=0 homed=0 reference=NONE error=none`，仍為一位、OFFSET=0 的預設設定 |
+| ESP32 單獨 USB／COM7 | 正常 `POWERON_RESET`／`SPI_FAST_FLASH_BOOT`，顯示 `NodeMCU ESP-32S 1.2.0`；三次 `STATUS` 正常，`running=0`，未見啟動故障 |
+| ESP32 Wi-Fi／HTTP | 取得家用網路 IP `192.168.68.66`；電腦唯讀請求 `/` 回 HTTP 401 與 `SplitFlap` Digest 登入驗證，確認 Wi-Fi 與網頁服務仍運作。IP 為本次 DHCP 結果，不視為固定地址 |
+| 共地／LM2596（使用者確認） | 四者共地；事故後獨立、空載輸出讀值為 5V。尚未量測主控負載下電壓、瞬態或各板 5V／3V3 電源軌 |
+
+結論限定為：**兩顆主晶片在單獨 USB 供電下仍能執行正式韌體並回覆；ESP32 的 Wi-Fi／HTTP 也仍運作。** GPIO13／14、Mega D18／D19、其他 I/O、VIN 穩壓路徑、各板實際 5V／3V3 電壓及 LM2596 負載／瞬態輸出尚未驗證，不能據此排除局部損傷。沒有重新燒錄、匯入設定、寫入 EEPROM 或執行 ARM／運動命令。
+
+當次存活檢查期間 P011 隔離停用；後續現場恢復狀態見本頁最上方紀錄。事故後日誌保存在忽略版本控制的 `.tools/incident-check-2026-10-31/`；下節的三分鐘雙板 USB 測試是事故前紀錄。
+
+## 2026-10-31：新板 USB 燒錄與開機初驗
+
+兩塊新主控已到貨，本節為實板測試。使用者確認兩板僅接電腦 USB，外部 5V／板間 UART 已拔除、馬達 12V 關閉；本次只燒錄及查詢，沒有執行 ARM、定位或運動命令。
+
+| 項目 | 實測結果 |
+| --- | --- |
+| 本機連接埠 | Mega2560 Pro 為 `COM5`；NodeMCU ESP-32S 為 `COM7`。兩者均列為 CH340、VID `1A86`／PID `7523`，無 USB 序號；換插孔後須重新確認，不靠晶片廠牌或舊 COM 號推定板型 |
+| Mega 晶片／bootloader | 唯讀簽章 `1E 98 01`，確認 ATmega2560；Wiring／STK500v2、115200 可正常通訊 |
+| Mega 建置／燒錄 | AVR 1.8.8；Flash 32,110／253,952、全域 RAM 2,360／8,192 bytes；正式 `dev.py upload --port COM5` 重建、上傳並啟用驗證，成功結束 |
+| Mega EEPROM | 燒錄前後各唯讀備份 4,096 bytes，逐份雜湊一致；兩份皆為 `0xFF`，沒有既有校準。沒有匯入舊板參數或寫入 EEPROM |
+| ESP32 晶片／Flash | ESP32-D0WD-V3、revision v3.1、40MHz 晶振；Flash 廠商 `20`／裝置 `4016`，實測 4MB，符合 classic ESP32／4MB 建置設定 |
+| ESP32 建置／燒錄 | Arduino-ESP32 3.3.12、韌體 1.2.0；Flash 1,073,649／1,966,080、全域 RAM 53,944／327,680 bytes。開機程式、分割表、boot_app0 與正式 app 全部寫入，各區段均回報 `Hash of data verified` |
+| ESP32 正式映像 | app 1,073,792 bytes；SHA-256 `487660f1fddc7a5b28d6cf39226c2b58758ee9fddc40e249da3b043a6d4d01c1`，與 1.2.0 既有建置紀錄一致 |
+| 開機與狀態 | Mega 正式選單及兩次 `STATUS ALL` 正常；ESP32 完整拔插 USB 後顯示 `NodeMCU ESP-32S 1.2.0`，三次 `STATUS` 正常。Mega `armed=0`、`error=none`；ESP32 `running=0` |
+| 雙板 USB 穩定性 | 兩板同時接 USB，01:38:18–01:41:22（Asia/Taipei）；有效觀察 180.39 秒，每 5 秒查詢一次，各 36／36 次正常回覆，零失聯／故障，沒有非預期重啟。Mega 持續未 ARM、ESP32 持續 `running=0`；`usb-stability.json` 回報 `passed=true` |
+
+ESP32 本次自動進入下載模式未成功，改用「按住 BOOT → 按一下 EN → 放開 BOOT」，以 `--before no-reset` 保留下載模式後完成燒錄。後續串列控制線重設／EN 測試一度沒有收到資料；完整拔除 USB 約 10 秒再接回後，取得正常的 `POWERON_RESET`／`SPI_FAST_FLASH_BOOT`、1.2.0 開機訊息及狀態回覆。自動重設的可靠性仍待確認，不將此項列為通過。
+
+實測狀態摘要：
+
+```text
+COM7: Split-Flap NodeMCU ESP-32S 1.2.0. UART2 RX=14 TX=13; Mega Serial1 115200.
+COM7: Mega=offline digits=1 AP=192.168.4.1 STA=0.0.0.0 running=0
+COM5: DIGITS=1 UNITS=0 SELECTED=U0 UPDATE=PARALLEL
+COM5: U0 armed=0 homed=0 reference=NONE value=UNKNOWN index=0 REVSTEPS=4096 OFFSET=0 SPEED=800 ACCEL=800 DIR=1 ORDER=1234 POLARITY=LOW error=none
+```
+
+`Mega=offline` 是板間 UART 尚未恢復時的預期狀態；兩個 USB 埠同時可用不代表板間通訊已通過。新 Mega 目前只啟用 U0、OFFSET=0；舊 U0 的 OFFSET=273 等校準尚未搬移。EEPROM 備份及隱去密碼的本機日誌保存在忽略版本控制的 `.tools/board-validation-2026-10-31/`。本次沒有驗證外部供電、UART、Hall、馬達負載、手機連線或 OTA。
+
 ## 2026-10-28：提交前 review
 
 - 修正協定文件仍使用舊 CAM OTA magic／tag 的內容，改為與韌體及封裝工具一致的 `SFESP01\0`／`splitflap-32s-v1`。另明列 schema 1 設定備份沿用舊 device 識別以匯入既有校準。
@@ -32,7 +148,8 @@
 ### 新硬體到貨後驗收
 
 - [ ] 核對板型、Flash、USB 接頭／USB-UART 晶片與 NodeMCU 5V／VIN 電源路徑；Pro 公排針依邏輯腳逐線導通確認。
-- [ ] 分別只接板上 USB，確認新 COM 及燒錄；兩板開機不 ARM、不轉動。新 ESP32 以 ACCESS 取得新 Wi-Fi／登入資料。
+- [x] 分別只接板上 USB，確認新 COM 及燒錄／開機狀態；Mega `armed=0`、ESP32 `running=0`（2026-10-31）。
+- [ ] 新 ESP32 以 ACCESS 取得新 Wi-Fi／登入資料，實際以手機連線。
 - [ ] 無負載與 Wi-Fi／多位負載下量 LM2596 5.0V、3V3、總電流及接點壓降／溫升；確定線徑、F1／F2 熔斷值及直流開關額定。購買選項 5A 尚未核准為設計值。
 - [ ] 外部 5V 與 USB 互斥；切換前實際拔除該板外部 5V／四條 UART 線。P011 不假設單側斷電隔離。
 - [ ] 還原舊 Mega 校準／安裝設定；新 EEPROM 不含舊板資料。先只啟用 U0，核對 OFFSET=273 的實物空白頁及 HOME，重新定位／ARM 後試文字。

@@ -243,6 +243,11 @@ void rampedDisplayAndSlowReference() {
   assert(longMove[longMove.size() / 2] == 3000);
   assert(r.bench.goTo(44, r.now));
   assert(intervals(r).empty() && r.bench.index() == 44);  // No zero-length underflow.
+  // Crossing the revolution start advances directly; it never re-searches Hall.
+  assert(r.bench.goTo(2, r.now));
+  const std::vector<uint32_t> wrapMove = intervals(r);
+  assert(wrapMove.size() == 1000 - mega::Bench::positionFor(1000, 44) + mega::Bench::positionFor(1000, 2));
+  assert(r.bench.index() == 2 && r.bench.homed() && !r.bench.error());
   // Cruise changes below the reference cap must leave homing/offset identical.
   Rotor baseline, tuned;
   mega::Config c = baseline.bench.config(); c.intervalUs = 5000;

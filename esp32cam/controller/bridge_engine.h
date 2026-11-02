@@ -11,7 +11,7 @@ struct Job {
 };
 struct State {
   bool connected = false, valid = false, protocolMismatch = false, uncertain = false, maintenance = false;
-  uint32_t boot = 0, session = 0, updatedAt = 0, nextRequest = 1;
+  uint32_t boot = 0, session = 0, updatedAt = 0, nextRequest = 1, snapshotSerial = 0;
   sf::PanelState panel;
   sf::UnitState units[10];
   sf::Settings settings;
@@ -27,6 +27,24 @@ class BridgeEngine {
  public:
   void begin(uint32_t seed) { state_.boot = seed ? seed : 1; rotateSession(); }
   const State& state() const { return state_; }
+  sf::Error reserve(const uint8_t* payload, size_t n, uint32_t request, uint32_t& id, bool& created) {
+    created = false;
+    const uint16_t hash = sf::crc16(payload, n);
+    if (request && request < state_.nextRequest) {
+      for (const auto& j : state_.jobs) if (j.id && j.request == request) {
+        if (j.hash != hash) return sf::Error::Invalid;
+        id = j.id; return sf::Error::None;
+      }
+      return sf::Error::Unknown;
+    }
+    if (request && request != state_.nextRequest) return sf::Error::Invalid;
+    if (request) ++state_.nextRequest;
+    id = ++wireId_; if (!id) id = ++wireId_;
+    Job& j = nextJob(true);
+    j = Job(); j.id = id; j.request = request; j.hash = hash; j.op = payload[0]; j.stage = uint8_t(sf::Stage::Accepted);
+    created = true; return sf::Error::None;
+  }
+  void complete(uint32_t id, sf::Error error) { mark(id, error == sf::Error::None ? sf::Stage::Done : sf::Stage::Fault, error); }
   bool pending() const { return activeId_ != 0; }
   // A config import also saves ESP preferences after Mega commits its half of the job.
   void configurationFailed(uint32_t id) {
@@ -54,7 +72,7 @@ class BridgeEngine {
     if (stop && activeId_) mark(activeId_, sf::Stage::Fault, sf::Error::Stopped);
     if (request) ++state_.nextRequest;
     id = ++wireId_; if (!id) id = ++wireId_;
-    Job& j = state_.jobs[jobCursor_]; jobCursor_ = (jobCursor_ + 1) % 16;
+    Job& j = nextJob(request != 0);
     j = Job(); j.id = id; j.request = request; j.hash = hash; j.op = payload[0];
     activeId_ = id; command_ = sf::Packet(); command_.kind = sf::Kind::Command;
     command_.session = state_.session; command_.id = id; command_.length = uint8_t(n);
@@ -96,6 +114,12 @@ class BridgeEngine {
   }
   const Job* job(uint32_t id) const { for (const auto& j : state_.jobs) if (j.id == id) return &j; return nullptr; }
  private:
+  // Automatic clock updates must not evict a browser's completed workflow while
+  // that browser is suspended. Keep eight user results and eight wire results.
+  Job& nextJob(bool external) {
+    uint8_t& cursor = external ? externalCursor_ : internalCursor_;
+    Job& job = state_.jobs[(external ? 0 : 8) + cursor]; cursor = (cursor + 1) % 8; return job;
+  }
   void rotateSession() {
     nonce_ = (nonce_ ? nonce_ : state_.boot) * 1664525U + 1013904223U;
     state_.session = nonce_ ? nonce_ : 1; helloSent_ = false; snapshotId_ = 0;
@@ -149,14 +173,14 @@ class BridgeEngine {
           memcmp(assemblingPanel_.mapping, assemblingSettings_.mapping, assemblingPanel_.count)) return;
       state_.panel = assemblingPanel_; state_.settings = assemblingSettings_;
       if (!strcmp(state_.panel.error, "link_lost")) state_.uncertain = true;
-      memcpy(state_.units, assemblingUnits_, sizeof(state_.units)); state_.updatedAt = now; state_.valid = true;
+      memcpy(state_.units, assemblingUnits_, sizeof(state_.units)); state_.updatedAt = now; state_.valid = true; ++state_.snapshotSerial;
     }
   }
   State state_; sf::Decoder decoder_; sf::Packet command_;
   sf::PanelState assemblingPanel_; sf::UnitState assemblingUnits_[10]; sf::Settings assemblingSettings_;
   uint8_t tx_[sf::kWireSize]; size_t txAt_ = 0, txLength_ = 0;
   uint32_t nonce_ = 0, wireId_ = 0, activeId_ = 0, lastRx_ = 0, helloAt_ = 0, pingAt_ = 0, queryAt_ = 0, sentAt_ = 0, snapshotId_ = 0;
-  uint16_t snapshotMask_ = 0; uint8_t jobCursor_ = 0;
+  uint16_t snapshotMask_ = 0; uint8_t externalCursor_ = 0, internalCursor_ = 0;
   bool commandPending_ = false, helloSent_ = false, havePanel_ = false, haveConfig_ = false;
 };
 }

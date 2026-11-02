@@ -13,7 +13,7 @@
 
 namespace cam {
 static const char kHardwareName[] = "NodeMCU ESP-32S";
-static const char kFirmwareVersion[] = "1.2.0";
+static const char kFirmwareVersion[] = "1.3.1";
 static const char kOtaMagic[] = "SFESP01";  // Eight bytes including the trailing NUL.
 static const char kOtaProject[] = "splitflap-32s-v1";  // Sixteen bytes, no trailing NUL on wire.
 static const uint8_t kUartRx = 14, kUartTx = 13;

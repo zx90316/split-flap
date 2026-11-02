@@ -39,24 +39,43 @@ inline bool textIndices(const char* text, uint8_t width, Align align, bool exact
   memcpy(out + start, glyphs, count); return true;
 }
 inline bool validFormat(const char* mode, const char* format, uint8_t width) {
-  if (!strcmp(mode, "clock")) return (!strcmp(format, "HHMM") && width >= 4) || (!strcmp(format, "HH:MM") && width >= 5);
-  if (strcmp(mode, "date")) return false;
-  return (!strcmp(format, "MMDD") && width >= 4) || (!strcmp(format, "MM-DD") && width >= 5) ||
-      (!strcmp(format, "YYYYMMDD") && width >= 8) || (!strcmp(format, "YYYY-MM-DD") && width >= 10);
+  if (!mode || !format || !width || width > 10) return false;
+  if (!strcmp(mode, "weekday")) return (!strcmp(format, "SHORT") && width >= 3) || (!strcmp(format, "LONG") && width >= 9);
+  const char* clocks[] = {"HH", "MM", "SS", "HHMM", "HH:MM", "HHMMSS", "HH:MM:SS", "hhmm", "hh:mm", "hhmmss", "hh:mm:ss", "hhmmAP", "hh:mmAP", "hhmmssAP", "hh:mm:ssAP"};
+  const char* dates[] = {"MMDD", "MM-DD", "DDMM", "DD-MM", "YYMMDD", "YYYYMMDD", "YYYY-MM-DD", "DD-MM-YYYY"};
+  if (!strcmp(mode, "clock")) {
+    for (const char* f : clocks) if (!strcmp(format, f)) return strlen(f) <= width;
+  } else if (!strcmp(mode, "date")) {
+    for (const char* f : dates) if (!strcmp(format, f)) return strlen(f) <= width;
+  }
+  return false;
 }
 inline bool formatTime(int64_t unixTime, int16_t offsetMinutes, const char* mode, const char* format,
-                       uint8_t width, Align align, uint8_t* out) {
+                       uint8_t width, Align align, uint8_t* out, bool leadingZero = true) {
   if (unixTime < 1704067200LL || unixTime >= 4102444800LL || offsetMinutes < -720 || offsetMinutes > 840 ||
       offsetMinutes % 15 || !validFormat(mode, format, width)) return false;
   const time_t adjusted = time_t(unixTime + int64_t(offsetMinutes) * 60);
   const struct tm* utc = gmtime(&adjusted); if (!utc) return false;
-  const struct tm t = *utc; char buffer[32];
-  if (!strcmp(format, "HHMM")) snprintf(buffer, sizeof(buffer), "%02d%02d", t.tm_hour, t.tm_min);
-  else if (!strcmp(format, "HH:MM")) snprintf(buffer, sizeof(buffer), "%02d:%02d", t.tm_hour, t.tm_min);
-  else if (!strcmp(format, "MMDD")) snprintf(buffer, sizeof(buffer), "%02d%02d", t.tm_mon + 1, t.tm_mday);
-  else if (!strcmp(format, "MM-DD")) snprintf(buffer, sizeof(buffer), "%02d-%02d", t.tm_mon + 1, t.tm_mday);
-  else if (!strcmp(format, "YYYYMMDD")) snprintf(buffer, sizeof(buffer), "%04d%02d%02d", t.tm_year + 1900, t.tm_mon + 1, t.tm_mday);
-  else snprintf(buffer, sizeof(buffer), "%04d-%02d-%02d", t.tm_year + 1900, t.tm_mon + 1, t.tm_mday);
+  const struct tm t = *utc; char buffer[32] = {}; size_t at = 0;
+  if (!strcmp(mode, "weekday")) {
+    const char* names[] = {"SUNDAY", "MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY"};
+    snprintf(buffer, sizeof(buffer), "%s", names[t.tm_wday]);
+    if (!strcmp(format, "SHORT")) buffer[3] = 0;
+  } else for (const char* p = format; *p && at < sizeof(buffer) - 5;) {
+    int value = -1, digits = 2;
+    if (!strncmp(p, "YYYY", 4)) { value = t.tm_year + 1900; digits = 4; p += 4; }
+    else if (!strncmp(p, "YY", 2)) { value = (t.tm_year + 1900) % 100; p += 2; }
+    else if (!strncmp(p, "HH", 2)) { value = t.tm_hour; p += 2; }
+    else if (!strncmp(p, "hh", 2)) { value = t.tm_hour % 12; if (!value) value = 12; p += 2; }
+    else if (!strncmp(p, "MM", 2) || !strncmp(p, "mm", 2)) { value = !strcmp(mode, "date") ? t.tm_mon + 1 : t.tm_min; p += 2; }
+    else if (!strncmp(p, "SS", 2) || !strncmp(p, "ss", 2)) { value = t.tm_sec; p += 2; }
+    else if (!strncmp(p, "DD", 2)) { value = t.tm_mday; p += 2; }
+    else if (!strncmp(p, "AP", 2)) { buffer[at++] = t.tm_hour < 12 ? 'A' : 'P'; buffer[at++] = 'M'; p += 2; }
+    else buffer[at++] = *p++;
+    if (value >= 0) at += snprintf(buffer + at, sizeof(buffer) - at, "%0*d", digits, value);
+    buffer[at] = 0;
+  }
+  if (!leadingZero && (!strncmp(format, "HH", 2) || !strncmp(format, "hh", 2)) && buffer[0] == '0') buffer[0] = ' ';
   return textIndices(buffer, width, align, false, out);
 }
 static const size_t kOtaHeaderSize = 64;

@@ -1,10 +1,12 @@
 # Split-Flap · NodeMCU ESP-32S＋Mega2560 Pro（1～10 位可選）
 
-**現行硬體改為新購 Mega2560 Pro CH340G＋NodeMCU ESP-32S。** 手機網頁、Wi-Fi、時鐘／日期、設定保存及 ESP32 OTA 由 NodeMCU 提供，Mega Pro 直接控制 ULN2003／KY-003，所有需更新的位置同時翻頁。兩板各自使用板上 USB 燒錄，沿用現有 P011 轉換板與 LM2596。
+**現行硬體改為新購 Mega2560 Pro CH340G＋NodeMCU ESP-32S。** 手機網頁、Wi-Fi、時鐘／日期、設定保存及 ESP32 OTA 由 NodeMCU 提供，Mega Pro 直接控制 ULN2003／KY-003，所有需更新的位置同時翻頁。兩板各自使用板上 USB 燒錄，UART 經 P011 電平轉換，控制電源採 LM2596。
 
 **[新硬體快速開始](esp32cam/README.md) · [已購清單與設定搬移](hardware/purchased-2026-10-26.md) · [正常供電／UART](esp32cam/wiring-runtime.svg) · [兩板 USB 燒錄](esp32cam/wiring-flashing.svg) · [驗證紀錄](esp32cam/validation.md)**
 
-源碼目錄仍叫 `esp32cam/`，目前目標已改為 NodeMCU ESP-32S（4MB、無 PSRAM）；舊 CAM 更新檔不相容。新板 EEPROM／NVS 不會自動繼承舊板設定，先依搬移指南還原校準，再重新定位及 ARM。購買清單是待出貨紀錄，新板尚未實機驗收。
+**目前進度（2026-11-01）：ESP32 1.3.1 包含位數管理、頁面內登入、歸零校準、復電恢復與時鐘輪播，另加入 OTA 寫入後等待新狀態。正式建置、核心回歸與 15 項工具／HTTP 測試通過；網頁沿用已通過 9 組流程的版本。現場舊版 1.2.0 的 OTA 在慢速上傳時仍中止，設定與停止狀態保留；新版已備妥，等待 ESP32 單獨接 USB 更新，尚未部署實板。詳見[驗證紀錄](esp32cam/validation.md)。**
+
+源碼目錄仍叫 `esp32cam/`，目前目標已改為 NodeMCU ESP-32S（4MB、無 PSRAM）；舊 CAM 更新檔不相容。新板 EEPROM／NVS 不會自動繼承舊板設定，先依搬移指南還原校準，再由新版網頁完成歸零校準。兩塊主控已於 2026-10-31 完成 USB 燒錄與開機初驗（本機 Mega=`COM5`、ESP32=`COM7`），詳見[驗證紀錄](esp32cam/validation.md)；板間通訊已恢復正常，後續聚焦校準、顯示與復電功能驗收。
 
 1. **[從單顆測試開始：接線、硬體清單、燒錄與操作](mega2560/README.md)**
 2. [單顆接線圖](mega2560/wiring-single.svg)／[十字元接線規劃](mega2560/wiring-ten.svg)／[Hall 洞洞板逐孔配置](mega2560/hall-board.svg)
@@ -17,9 +19,9 @@
 
 ![單顆測試接線](mega2560/wiring-single.svg)
 
-`mega2560/unit_test/unit_test.ino` 開機不轉動，有效 EEPROM 會載入安裝／校準，否則只啟用 U0。`DIGITS 1..10` 啟用前 N 位，`UNITS 0,2,7` 指定順序；未啟用輸出保持 LOW。各位保留獨立設定，USB `SAVE`／`LOAD` 或網頁可持久化；ESP32 另保存最後完成字元，重開後核對實物並確認才建立定位及允許轉動。調速／加速度保留目前定位與 ARM。無磁鐵可 SET／SHOW，或 SETTEXT／ARM ALL／TEXT；跨圈按步數前進。文字、HOME ALL／CYCLE ALL 同時開始，定距移動自動加減速，預設 SPEED 800µs／ACCEL 800半步/s²，SPEED 可調 800–30000µs。網頁 UART 使用獨立的 Serial1 封包／心跳，查狀態不會停止馬達。Cardputer 與外接 RTC 尚未整合；現有接線無法自動偵測插拔，僅啟用實際接上的組別。手機設定頁內含四張離線接線圖。
+`mega2560/unit_test/unit_test.ino` 開機不轉動，有效 EEPROM 會載入安裝／校準，否則只啟用 U0。`DIGITS 1..10` 啟用前 N 位，`UNITS 0,2,7` 指定順序；未啟用輸出保持 LOW。各位保留獨立設定，USB `SAVE`／`LOAD` 或網頁可持久化；ESP32 另保存最後完成字元；1.3.0 網頁使用連續位數設定，動作自動準備，完成校準後可復電歸零並恢復顯示。調速／加速度保留目前定位與 ARM。無磁鐵可 SET／SHOW，或 SETTEXT／ARM ALL／TEXT；跨圈按步數前進。文字、HOME ALL／CYCLE ALL 同時開始，定距移動自動加減速，預設 SPEED 800µs／ACCEL 800半步/s²，SPEED 可調 800–30000µs。網頁 UART 使用獨立的 Serial1 封包／心跳，查狀態不會停止馬達。Cardputer 與外接 RTC 尚未整合；現有接線無法自動偵測插拔，僅啟用實際接上的組別。手機設定頁內含四張離線接線圖。
 
-**U0手動定位已回報數輪無偏移：SPEED 800、ACCEL 800、REVSTEPS 4096。U0磁鐵歸零已初驗，空白頁 OFFSET=273 已保存。** [實機紀錄](mega2560/validation.md)保留STATUS與驗證範圍；三圈量測平均4096半步、最大差4半步，重複性目標及完整系統驗收仍待完成。先只接 U0；馬達電源須有實體切斷開關。移動中送任何非換行字元會停止並釋放線圈，不能取代切斷 12V 或保證硬體故障時關閉。
+**舊控制器上的 U0 歷史驗證：手動定位已回報數輪無偏移，SPEED 800、ACCEL 800、REVSTEPS 4096。U0磁鐵歸零已初驗，空白頁 OFFSET=273 已保存。** [實機紀錄](mega2560/validation.md)保留STATUS與驗證範圍；三圈量測平均4096半步、最大差4半步，重複性目標及完整系統驗收仍待完成。先只接 U0；馬達電源須有實體切斷開關。移動中送任何非換行字元會停止並釋放線圈，不能取代切斷 12V 或保證硬體故障時關閉。
 
 ## 既有 ESP32 與來源
 

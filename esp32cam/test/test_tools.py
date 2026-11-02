@@ -31,6 +31,7 @@ def module(name, path):
 
 dev = module('cam_dev_test', 'esp32cam/tools/dev.py')
 mock = module('mock_web_test', 'esp32cam/test/mock_web.py')
+ota = module('ota_upload_test', 'esp32cam/tools/ota_upload.py')
 PORT = 'COM4' if os.name == 'nt' else '/dev/ttyUSB0'
 
 
@@ -100,12 +101,16 @@ class ArtifactsTest(unittest.TestCase):
             with contextlib.redirect_stdout(io.StringIO()):
                 package = dev.package(binary, path / 'dist')
             data = package.read_bytes()
+            self.assertEqual(ota.validate_package(package), data)
             self.assertEqual(len(data), 64 + len(image))
             self.assertEqual(data[16:48], hashlib.sha256(image).digest())
             self.assertEqual(mock.verify_package(data), image)
             for broken in [data[:-1], data + b'x', b'BAD' + data[3:], data[:80] + bytes([data[80] ^ 1]) + data[81:]]:
                 with self.assertRaises(ValueError):
                     mock.verify_package(broken)
+                package.write_bytes(broken)
+                with self.assertRaises(ValueError):
+                    ota.validate_package(package)
             image[12] = 1
             binary.write_bytes(image)
             with self.assertRaises(ValueError):
@@ -214,8 +219,7 @@ class HttpFixtureTest(unittest.TestCase):
         return client
 
     def login(self, client):
-        data = urllib.parse.urlencode({'username': 'admin', 'password': self.model.admin_password}).encode()
-        client.open(self.url + '/mock/login', data=data, timeout=3).read()
+        self.post(client, '/api/login', {'username':'admin','password':self.model.admin_password},csrf=False)
 
     def post(self, client, path, body, csrf=True):
         request = urllib.request.Request(self.url + path, data=json.dumps(body).encode(), headers={'Content-Type': 'application/json'})
@@ -232,6 +236,25 @@ class HttpFixtureTest(unittest.TestCase):
         with self.assertRaises(urllib.error.HTTPError) as error:
             self.post(client, '/api/command', {'op': 'STOP'}, csrf=False)
         self.assertEqual(error.exception.code, 403)
+
+    def test_paced_ota_authenticates_and_requires_prepared_stop(self):
+        client = ota.DeviceClient(self.url, self.model.admin_password)
+        state = client.get('/api/state')
+        image = bytearray(4096)
+        image[0] = 0xe9
+        package = b'SFESP01\0' + struct.pack('<II', len(image), 1) + hashlib.sha256(image).digest() + b'splitflap-32s-v1' + image
+        with contextlib.redirect_stdout(io.StringIO()):
+            status, _ = client.upload(package, state['csrf'], 'unprepared', interval=0)
+        self.assertNotEqual(status, 200)
+        self.assertEqual(self.model.boot, state['boot'])
+        status, prepared = client.request('/api/ota/prepare', {'boot': state['boot'], 'request': state['nextRequest']}, {'X-CSRF-Token': state['csrf']})
+        self.assertEqual(status, 202)
+        with contextlib.redirect_stdout(io.StringIO()):
+            status, _ = client.upload(package, state['csrf'], prepared['ticket'], interval=0)
+        self.assertEqual(status, 200)
+        self.assertEqual(self.model.boot, state['boot'] + 1)
+        self.assertFalse(self.model.ota_ready)
+        self.assertFalse(any(unit['armed'] for unit in self.model.units))
 
     def test_fixture_wifi_without_mega_preserves_motion_and_maintenance_guards(self):
         client = self.client()
@@ -251,7 +274,7 @@ class HttpFixtureTest(unittest.TestCase):
         self.assertEqual(self.model.network['ssid'], 'First-Setup-WiFi')
         self.post(client, '/mock/control', {'connected': True, 'maintenance': False})
 
-    def test_fixture_manual_glyphs_sparse_layout_and_atomic_validation(self):
+    def test_fixture_manual_glyphs_contiguous_layout_and_atomic_validation(self):
         client = self.client()
         self.login(client)
         state = json.load(client.open(self.url + '/api/state', timeout=3))
@@ -261,15 +284,18 @@ class HttpFixtureTest(unittest.TestCase):
         self.assertEqual(self.model.units[0]['index'], 27)
         config = copy = json.loads(json.dumps(self.model.schema))
         config['units'] = [7, 0, 2]
+        with self.assertRaises(urllib.error.HTTPError):
+            self.post(client, '/api/config', dict(schema=1, boot=self.model.boot, request=self.model.next_request, mega=config))
+        config['units'] = [0, 1, 2]
         response = self.post(client, '/api/config', dict(schema=1, boot=self.model.boot, request=self.model.next_request, mega=config))
         self.assertIn('id', response)
-        self.assertEqual(self.model.schema['units'], [7, 0, 2])
-        self.assertFalse(self.model.units[1]['enabled'])
+        self.assertEqual(self.model.schema['units'], [0, 1, 2])
+        self.assertFalse(self.model.units[3]['enabled'])
         bad = json.loads(json.dumps(copy))
         bad['units'] = [0, 0]
         with self.assertRaises(urllib.error.HTTPError):
             self.post(client, '/api/config', dict(schema=1, boot=self.model.boot, request=self.model.next_request, mega=bad))
-        self.assertEqual(self.model.schema['units'], [7, 0, 2])
+        self.assertEqual(self.model.schema['units'], [0, 1, 2])
 
     def test_fixture_ota_requires_stop_ticket_and_clears_failed_attempt(self):
         client = self.client()

@@ -45,7 +45,7 @@ def package(image=None, destination=None):
     result.write_bytes(header + binary)
     shutil.copyfile(image, destination / 'splitflap-esp32s.bin')
     metadata = {'device': 'splitflap-esp32s', 'hardware': 'NodeMCU ESP-32S', 'board': FQBN,
-                'core': CORE, 'protocol': 1, 'firmware': '1.2.0', 'psram': False,
+                'core': CORE, 'protocol': 1, 'firmware': '1.3.1', 'psram': False,
                 'size': len(binary), 'sha256': digest.hex()}
     (destination / 'firmware.json').write_text(json.dumps(metadata, indent=2) + '\n', encoding='utf-8')
     print(f'ESP32-S：網頁更新檔 {result} (映像 {len(binary)} bytes，封裝 {len(header) + len(binary)} bytes，SHA-256 {digest.hex()[:16]}…)')

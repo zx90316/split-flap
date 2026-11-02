@@ -22,7 +22,12 @@ class Bridge {
     const sf::Error error = engine_.submit(bytes, n, request, millis(), id);
     xSemaphoreGive(lock_); return error;
   }
+  sf::Error submit(const uint8_t* bytes, size_t n, uint32_t request, uint32_t, uint32_t& id) { return submit(bytes, n, request, id); }
   bool pending() { xSemaphoreTake(lock_, portMAX_DELAY); bool b = engine_.pending(); xSemaphoreGive(lock_); return b; }
+  sf::Error reserve(const uint8_t* bytes, size_t n, uint32_t request, uint32_t& id, bool& created) {
+    xSemaphoreTake(lock_, portMAX_DELAY); const auto result = engine_.reserve(bytes, n, request, id, created); xSemaphoreGive(lock_); return result;
+  }
+  void complete(uint32_t id, sf::Error error) { xSemaphoreTake(lock_, portMAX_DELAY); engine_.complete(id, error); xSemaphoreGive(lock_); }
   void configurationFailed(uint32_t id) {
     xSemaphoreTake(lock_, portMAX_DELAY); engine_.configurationFailed(id); xSemaphoreGive(lock_);
   }

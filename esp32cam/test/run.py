@@ -68,3 +68,10 @@ if not args.build_only:
     subprocess.run([binary], check=True, env=env)
 else:
     print('Built:', binary)
+
+program_binary = build / ('test_program' + ('.exe' if os.name == 'nt' else ''))
+compile_checked([zig, 'c++', '-std=c++11', '-Wall', '-Wextra', '-Werror',
+    '-I' + str(ROOT / 'esp32cam/test/stubs'), '-I' + str(ROOT / 'libraries/SplitFlapLink/src'), '-I' + str(dep),
+    ROOT / 'esp32cam/test/test_program.cpp', obj, '-o', program_binary] + debug)
+if not args.build_only:
+    subprocess.run([program_binary], check=True, env=env)

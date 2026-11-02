@@ -42,6 +42,7 @@ inline bool copyString(const char* input, char* output, size_t size) {
 }
 inline cJSON* settingsJson(const sf::Settings& settings) {
   cJSON* o = cJSON_CreateObject(); cJSON* map = cJSON_AddArrayToObject(o, "units");
+  num(o, "digits", settings.count);
   for (uint8_t i = 0; i < settings.count; ++i) cJSON_AddItemToArray(map, cJSON_CreateNumber(settings.mapping[i]));
   cJSON* configs = cJSON_AddArrayToObject(o, "calibration");
   for (const auto& c : settings.units) {
@@ -54,7 +55,16 @@ inline cJSON* settingsJson(const sf::Settings& settings) {
 }
 inline bool parseSettings(const cJSON* o, sf::Settings& out) {
   const cJSON* units = cJSON_GetObjectItemCaseSensitive(o, "units"); const cJSON* cal = cJSON_GetObjectItemCaseSensitive(o, "calibration");
-  if (!cJSON_IsArray(units) || cJSON_GetArraySize(units) < 1 || cJSON_GetArraySize(units) > 10 || !cJSON_IsArray(cal) || cJSON_GetArraySize(cal) != 10) return false;
+  const cJSON* digits = cJSON_GetObjectItemCaseSensitive(o, "digits"); int64_t width = 0;
+  if (digits && !integer(digits, 1, 10, width)) return false;
+  if ((!digits && (!cJSON_IsArray(units) || cJSON_GetArraySize(units) < 1 || cJSON_GetArraySize(units) > 10)) || !cJSON_IsArray(cal) || cJSON_GetArraySize(cal) != 10) return false;
+  if (digits && !units) {
+    sf::Settings generated; generated.count = uint8_t(width);
+    cJSON* copy = cJSON_Duplicate(o, true); cJSON* list = cJSON_AddArrayToObject(copy, "units");
+    for (uint8_t i = 0; i < generated.count; ++i) cJSON_AddItemToArray(list, cJSON_CreateNumber(i));
+    const bool ok = parseSettings(copy, out); cJSON_Delete(copy); return ok;
+  }
+  if (!cJSON_IsArray(units) || (digits && cJSON_GetArraySize(units) != width)) return false;
   sf::Settings result; result.count = uint8_t(cJSON_GetArraySize(units)); int64_t n;
   for (uint8_t i = 0; i < result.count; ++i) { if (!integer(cJSON_GetArrayItem(units, i), 0, 9, n)) return false; result.mapping[i] = uint8_t(n); }
   for (uint8_t i = 0; i < 10; ++i) {

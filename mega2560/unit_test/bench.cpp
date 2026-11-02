@@ -126,8 +126,9 @@ bool Bench::measure(uint32_t now) {
 bool Bench::goTo(uint8_t target, uint32_t now) {
   if (target >= kFlapCount || !positioned() || !begin(Job::Move, now)) return false;
   target_ = target;
-  if (homed() && target < index_) startHome(now);
-  else startMove(target, now);
+  // Display moves always advance from the known position, wrapping past the
+  // revolution start; the Hall marker is only a reference, never searched here.
+  startMove(target, now);
   return true;
 }
 

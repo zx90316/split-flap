@@ -1,6 +1,8 @@
 # Mega2560 Pro＋NodeMCU ESP-32S 接線表
 
-適用 2026-10-26 新購的 **Mega2560 Pro CH340G（焊好排針）與 NodeMCU ESP-32S**。功能圖按腳位名稱畫線，不代表實體排針排列、接頭外觀或尺寸。新板尚待到貨核對；原標準 Mega／ESP32-CAM 的排針位置不能直接套用。
+適用 2026-10-26 新購的 **Mega2560 Pro CH340G（焊好排針）與 NodeMCU ESP-32S**。功能圖按腳位名稱畫線，不代表實體排針排列、接頭外觀或尺寸。兩塊新主控已到貨並完成 USB 初驗，電源輸入與排針仍須依實板核對；原標準 Mega／ESP32-CAM 的排針位置不能直接套用。
+
+**2026-10-31 現場狀態：**使用者確認 Mega 與 ESP32 均由外部 5V 接各板 5V 腳，兩板已可交換正常狀態資料。完整功能驗收進度與現場歷史見[驗證紀錄](validation.md)。
 
 [已購硬體與用途](../hardware/purchased-2026-10-26.md) · [正常供電圖](wiring-runtime.svg) · [板上 USB 燒錄圖](wiring-flashing.svg) · [十組馬達／Hall](../mega2560/wiring-ten.svg)
 
@@ -60,6 +62,8 @@ Hall + 接 5V、− 接 GND，S／+／− 針序依實板核對。[Hall 洞洞�
 Pro 若為已焊公排針，ULN 端也是公針時用母母線；四條相位線按邏輯腳個別對接，不保證四個腳在 Pro 上連續。標準 Mega 的母排則需公頭。D0／D1 留給 USB，D18／D19 留給板間 UART，D20／D21 暫預留，不新增 DIP 或繼電器接線。
 
 ## USB 燒錄與供電切換
+
+**兩板的 5V 腳由外部供電時，不直接插入電腦 USB。**日常操作與狀態查詢使用 Wi-Fi；需改用 USB 時，依下列斷電、拔線順序切換。
 
 ![兩板各自 USB](wiring-flashing.svg)
 
