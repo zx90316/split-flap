@@ -1,0 +1,89 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 930" role="img" aria-labelledby="title desc">
+<title id="title">第一階段：只接 U0，一顆一顆確認</title><desc id="desc">Mega 2560 用 USB 供電與收命令；12V 只供馬達。示意連線，非模組實際針序或等比例外觀。</desc>
+<style>text{font-family:"Microsoft JhengHei","Noto Sans CJK TC",sans-serif;fill:#172b45} .wire{fill:none;stroke-linejoin:round;stroke-linecap:round}</style>
+<rect width="1280" height="930" fill="#f5f7fb"/>
+<text x="45" y="55" font-size="30" font-weight="bold" text-anchor="start">第一階段：只接 U0，一顆一顆確認</text>
+<text x="45" y="88" font-size="17" font-weight="normal" text-anchor="start">Mega 2560 用 USB 供電與收命令；12V 只供馬達。示意連線，非模組實際針序或等比例外觀。</text>
+<rect x="45" y="110" width="1190" height="49" rx="12" fill="#fff1f2" stroke="#fecdd3" stroke-width="2"/>
+<text x="65" y="141" font-size="20" font-weight="normal" text-anchor="start" style="fill:#b42334">12V 不接 Mega、Hall 或 GPIO；VIN／DC 圓孔不接電。先關馬達分支，再拔 USB。</text>
+<rect x="65" y="210" width="330" height="440" rx="12" fill="#eaf2ff" stroke="#93b4f5" stroke-width="2"/>
+<text x="88" y="250" font-size="25" font-weight="bold" text-anchor="start">Mega2560 Pro／Mega</text>
+<text x="88" y="282" font-size="17" font-weight="normal" text-anchor="start">預設 U0；其他相位全部 LOW</text>
+<rect x="95" y="176" width="225" height="40" rx="12" fill="#dbeafe" stroke="#93b4f5" stroke-width="2"/>
+<text x="112" y="202" font-size="16" font-weight="normal" text-anchor="start">USB ← 電腦（5V＋資料）</text>
+<rect x="760" y="230" width="260" height="280" rx="12" fill="#fff7ed" stroke="#edc28b" stroke-width="2"/>
+<text x="785" y="262" font-size="23" font-weight="bold" text-anchor="start">ULN2003 · U0</text>
+<text x="295" y="316" font-size="21" font-weight="normal" text-anchor="start">D22</text>
+<text x="778" y="316" font-size="20" font-weight="normal" text-anchor="start">IN1</text>
+<polyline class="wire" points="395,310 760,310" stroke="#d97706" stroke-width="4"/>
+<circle cx="395" cy="310" r="5" fill="#d97706"/>
+<circle cx="760" cy="310" r="5" fill="#d97706"/>
+<text x="295" y="356" font-size="21" font-weight="normal" text-anchor="start">D24</text>
+<text x="778" y="356" font-size="20" font-weight="normal" text-anchor="start">IN2</text>
+<polyline class="wire" points="395,350 760,350" stroke="#8b5cf6" stroke-width="4"/>
+<circle cx="395" cy="350" r="5" fill="#8b5cf6"/>
+<circle cx="760" cy="350" r="5" fill="#8b5cf6"/>
+<text x="295" y="396" font-size="21" font-weight="normal" text-anchor="start">D26</text>
+<text x="778" y="396" font-size="20" font-weight="normal" text-anchor="start">IN3</text>
+<polyline class="wire" points="395,390 760,390" stroke="#2563eb" stroke-width="4"/>
+<circle cx="395" cy="390" r="5" fill="#2563eb"/>
+<circle cx="760" cy="390" r="5" fill="#2563eb"/>
+<text x="295" y="436" font-size="21" font-weight="normal" text-anchor="start">D28</text>
+<text x="778" y="436" font-size="20" font-weight="normal" text-anchor="start">IN4</text>
+<polyline class="wire" points="395,430 760,430" stroke="#c026a3" stroke-width="4"/>
+<circle cx="395" cy="430" r="5" fill="#c026a3"/>
+<circle cx="760" cy="430" r="5" fill="#c026a3"/>
+<text x="505" y="291" font-size="16" font-weight="normal" text-anchor="start">4P：Pro 公排針與 ULN 公針使用母母線</text>
+<text x="88" y="335" font-size="15" font-weight="normal" text-anchor="start">邏輯腳：22 / 24 / 26 / 28</text>
+<text x="88" y="365" font-size="15" font-weight="normal" text-anchor="start">依板上印字，不猜實體排位</text>
+<text x="88" y="405" font-size="16" font-weight="normal" text-anchor="start">只驅動 ULN 的輸入</text>
+<text x="88" y="434" font-size="16" font-weight="normal" text-anchor="start">不直接供電給馬達線圈</text>
+<rect x="1080" y="300" width="155" height="165" rx="12" fill="#fff7ed" stroke="#edc28b" stroke-width="2"/>
+<text x="1098" y="338" font-size="20" font-weight="bold" text-anchor="start">28BYJ-48</text>
+<text x="1098" y="370" font-size="18" font-weight="normal" text-anchor="start">12V · 五線</text>
+<text x="1098" y="405" font-size="18" font-weight="normal" text-anchor="start">U0 滾筒</text>
+<polyline class="wire" points="1020,355 1080,355" stroke="#d97706" stroke-width="6"/>
+<text x="1028" y="290" font-size="15" font-weight="normal" text-anchor="start">原五線插頭</text>
+<text x="786" y="493" font-size="17" font-weight="normal" text-anchor="start" style="fill:#dc3545">+ / COM</text>
+<text x="938" y="493" font-size="17" font-weight="normal" text-anchor="start">GND</text>
+<circle cx="820" cy="510" r="5" fill="#dc3545"/>
+<circle cx="970" cy="510" r="5" fill="#334155"/>
+<rect x="760" y="560" width="260" height="160" rx="12" fill="#e8f7f1" stroke="#86cdb8" stroke-width="2"/>
+<text x="815" y="593" font-size="23" font-weight="bold" text-anchor="start">KY-003 · U0</text>
+<text x="782" y="625" font-size="21" font-weight="normal" text-anchor="start" style="fill:#07836d">S</text>
+<circle cx="760" cy="620" r="5" fill="#07836d"/>
+<text x="782" y="665" font-size="21" font-weight="normal" text-anchor="start" style="fill:#dc3545">+</text>
+<circle cx="760" cy="660" r="5" fill="#dc3545"/>
+<text x="782" y="705" font-size="21" font-weight="normal" text-anchor="start" style="fill:#334155">−</text>
+<circle cx="760" cy="700" r="5" fill="#334155"/>
+<text x="850" y="635" font-size="16" font-weight="normal" text-anchor="start">3P：S / + / −</text>
+<text x="850" y="666" font-size="16" font-weight="normal" text-anchor="start">腳序依實物調整</text>
+<text x="850" y="697" font-size="16" font-weight="normal" text-anchor="start">可經 Hall 分線座</text>
+<text x="335" y="506" font-size="21" font-weight="normal" text-anchor="start" style="fill:#07836d">A0</text>
+<text x="333" y="566" font-size="21" font-weight="normal" text-anchor="start" style="fill:#dc3545">5V</text>
+<text x="323" y="626" font-size="20" font-weight="normal" text-anchor="start">GND</text>
+<polyline class="wire" points="395,500 625,500 625,620 760,620" stroke="#07836d" stroke-width="4"/>
+<polyline class="wire" points="395,560 580,560 580,660 760,660" stroke="#dc3545" stroke-width="3"/>
+<polyline class="wire" points="395,620 435,620 435,810" stroke="#334155" stroke-width="4"/>
+<polyline class="wire" points="760,700 735,700 735,810" stroke="#334155" stroke-width="3"/>
+<rect x="65" y="746" width="210" height="94" rx="12" fill="white" stroke="#cbd5e1" stroke-width="2"/>
+<text x="82" y="777" font-size="20" font-weight="bold" text-anchor="start">隔離式 12V 電源</text>
+<text x="82" y="811" font-size="16" font-weight="normal" text-anchor="start" style="fill:#dc3545">+12V</text>
+<text x="210" y="811" font-size="16" font-weight="normal" text-anchor="start">0V / −</text>
+<rect x="320" y="746" width="90" height="44" rx="12" fill="#fff1f2" stroke="#fecdd3" stroke-width="2"/>
+<text x="365.0" y="774" font-size="17" font-weight="normal" text-anchor="middle">保險絲</text>
+<rect x="450" y="746" width="100" height="44" rx="12" fill="#fff1f2" stroke="#fecdd3" stroke-width="2"/>
+<text x="500.0" y="774" font-size="17" font-weight="normal" text-anchor="middle">主開關</text>
+<rect x="590" y="746" width="130" height="44" rx="12" fill="#fff1f2" stroke="#fecdd3" stroke-width="2"/>
+<text x="655.0" y="774" font-size="17" font-weight="normal" text-anchor="middle">馬達切斷</text>
+<polyline class="wire" points="275,765 320,765" stroke="#dc3545" stroke-width="5"/>
+<polyline class="wire" points="410,765 450,765" stroke="#dc3545" stroke-width="5"/>
+<polyline class="wire" points="550,765 590,765" stroke="#dc3545" stroke-width="5"/>
+<polyline class="wire" points="720,765 1050,765 1050,540 820,540 820,510" stroke="#dc3545" stroke-width="5"/>
+<polyline class="wire" points="275,810 1070,810 1070,525 970,525 970,510" stroke="#334155" stroke-width="5"/>
+<circle cx="435" cy="810" r="5" fill="#334155"/>
+<circle cx="735" cy="810" r="5" fill="#334155"/>
+<text x="330" y="838" font-size="17" font-weight="normal" text-anchor="start">共地分配點；馬達回流獨立走線。交叉無圓點不相接。</text>
+<text x="65" y="880" font-size="18" font-weight="normal" text-anchor="start">測試順序：WATCH → 拔馬達做 LED → STEP → HOME → MEASURE → OFFSET → FLAP / GOTO / CYCLE</text>
+<text x="65" y="908" font-size="17" font-weight="normal" text-anchor="start">每個動作前須 ARM；運動中任意非換行輸入停止整行。LED 不等於相序或硬體安全驗證。</text>
+</svg>

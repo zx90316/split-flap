@@ -1,0 +1,18 @@
+# Generated ESP32 build/test files and private local credentials
+firmware/esp32/.pio/
+firmware/esp32/.vscode/
+firmware/esp32/include/secrets.h
+firmware/esp32/test/native/.build/
+__pycache__/
+*.pyc
+
+# Local Mega toolchains and generated firmware/test artifacts
+.tools/
+mega2560/.build/
+mega2560/.pio/
+mega2560/test/.build/
+esp32cam/.build/
+esp32cam/test/.build/
+esp32cam/dist/
+esp32cam/test/node_modules/
+.codex-remote-attachments/

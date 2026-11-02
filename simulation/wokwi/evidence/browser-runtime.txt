@@ -1,0 +1,56 @@
+ets Jul 29 2019 12:21:46
+
+rst:0x1 (POWERON_RESET),boot:0x13 (SPI_FAST_FLASH_BOOT)
+configsip: 0, SPIWP:0xee
+clk_drv:0x00,q_drv:0x00,d_drv:0x00,cs0_drv:0x00,hd_drv:0x00,wp_drv:0x00
+mode:DIO, clock div:2
+load:0x3fff0030,len:1156
+load:0x40078000,len:11456
+ho 0 tail 12 room 4
+load:0x40080400,len:2972
+entry 0x400805dc
+ESP32 split-flap: motor 12V OFF; verify wiring; INIT POWER_OFF then HELP.
+OK bus initialized; verify safe power before ARM
+OK enabled prefix; ARM then HOME
+OK concurrency set; verify power before increasing
+OK armed; no automatic motion
+OK homing queued
+BUSY; STOP is available; detailed STATUS when idle
+bus=ready armed=1 enabled=10 limit=10 hall=0x3ff charset=UMLAUT nvs=1
+0 ready fault=none homed=1 slot=0 rev=4096 offset=0 dir=1 us=8000 hall=LOW
+1 ready fault=none homed=1 slot=0 rev=4096 offset=0 dir=1 us=8000 hall=LOW
+2 ready fault=none homed=1 slot=0 rev=4096 offset=0 dir=1 us=8000 hall=LOW
+3 ready fault=none homed=1 slot=0 rev=4096 offset=0 dir=1 us=8000 hall=LOW
+4 ready fault=none homed=1 slot=0 rev=4096 offset=0 dir=1 us=8000 hall=LOW
+5 ready fault=none homed=1 slot=0 rev=4096 offset=0 dir=1 us=8000 hall=LOW
+6 ready fault=none homed=1 slot=0 rev=4096 offset=0 dir=1 us=8000 hall=LOW
+7 ready fault=none homed=1 slot=0 rev=4096 offset=0 dir=1 us=8000 hall=LOW
+8 ready fault=none homed=1 slot=0 rev=4096 offset=0 dir=1 us=8000 hall=LOW
+9 ready fault=none homed=1 slot=0 rev=4096 offset=0 dir=1 us=8000 hall=LOW
+OK queued
+bus=ready armed=1 enabled=10 limit=10 hall=0x3e0 charset=UMLAUT nvs=1
+0 ready fault=none homed=1 slot=8 rev=4096 offset=0 dir=1 us=8000 hall=LOW
+1 ready fault=none homed=1 slot=5 rev=4096 offset=0 dir=1 us=8000 hall=LOW
+2 ready fault=none homed=1 slot=12 rev=4096 offset=0 dir=1 us=8000 hall=LOW
+3 ready fault=none homed=1 slot=12 rev=4096 offset=0 dir=1 us=8000 hall=LOW
+4 ready fault=none homed=1 slot=15 rev=4096 offset=0 dir=1 us=8000 hall=LOW
+5 ready fault=none homed=1 slot=0 rev=4096 offset=0 dir=1 us=8000 hall=LOW
+6 ready fault=none homed=1 slot=0 rev=4096 offset=0 dir=1 us=8000 hall=LOW
+7 ready fault=none homed=1 slot=0 rev=4096 offset=0 dir=1 us=8000 hall=LOW
+8 ready fault=none homed=1 slot=0 rev=4096 offset=0 dir=1 us=8000 hall=LOW
+9 ready fault=none homed=1 slot=0 rev=4096 offset=0 dir=1 us=8000 hall=LOW
+OK move queued
+OK stopped/disarmed; position invalid; HOME required
+OK calibration changed; ARM/HOME; SAVE to persist
+OK calibration saved
+bus=ready armed=0 enabled=10 limit=10 hall=0x3e0 charset=UMLAUT nvs=1
+0 unhomed fault=none homed=0 slot=0 rev=4096 offset=45 dir=-1 us=8000 hall=LOW
+1 unhomed fault=none homed=0 slot=0 rev=4096 offset=0 dir=1 us=8000 hall=LOW
+2 unhomed fault=none homed=0 slot=0 rev=4096 offset=0 dir=1 us=8000 hall=LOW
+3 unhomed fault=none homed=0 slot=0 rev=4096 offset=0 dir=1 us=8000 hall=LOW
+4 unhomed fault=none homed=0 slot=0 rev=4096 offset=0 dir=1 us=8000 hall=LOW
+5 unhomed fault=none homed=0 slot=0 rev=4096 offset=0 dir=1 us=8000 hall=LOW
+6 unhomed fault=none homed=0 slot=0 rev=4096 offset=0 dir=1 us=8000 hall=LOW
+7 unhomed fault=none homed=0 slot=0 rev=4096 offset=0 dir=1 us=8000 hall=LOW
+8 unhomed fault=none homed=0 slot=0 rev=4096 offset=0 dir=1 us=8000 hall=LOW
+9 unhomed fault=none homed=0 slot=0 rev=4096 offset=0 dir=1 us=8000 hall=LOW

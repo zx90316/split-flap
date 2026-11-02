@@ -1,0 +1,273 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 1190" role="img" aria-labelledby="title desc">
+<title id="title">十字元接線規劃：40 路相位＋10 路 Hall</title><desc id="desc">支援 1～10 位同時翻轉；只啟用已接組別。擴充前量控制 5V 負載、12V 總電流與壓降。</desc>
+<style>text{font-family:"Microsoft JhengHei","Noto Sans CJK TC",sans-serif;fill:#172b45} .wire{fill:none;stroke-linejoin:round;stroke-linecap:round}</style>
+<rect width="1440" height="1190" fill="#f5f7fb"/>
+<text x="45" y="55" font-size="30" font-weight="bold" text-anchor="start">十字元接線規劃：40 路相位＋10 路 Hall</text>
+<text x="45" y="88" font-size="17" font-weight="normal" text-anchor="start">支援 1～10 位同時翻轉；只啟用已接組別。擴充前量控制 5V 負載、12V 總電流與壓降。</text>
+<text x="55" y="134" font-size="23" font-weight="bold" text-anchor="start">Mega2560 Pro／Mega</text>
+<text x="580" y="134" font-size="23" font-weight="bold" text-anchor="start">ULN2003 ×10</text>
+<text x="865" y="134" font-size="23" font-weight="bold" text-anchor="start">12V 馬達 ×10</text>
+<text x="1155" y="134" font-size="23" font-weight="bold" text-anchor="start">KY-003 ×10</text>
+<rect x="45" y="170" width="370" height="784" rx="12" fill="#eaf2ff" stroke="#93b4f5" stroke-width="2"/>
+<text x="65" y="213" font-size="18" font-weight="bold" text-anchor="start">U0: D22 / D24 / D26 / D28</text>
+<text x="65" y="241" font-size="15" font-weight="normal" text-anchor="start" style="fill:#07836d">Hall S0 → A0    Pro 公排針：4P 母母線</text>
+<rect x="590" y="188" width="205" height="56" rx="12" fill="#fff7ed" stroke="#edc28b" stroke-width="2"/>
+<text x="608" y="211" font-size="16" font-weight="normal" text-anchor="start">U0 · IN1 / 2 / 3 / 4</text>
+<text x="610" y="235" font-size="15" font-weight="normal" text-anchor="start" style="fill:#dc3545">+12V</text>
+<text x="735" y="235" font-size="15" font-weight="normal" text-anchor="start">GND</text>
+<polyline class="wire" points="415,211 590,211" stroke="#d97706" stroke-width="5"/>
+<text x="460" y="203" font-size="16" font-weight="normal" text-anchor="start">4P</text>
+<rect x="865" y="188" width="180" height="56" rx="12" fill="#fff7ed" stroke="#edc28b" stroke-width="2"/>
+<text x="884" y="212" font-size="17" font-weight="normal" text-anchor="start">U0  28BYJ-48</text>
+<text x="884" y="235" font-size="15" font-weight="normal" text-anchor="start">五線插頭 · 12V</text>
+<polyline class="wire" points="795,211 865,211" stroke="#d97706" stroke-width="4"/>
+<rect x="1155" y="188" width="220" height="56" rx="12" fill="#e8f7f1" stroke="#86cdb8" stroke-width="2"/>
+<text x="1172" y="211" font-size="18" font-weight="normal" text-anchor="start">U0: S0 / + / −</text>
+<text x="1172" y="235" font-size="15" font-weight="normal" text-anchor="start">3P 母對母 → 分線板</text>
+<polyline class="wire" points="1375,200 1395,200" stroke="#dc3545" stroke-width="2"/>
+<circle cx="1395" cy="200" r="3" fill="#dc3545"/>
+<polyline class="wire" points="1375,232 1415,232" stroke="#334155" stroke-width="2"/>
+<circle cx="1415" cy="232" r="3" fill="#334155"/>
+<polyline class="wire" points="1250,244 1250,254 435,254 435,238 415,238" stroke="#07836d" stroke-width="2"/>
+<polyline class="wire" points="555,235 590,235" stroke="#dc3545" stroke-width="3"/>
+<circle cx="555" cy="235" r="4" fill="#dc3545"/>
+<polyline class="wire" points="750,244 750,249 825,249" stroke="#334155" stroke-width="2"/>
+<circle cx="825" cy="249" r="4" fill="#334155"/>
+<text x="65" y="289" font-size="18" font-weight="bold" text-anchor="start">U1: D30 / D32 / D34 / D36</text>
+<text x="65" y="317" font-size="15" font-weight="normal" text-anchor="start" style="fill:#07836d">Hall S1 → A1    Pro 公排針：4P 母母線</text>
+<rect x="590" y="264" width="205" height="56" rx="12" fill="#fff7ed" stroke="#edc28b" stroke-width="2"/>
+<text x="608" y="287" font-size="16" font-weight="normal" text-anchor="start">U1 · IN1 / 2 / 3 / 4</text>
+<text x="610" y="311" font-size="15" font-weight="normal" text-anchor="start" style="fill:#dc3545">+12V</text>
+<text x="735" y="311" font-size="15" font-weight="normal" text-anchor="start">GND</text>
+<polyline class="wire" points="415,287 590,287" stroke="#8b5cf6" stroke-width="5"/>
+<text x="460" y="279" font-size="16" font-weight="normal" text-anchor="start">4P</text>
+<rect x="865" y="264" width="180" height="56" rx="12" fill="#fff7ed" stroke="#edc28b" stroke-width="2"/>
+<text x="884" y="288" font-size="17" font-weight="normal" text-anchor="start">U1  28BYJ-48</text>
+<text x="884" y="311" font-size="15" font-weight="normal" text-anchor="start">五線插頭 · 12V</text>
+<polyline class="wire" points="795,287 865,287" stroke="#d97706" stroke-width="4"/>
+<rect x="1155" y="264" width="220" height="56" rx="12" fill="#e8f7f1" stroke="#86cdb8" stroke-width="2"/>
+<text x="1172" y="287" font-size="18" font-weight="normal" text-anchor="start">U1: S1 / + / −</text>
+<text x="1172" y="311" font-size="15" font-weight="normal" text-anchor="start">3P 母對母 → 分線板</text>
+<polyline class="wire" points="1375,276 1395,276" stroke="#dc3545" stroke-width="2"/>
+<circle cx="1395" cy="276" r="3" fill="#dc3545"/>
+<polyline class="wire" points="1375,308 1415,308" stroke="#334155" stroke-width="2"/>
+<circle cx="1415" cy="308" r="3" fill="#334155"/>
+<polyline class="wire" points="1250,320 1250,330 435,330 435,314 415,314" stroke="#07836d" stroke-width="2"/>
+<polyline class="wire" points="555,311 590,311" stroke="#dc3545" stroke-width="3"/>
+<circle cx="555" cy="311" r="4" fill="#dc3545"/>
+<polyline class="wire" points="750,320 750,325 825,325" stroke="#334155" stroke-width="2"/>
+<circle cx="825" cy="325" r="4" fill="#334155"/>
+<text x="65" y="365" font-size="18" font-weight="bold" text-anchor="start">U2: D38 / D40 / D42 / D44</text>
+<text x="65" y="393" font-size="15" font-weight="normal" text-anchor="start" style="fill:#07836d">Hall S2 → A2    Pro 公排針：4P 母母線</text>
+<rect x="590" y="340" width="205" height="56" rx="12" fill="#fff7ed" stroke="#edc28b" stroke-width="2"/>
+<text x="608" y="363" font-size="16" font-weight="normal" text-anchor="start">U2 · IN1 / 2 / 3 / 4</text>
+<text x="610" y="387" font-size="15" font-weight="normal" text-anchor="start" style="fill:#dc3545">+12V</text>
+<text x="735" y="387" font-size="15" font-weight="normal" text-anchor="start">GND</text>
+<polyline class="wire" points="415,363 590,363" stroke="#2563eb" stroke-width="5"/>
+<text x="460" y="355" font-size="16" font-weight="normal" text-anchor="start">4P</text>
+<rect x="865" y="340" width="180" height="56" rx="12" fill="#fff7ed" stroke="#edc28b" stroke-width="2"/>
+<text x="884" y="364" font-size="17" font-weight="normal" text-anchor="start">U2  28BYJ-48</text>
+<text x="884" y="387" font-size="15" font-weight="normal" text-anchor="start">五線插頭 · 12V</text>
+<polyline class="wire" points="795,363 865,363" stroke="#d97706" stroke-width="4"/>
+<rect x="1155" y="340" width="220" height="56" rx="12" fill="#e8f7f1" stroke="#86cdb8" stroke-width="2"/>
+<text x="1172" y="363" font-size="18" font-weight="normal" text-anchor="start">U2: S2 / + / −</text>
+<text x="1172" y="387" font-size="15" font-weight="normal" text-anchor="start">3P 母對母 → 分線板</text>
+<polyline class="wire" points="1375,352 1395,352" stroke="#dc3545" stroke-width="2"/>
+<circle cx="1395" cy="352" r="3" fill="#dc3545"/>
+<polyline class="wire" points="1375,384 1415,384" stroke="#334155" stroke-width="2"/>
+<circle cx="1415" cy="384" r="3" fill="#334155"/>
+<polyline class="wire" points="1250,396 1250,406 435,406 435,390 415,390" stroke="#07836d" stroke-width="2"/>
+<polyline class="wire" points="555,387 590,387" stroke="#dc3545" stroke-width="3"/>
+<circle cx="555" cy="387" r="4" fill="#dc3545"/>
+<polyline class="wire" points="750,396 750,401 825,401" stroke="#334155" stroke-width="2"/>
+<circle cx="825" cy="401" r="4" fill="#334155"/>
+<text x="65" y="441" font-size="18" font-weight="bold" text-anchor="start">U3: D46 / D48 / D50 / D52</text>
+<text x="65" y="469" font-size="15" font-weight="normal" text-anchor="start" style="fill:#07836d">Hall S3 → A3    Pro 公排針：4P 母母線</text>
+<rect x="590" y="416" width="205" height="56" rx="12" fill="#fff7ed" stroke="#edc28b" stroke-width="2"/>
+<text x="608" y="439" font-size="16" font-weight="normal" text-anchor="start">U3 · IN1 / 2 / 3 / 4</text>
+<text x="610" y="463" font-size="15" font-weight="normal" text-anchor="start" style="fill:#dc3545">+12V</text>
+<text x="735" y="463" font-size="15" font-weight="normal" text-anchor="start">GND</text>
+<polyline class="wire" points="415,439 590,439" stroke="#c026a3" stroke-width="5"/>
+<text x="460" y="431" font-size="16" font-weight="normal" text-anchor="start">4P</text>
+<rect x="865" y="416" width="180" height="56" rx="12" fill="#fff7ed" stroke="#edc28b" stroke-width="2"/>
+<text x="884" y="440" font-size="17" font-weight="normal" text-anchor="start">U3  28BYJ-48</text>
+<text x="884" y="463" font-size="15" font-weight="normal" text-anchor="start">五線插頭 · 12V</text>
+<polyline class="wire" points="795,439 865,439" stroke="#d97706" stroke-width="4"/>
+<rect x="1155" y="416" width="220" height="56" rx="12" fill="#e8f7f1" stroke="#86cdb8" stroke-width="2"/>
+<text x="1172" y="439" font-size="18" font-weight="normal" text-anchor="start">U3: S3 / + / −</text>
+<text x="1172" y="463" font-size="15" font-weight="normal" text-anchor="start">3P 母對母 → 分線板</text>
+<polyline class="wire" points="1375,428 1395,428" stroke="#dc3545" stroke-width="2"/>
+<circle cx="1395" cy="428" r="3" fill="#dc3545"/>
+<polyline class="wire" points="1375,460 1415,460" stroke="#334155" stroke-width="2"/>
+<circle cx="1415" cy="460" r="3" fill="#334155"/>
+<polyline class="wire" points="1250,472 1250,482 435,482 435,466 415,466" stroke="#07836d" stroke-width="2"/>
+<polyline class="wire" points="555,463 590,463" stroke="#dc3545" stroke-width="3"/>
+<circle cx="555" cy="463" r="4" fill="#dc3545"/>
+<polyline class="wire" points="750,472 750,477 825,477" stroke="#334155" stroke-width="2"/>
+<circle cx="825" cy="477" r="4" fill="#334155"/>
+<text x="65" y="517" font-size="18" font-weight="bold" text-anchor="start">U4: D23 / D25 / D27 / D29</text>
+<text x="65" y="545" font-size="15" font-weight="normal" text-anchor="start" style="fill:#07836d">Hall S4 → A4    Pro 公排針：4P 母母線</text>
+<rect x="590" y="492" width="205" height="56" rx="12" fill="#fff7ed" stroke="#edc28b" stroke-width="2"/>
+<text x="608" y="515" font-size="16" font-weight="normal" text-anchor="start">U4 · IN1 / 2 / 3 / 4</text>
+<text x="610" y="539" font-size="15" font-weight="normal" text-anchor="start" style="fill:#dc3545">+12V</text>
+<text x="735" y="539" font-size="15" font-weight="normal" text-anchor="start">GND</text>
+<polyline class="wire" points="415,515 590,515" stroke="#d97706" stroke-width="5"/>
+<text x="460" y="507" font-size="16" font-weight="normal" text-anchor="start">4P</text>
+<rect x="865" y="492" width="180" height="56" rx="12" fill="#fff7ed" stroke="#edc28b" stroke-width="2"/>
+<text x="884" y="516" font-size="17" font-weight="normal" text-anchor="start">U4  28BYJ-48</text>
+<text x="884" y="539" font-size="15" font-weight="normal" text-anchor="start">五線插頭 · 12V</text>
+<polyline class="wire" points="795,515 865,515" stroke="#d97706" stroke-width="4"/>
+<rect x="1155" y="492" width="220" height="56" rx="12" fill="#e8f7f1" stroke="#86cdb8" stroke-width="2"/>
+<text x="1172" y="515" font-size="18" font-weight="normal" text-anchor="start">U4: S4 / + / −</text>
+<text x="1172" y="539" font-size="15" font-weight="normal" text-anchor="start">3P 母對母 → 分線板</text>
+<polyline class="wire" points="1375,504 1395,504" stroke="#dc3545" stroke-width="2"/>
+<circle cx="1395" cy="504" r="3" fill="#dc3545"/>
+<polyline class="wire" points="1375,536 1415,536" stroke="#334155" stroke-width="2"/>
+<circle cx="1415" cy="536" r="3" fill="#334155"/>
+<polyline class="wire" points="1250,548 1250,558 435,558 435,542 415,542" stroke="#07836d" stroke-width="2"/>
+<polyline class="wire" points="555,539 590,539" stroke="#dc3545" stroke-width="3"/>
+<circle cx="555" cy="539" r="4" fill="#dc3545"/>
+<polyline class="wire" points="750,548 750,553 825,553" stroke="#334155" stroke-width="2"/>
+<circle cx="825" cy="553" r="4" fill="#334155"/>
+<text x="65" y="593" font-size="18" font-weight="bold" text-anchor="start">U5: D31 / D33 / D35 / D37</text>
+<text x="65" y="621" font-size="15" font-weight="normal" text-anchor="start" style="fill:#07836d">Hall S5 → A5    Pro 公排針：4P 母母線</text>
+<rect x="590" y="568" width="205" height="56" rx="12" fill="#fff7ed" stroke="#edc28b" stroke-width="2"/>
+<text x="608" y="591" font-size="16" font-weight="normal" text-anchor="start">U5 · IN1 / 2 / 3 / 4</text>
+<text x="610" y="615" font-size="15" font-weight="normal" text-anchor="start" style="fill:#dc3545">+12V</text>
+<text x="735" y="615" font-size="15" font-weight="normal" text-anchor="start">GND</text>
+<polyline class="wire" points="415,591 590,591" stroke="#8b5cf6" stroke-width="5"/>
+<text x="460" y="583" font-size="16" font-weight="normal" text-anchor="start">4P</text>
+<rect x="865" y="568" width="180" height="56" rx="12" fill="#fff7ed" stroke="#edc28b" stroke-width="2"/>
+<text x="884" y="592" font-size="17" font-weight="normal" text-anchor="start">U5  28BYJ-48</text>
+<text x="884" y="615" font-size="15" font-weight="normal" text-anchor="start">五線插頭 · 12V</text>
+<polyline class="wire" points="795,591 865,591" stroke="#d97706" stroke-width="4"/>
+<rect x="1155" y="568" width="220" height="56" rx="12" fill="#e8f7f1" stroke="#86cdb8" stroke-width="2"/>
+<text x="1172" y="591" font-size="18" font-weight="normal" text-anchor="start">U5: S5 / + / −</text>
+<text x="1172" y="615" font-size="15" font-weight="normal" text-anchor="start">3P 母對母 → 分線板</text>
+<polyline class="wire" points="1375,580 1395,580" stroke="#dc3545" stroke-width="2"/>
+<circle cx="1395" cy="580" r="3" fill="#dc3545"/>
+<polyline class="wire" points="1375,612 1415,612" stroke="#334155" stroke-width="2"/>
+<circle cx="1415" cy="612" r="3" fill="#334155"/>
+<polyline class="wire" points="1250,624 1250,634 435,634 435,618 415,618" stroke="#07836d" stroke-width="2"/>
+<polyline class="wire" points="555,615 590,615" stroke="#dc3545" stroke-width="3"/>
+<circle cx="555" cy="615" r="4" fill="#dc3545"/>
+<polyline class="wire" points="750,624 750,629 825,629" stroke="#334155" stroke-width="2"/>
+<circle cx="825" cy="629" r="4" fill="#334155"/>
+<text x="65" y="669" font-size="18" font-weight="bold" text-anchor="start">U6: D39 / D41 / D43 / D45</text>
+<text x="65" y="697" font-size="15" font-weight="normal" text-anchor="start" style="fill:#07836d">Hall S6 → A6    Pro 公排針：4P 母母線</text>
+<rect x="590" y="644" width="205" height="56" rx="12" fill="#fff7ed" stroke="#edc28b" stroke-width="2"/>
+<text x="608" y="667" font-size="16" font-weight="normal" text-anchor="start">U6 · IN1 / 2 / 3 / 4</text>
+<text x="610" y="691" font-size="15" font-weight="normal" text-anchor="start" style="fill:#dc3545">+12V</text>
+<text x="735" y="691" font-size="15" font-weight="normal" text-anchor="start">GND</text>
+<polyline class="wire" points="415,667 590,667" stroke="#2563eb" stroke-width="5"/>
+<text x="460" y="659" font-size="16" font-weight="normal" text-anchor="start">4P</text>
+<rect x="865" y="644" width="180" height="56" rx="12" fill="#fff7ed" stroke="#edc28b" stroke-width="2"/>
+<text x="884" y="668" font-size="17" font-weight="normal" text-anchor="start">U6  28BYJ-48</text>
+<text x="884" y="691" font-size="15" font-weight="normal" text-anchor="start">五線插頭 · 12V</text>
+<polyline class="wire" points="795,667 865,667" stroke="#d97706" stroke-width="4"/>
+<rect x="1155" y="644" width="220" height="56" rx="12" fill="#e8f7f1" stroke="#86cdb8" stroke-width="2"/>
+<text x="1172" y="667" font-size="18" font-weight="normal" text-anchor="start">U6: S6 / + / −</text>
+<text x="1172" y="691" font-size="15" font-weight="normal" text-anchor="start">3P 母對母 → 分線板</text>
+<polyline class="wire" points="1375,656 1395,656" stroke="#dc3545" stroke-width="2"/>
+<circle cx="1395" cy="656" r="3" fill="#dc3545"/>
+<polyline class="wire" points="1375,688 1415,688" stroke="#334155" stroke-width="2"/>
+<circle cx="1415" cy="688" r="3" fill="#334155"/>
+<polyline class="wire" points="1250,700 1250,710 435,710 435,694 415,694" stroke="#07836d" stroke-width="2"/>
+<polyline class="wire" points="555,691 590,691" stroke="#dc3545" stroke-width="3"/>
+<circle cx="555" cy="691" r="4" fill="#dc3545"/>
+<polyline class="wire" points="750,700 750,705 825,705" stroke="#334155" stroke-width="2"/>
+<circle cx="825" cy="705" r="4" fill="#334155"/>
+<text x="65" y="745" font-size="18" font-weight="bold" text-anchor="start">U7: D47 / D49 / D51 / D53</text>
+<text x="65" y="773" font-size="15" font-weight="normal" text-anchor="start" style="fill:#07836d">Hall S7 → A7    Pro 公排針：4P 母母線</text>
+<rect x="590" y="720" width="205" height="56" rx="12" fill="#fff7ed" stroke="#edc28b" stroke-width="2"/>
+<text x="608" y="743" font-size="16" font-weight="normal" text-anchor="start">U7 · IN1 / 2 / 3 / 4</text>
+<text x="610" y="767" font-size="15" font-weight="normal" text-anchor="start" style="fill:#dc3545">+12V</text>
+<text x="735" y="767" font-size="15" font-weight="normal" text-anchor="start">GND</text>
+<polyline class="wire" points="415,743 590,743" stroke="#c026a3" stroke-width="5"/>
+<text x="460" y="735" font-size="16" font-weight="normal" text-anchor="start">4P</text>
+<rect x="865" y="720" width="180" height="56" rx="12" fill="#fff7ed" stroke="#edc28b" stroke-width="2"/>
+<text x="884" y="744" font-size="17" font-weight="normal" text-anchor="start">U7  28BYJ-48</text>
+<text x="884" y="767" font-size="15" font-weight="normal" text-anchor="start">五線插頭 · 12V</text>
+<polyline class="wire" points="795,743 865,743" stroke="#d97706" stroke-width="4"/>
+<rect x="1155" y="720" width="220" height="56" rx="12" fill="#e8f7f1" stroke="#86cdb8" stroke-width="2"/>
+<text x="1172" y="743" font-size="18" font-weight="normal" text-anchor="start">U7: S7 / + / −</text>
+<text x="1172" y="767" font-size="15" font-weight="normal" text-anchor="start">3P 母對母 → 分線板</text>
+<polyline class="wire" points="1375,732 1395,732" stroke="#dc3545" stroke-width="2"/>
+<circle cx="1395" cy="732" r="3" fill="#dc3545"/>
+<polyline class="wire" points="1375,764 1415,764" stroke="#334155" stroke-width="2"/>
+<circle cx="1415" cy="764" r="3" fill="#334155"/>
+<polyline class="wire" points="1250,776 1250,786 435,786 435,770 415,770" stroke="#07836d" stroke-width="2"/>
+<polyline class="wire" points="555,767 590,767" stroke="#dc3545" stroke-width="3"/>
+<circle cx="555" cy="767" r="4" fill="#dc3545"/>
+<polyline class="wire" points="750,776 750,781 825,781" stroke="#334155" stroke-width="2"/>
+<circle cx="825" cy="781" r="4" fill="#334155"/>
+<text x="65" y="821" font-size="18" font-weight="bold" text-anchor="start">U8: D2 / D3 / D4 / D5</text>
+<text x="65" y="849" font-size="15" font-weight="normal" text-anchor="start" style="fill:#07836d">Hall S8 → A8    Pro 公排針：4P 母母線</text>
+<rect x="590" y="796" width="205" height="56" rx="12" fill="#fff7ed" stroke="#edc28b" stroke-width="2"/>
+<text x="608" y="819" font-size="16" font-weight="normal" text-anchor="start">U8 · IN1 / 2 / 3 / 4</text>
+<text x="610" y="843" font-size="15" font-weight="normal" text-anchor="start" style="fill:#dc3545">+12V</text>
+<text x="735" y="843" font-size="15" font-weight="normal" text-anchor="start">GND</text>
+<polyline class="wire" points="415,819 590,819" stroke="#d97706" stroke-width="5"/>
+<text x="460" y="811" font-size="16" font-weight="normal" text-anchor="start">4P</text>
+<rect x="865" y="796" width="180" height="56" rx="12" fill="#fff7ed" stroke="#edc28b" stroke-width="2"/>
+<text x="884" y="820" font-size="17" font-weight="normal" text-anchor="start">U8  28BYJ-48</text>
+<text x="884" y="843" font-size="15" font-weight="normal" text-anchor="start">五線插頭 · 12V</text>
+<polyline class="wire" points="795,819 865,819" stroke="#d97706" stroke-width="4"/>
+<rect x="1155" y="796" width="220" height="56" rx="12" fill="#e8f7f1" stroke="#86cdb8" stroke-width="2"/>
+<text x="1172" y="819" font-size="18" font-weight="normal" text-anchor="start">U8: S8 / + / −</text>
+<text x="1172" y="843" font-size="15" font-weight="normal" text-anchor="start">3P 母對母 → 分線板</text>
+<polyline class="wire" points="1375,808 1395,808" stroke="#dc3545" stroke-width="2"/>
+<circle cx="1395" cy="808" r="3" fill="#dc3545"/>
+<polyline class="wire" points="1375,840 1415,840" stroke="#334155" stroke-width="2"/>
+<circle cx="1415" cy="840" r="3" fill="#334155"/>
+<polyline class="wire" points="1250,852 1250,862 435,862 435,846 415,846" stroke="#07836d" stroke-width="2"/>
+<polyline class="wire" points="555,843 590,843" stroke="#dc3545" stroke-width="3"/>
+<circle cx="555" cy="843" r="4" fill="#dc3545"/>
+<polyline class="wire" points="750,852 750,857 825,857" stroke="#334155" stroke-width="2"/>
+<circle cx="825" cy="857" r="4" fill="#334155"/>
+<text x="65" y="897" font-size="18" font-weight="bold" text-anchor="start">U9: D8 / D9 / D10 / D11</text>
+<text x="65" y="925" font-size="15" font-weight="normal" text-anchor="start" style="fill:#07836d">Hall S9 → A9    Pro 公排針：4P 母母線</text>
+<rect x="590" y="872" width="205" height="56" rx="12" fill="#fff7ed" stroke="#edc28b" stroke-width="2"/>
+<text x="608" y="895" font-size="16" font-weight="normal" text-anchor="start">U9 · IN1 / 2 / 3 / 4</text>
+<text x="610" y="919" font-size="15" font-weight="normal" text-anchor="start" style="fill:#dc3545">+12V</text>
+<text x="735" y="919" font-size="15" font-weight="normal" text-anchor="start">GND</text>
+<polyline class="wire" points="415,895 590,895" stroke="#8b5cf6" stroke-width="5"/>
+<text x="460" y="887" font-size="16" font-weight="normal" text-anchor="start">4P</text>
+<rect x="865" y="872" width="180" height="56" rx="12" fill="#fff7ed" stroke="#edc28b" stroke-width="2"/>
+<text x="884" y="896" font-size="17" font-weight="normal" text-anchor="start">U9  28BYJ-48</text>
+<text x="884" y="919" font-size="15" font-weight="normal" text-anchor="start">五線插頭 · 12V</text>
+<polyline class="wire" points="795,895 865,895" stroke="#d97706" stroke-width="4"/>
+<rect x="1155" y="872" width="220" height="56" rx="12" fill="#e8f7f1" stroke="#86cdb8" stroke-width="2"/>
+<text x="1172" y="895" font-size="18" font-weight="normal" text-anchor="start">U9: S9 / + / −</text>
+<text x="1172" y="919" font-size="15" font-weight="normal" text-anchor="start">3P 母對母 → 分線板</text>
+<polyline class="wire" points="1375,884 1395,884" stroke="#dc3545" stroke-width="2"/>
+<circle cx="1395" cy="884" r="3" fill="#dc3545"/>
+<polyline class="wire" points="1375,916 1415,916" stroke="#334155" stroke-width="2"/>
+<circle cx="1415" cy="916" r="3" fill="#334155"/>
+<polyline class="wire" points="1250,928 1250,938 435,938 435,922 415,922" stroke="#07836d" stroke-width="2"/>
+<polyline class="wire" points="555,919 590,919" stroke="#dc3545" stroke-width="3"/>
+<circle cx="555" cy="919" r="4" fill="#dc3545"/>
+<polyline class="wire" points="750,928 750,933 825,933" stroke="#334155" stroke-width="2"/>
+<circle cx="825" cy="933" r="4" fill="#334155"/>
+<polyline class="wire" points="555,235 555,1010" stroke="#dc3545" stroke-width="4"/>
+<polyline class="wire" points="825,249 825,1060" stroke="#334155" stroke-width="4"/>
+<polyline class="wire" points="415,182 1395,182 1395,884" stroke="#dc3545" stroke-width="3"/>
+<text x="326" y="193" font-size="15" font-weight="normal" text-anchor="start" style="fill:#dc3545">5V</text>
+<text x="1285" y="173" font-size="14" font-weight="normal" text-anchor="start" style="fill:#dc3545">Hall +5V</text>
+<polyline class="wire" points="1415,232 1415,1060 825,1060" stroke="#334155" stroke-width="3"/>
+<polyline class="wire" points="415,946 475,946 475,1060" stroke="#334155" stroke-width="3"/>
+<text x="325" y="949" font-size="14" font-weight="normal" text-anchor="start">GND</text>
+<circle cx="475" cy="1060" r="4" fill="#334155"/>
+<rect x="45" y="985" width="370" height="106" rx="12" fill="white" stroke="#cbd5e1" stroke-width="2"/>
+<text x="65" y="1017" font-size="20" font-weight="normal" text-anchor="start">12V → 保險絲 → 主開關</text>
+<text x="65" y="1049" font-size="20" font-weight="normal" text-anchor="start">→ 馬達分支開關 → 分配端子</text>
+<text x="65" y="1078" font-size="16" font-weight="normal" text-anchor="start">各片正負回到端子台（星狀分配）</text>
+<polyline class="wire" points="415,1010 555,1010" stroke="#dc3545" stroke-width="5"/>
+<polyline class="wire" points="415,1060 825,1060" stroke="#334155" stroke-width="5"/>
+<rect x="875" y="985" width="500" height="106" rx="12" fill="#e8f7f1" stroke="#86cdb8" stroke-width="2"/>
+<text x="895" y="1017" font-size="19" font-weight="normal" text-anchor="start">Hall 分線板：+ 全接 Mega 5V，− 全接 GND</text>
+<text x="895" y="1049" font-size="17" font-weight="normal" text-anchor="start">8P：S0–S7 → A0–A7；2P：S8–S9 → A8–A9</text>
+<text x="895" y="1078" font-size="17" font-weight="normal" text-anchor="start">控制 5V／USB 供電互斥；正負與訊號分開標記</text>
+<text x="45" y="1135" font-size="19" font-weight="normal" text-anchor="start">紅：12V 馬達分配；深灰：馬達地；綠：Hall 信號（經分線板）。交叉無圓點不代表相接。</text>
+<text x="45" y="1167" font-size="18" font-weight="normal" text-anchor="start">電腦調機：Mega 接 USB、外部 5V 拔除；獨立供電依 ESP32 圖。全部共地；U9 使用 D8–D11。</text>
+</svg>

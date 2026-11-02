@@ -1,0 +1,9 @@
+{
+  "name": "DIGITAL rail labels",
+  "author": "Split-flap project",
+  "pins": [
+    "V5_LOGIC",
+    "V12_MOTOR",
+    "GND"
+  ]
+}
