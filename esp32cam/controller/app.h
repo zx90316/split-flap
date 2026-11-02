@@ -7,7 +7,12 @@
 #include <ESPmDNS.h>
 #include <Update.h>
 #include <mbedtls/md.h>
+#include "board_profile.h"
+#ifdef SPLITFLAP_SINGLE
+#include "local_controller.h"
+#else
 #include "bridge.h"
+#endif
 #include "app_settings.h"
 #include "json_helpers.h"
 #include "program_json.h"
@@ -65,7 +70,11 @@ class App {
   void console();
   void resetNetwork();
   bool saveApp(const AppSettings& candidate);
+#ifdef SPLITFLAP_SINGLE
+  LocalController bridge_;  // Same interface as Bridge; motors are driven locally.
+#else
   Bridge bridge_;
+#endif
   AppSettings pendingSettings_;
   WebServer server_{80}; DNSServer dns_; AppStore store_; AppSettings settings_;
   SessionTable sessions_;

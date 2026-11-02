@@ -78,13 +78,26 @@ class Model:
 
     def state(self):
         self.advance()
-        return dict(firmware='1.3.0-mock', hardware='NodeMCU ESP-32S', protocol=1, boot=self.boot, nextRequest=self.next_request, csrf=self.csrf,
+        result = dict(firmware='1.3.0-mock', hardware='NodeMCU ESP-32S', protocol=1, boot=self.boot, nextRequest=self.next_request, csrf=self.csrf,
                     displayMemoryOk=True, workflow=self.workflow,
                     connected=self.connected, protocolMismatch=False, uncertain=False, maintenance=self.maintenance, storageOk=True,
                     networkEditable=not self.pending and not self.maintenance and not self.workflow['calibrating'],
                     ageMs=0, digits=len(self.schema['units']), selected=0, busy=bool(self.pending), saving=False,
                     watching=False, usbLocked=False, error='', mega=self.schema, units=self.units, jobs=self.jobs[-16:],
                     display=self.display, network=self.network, otaReady=self.ota_ready, otaError='')
+        result.update(self.single_state())
+        return result
+
+    single = False
+
+    def single_state(self):
+        if not self.single:
+            return {}
+        # Single controller: same API plus MCP23017 diagnostics; no Mega link.
+        return dict(single=True, hardware='NodeMCU ESP-32S + MCP23017', firmware='2.0.0-mock',
+                    mcp=dict(ready=self.connected, outputsOff=not self.pending, present=15 if self.connected else 14,
+                             required=15, hall=True, configStorageOk=True, maxTickGapUs=310, lateTicks=0, maxFlushUs=120),
+                    error='' if self.connected else 'mcp_missing')
 
     def new_job(self, body, op, stop=False):
         if body.get('boot') != self.boot:
@@ -429,8 +442,10 @@ def create_server(port=8765):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--port', type=int, default=8765)
+    parser.add_argument('--single', action='store_true', help='ESP32 + MCP23017 single-controller state')
     args = parser.parse_args()
     server, _model = create_server(args.port)
+    _model.single = args.single
     print(f'Mock web http://127.0.0.1:{server.server_port} — admin / MockPassword123 (no hardware)', flush=True)
     try:
         server.serve_forever()

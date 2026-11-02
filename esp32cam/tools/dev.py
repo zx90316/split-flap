@@ -25,48 +25,65 @@ CORE = 'esp32:esp32@3.3.12'
 INDEX = 'https://espressif.github.io/arduino-esp32/package_esp32_index.json'
 BUILD = ROOT / 'esp32cam/.build'
 DIST = ROOT / 'esp32cam/dist'
+# --single builds the ESP32 + MCP23017 single controller (no Mega). It uses its own
+# build directory, OTA project and file names so the two images are never mixed up.
+VARIANTS = {
+    False: {'build': BUILD, 'project': b'splitflap-32s-v1', 'name': 'splitflap-esp32s',
+            'hardware': 'NodeMCU ESP-32S', 'firmware': '1.3.1', 'flags': ''},
+    True: {'build': ROOT / 'esp32cam/.build-single', 'project': b'splitflap-32s-s1',
+           'name': 'splitflap-esp32s-single', 'hardware': 'NodeMCU ESP-32S + MCP23017',
+           'firmware': '2.0.0', 'flags': '-DSPLITFLAP_SINGLE'},
+}
 
 
 def run(args):
     shared.run(args)
 
 
-def package(image=None, destination=None):
-    image = Path(image or BUILD / 'controller.ino.bin')
+def package(image=None, destination=None, single=False):
+    variant = VARIANTS[single]
+    image = Path(image or variant['build'] / 'controller.ino.bin')
     destination = Path(destination or DIST)
     binary = image.read_bytes()
     if len(binary) < 256 or len(binary) > 1966080 or binary[0] != 0xE9 or binary[12:14] != b'\0\0':
         raise ValueError('不是適用於 ESP32／min_spiffs 的映像。')
     digest = hashlib.sha256(binary).digest()
-    header = b'SFESP01\0' + struct.pack('<II', len(binary), 1) + digest + b'splitflap-32s-v1'
+    header = b'SFESP01\0' + struct.pack('<II', len(binary), 1) + digest + variant['project']
     assert len(header) == 64
     destination.mkdir(parents=True, exist_ok=True)
-    result = destination / 'splitflap-esp32s.sffw'
+    result = destination / (variant['name'] + '.sffw')
     result.write_bytes(header + binary)
-    shutil.copyfile(image, destination / 'splitflap-esp32s.bin')
-    metadata = {'device': 'splitflap-esp32s', 'hardware': 'NodeMCU ESP-32S', 'board': FQBN,
-                'core': CORE, 'protocol': 1, 'firmware': '1.3.1', 'psram': False,
+    shutil.copyfile(image, destination / (variant['name'] + '.bin'))
+    metadata = {'device': variant['name'], 'hardware': variant['hardware'], 'board': FQBN,
+                'core': CORE, 'protocol': 1, 'firmware': variant['firmware'], 'psram': False,
                 'size': len(binary), 'sha256': digest.hex()}
-    (destination / 'firmware.json').write_text(json.dumps(metadata, indent=2) + '\n', encoding='utf-8')
+    (destination / (variant['name'] + '.json' if single else 'firmware.json')).write_text(json.dumps(metadata, indent=2) + '\n', encoding='utf-8')
     print(f'ESP32-S：網頁更新檔 {result} (映像 {len(binary)} bytes，封裝 {len(header) + len(binary)} bytes，SHA-256 {digest.hex()[:16]}…)')
     return result
 
 
-def compile_firmware(clean=False):
+def compile_firmware(clean=False, single=False):
+    variant = VARIANTS[single]
     run([sys.executable, ROOT / 'esp32cam/tools/embed_web.py'])
     args = [shared.arduino_cli(), 'compile', '--fqbn', FQBN, '--warnings', 'all',
-            '--libraries', ROOT / 'libraries', '--build-path', BUILD, '--no-color']
+            '--libraries', ROOT / 'libraries', '--build-path', variant['build'], '--no-color']
+    if variant['flags']:
+        args += ['--build-property', 'compiler.cpp.extra_flags=' + variant['flags'],
+                 '--build-property', 'compiler.c.extra_flags=' + variant['flags']]
     if clean:
         args.append('--clean')
     run(args + [ROOT / 'esp32cam/controller'])
-    package()
+    package(single=single)
 
 
-def upload(port):
-    compile_firmware()
-    print('ESP32-S：關閉馬達 12V；拔該板外部 5V 與板間四條 UART 訊號線，再用板上 USB 接電腦。', flush=True)
+def upload(port, single=False):
+    compile_firmware(single=single)
+    if single:
+        print('ESP32-S 單主控：關閉馬達 12V；拔該板外部 5V，再用板上 USB 接電腦。MCP 的 I2C／RST 線可保留。', flush=True)
+    else:
+        print('ESP32-S：關閉馬達 12V；拔該板外部 5V 與板間四條 UART 訊號線，再用板上 USB 接電腦。', flush=True)
     print('通常自動進入燒錄；若停在 Connecting，按住 BOOT，連線開始後放開。', flush=True)
-    run([shared.arduino_cli(), 'upload', '--fqbn', FQBN, '--port', port, '--input-dir', BUILD,
+    run([shared.arduino_cli(), 'upload', '--fqbn', FQBN, '--port', port, '--input-dir', VARIANTS[single]['build'],
          '--upload-property', 'upload.speed=115200', '--verify', '--no-color', ROOT / 'esp32cam/controller'])
     print('燒錄完成；若未自動啟動，按 EN／RESET。無需 CP2102 或 GPIO0 跳線。', flush=True)
 
@@ -97,6 +114,7 @@ def main(argv=None):
     parser.add_argument('action', choices=['doctor', 'setup', 'ports', 'build', 'rebuild', 'upload',
                          'upload-monitor', 'monitor', 'test', 'test-web', 'native-debug', 'diagrams', 'mock-web'])
     parser.add_argument('--port')
+    parser.add_argument('--single', action='store_true', help='ESP32 + MCP23017 單主控（不接 Mega）')
     args = parser.parse_args(argv)
     try:
         port = shared.validate_port(args.port) if args.action in {'upload', 'upload-monitor', 'monitor'} else None
@@ -110,9 +128,9 @@ def main(argv=None):
         elif args.action == 'ports':
             run([shared.arduino_cli(), 'board', 'list', '--no-color'])
         elif args.action in {'build', 'rebuild'}:
-            compile_firmware(args.action == 'rebuild')
+            compile_firmware(args.action == 'rebuild', args.single)
         elif args.action in {'upload', 'upload-monitor'}:
-            upload(port)
+            upload(port, args.single)
             if args.action == 'upload-monitor':
                 monitor(port)
         elif args.action == 'monitor':

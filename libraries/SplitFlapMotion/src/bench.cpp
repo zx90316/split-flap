@@ -213,7 +213,7 @@ void Bench::markerFound(uint32_t now) {
   } else homeDone(now);
 }
 
-void Bench::tick(uint32_t now, bool activeHall) {
+void Bench::tick(uint32_t now, bool activeHall, bool allowStep) {
   if (!hallKnown_) {
     hallKnown_ = true;
     rawHall_ = stableHall_ = activeHall;
@@ -296,6 +296,7 @@ void Bench::tick(uint32_t now, bool activeHall) {
   const bool ramped = mode_ == Mode::Raw || mode_ == Mode::Offset || mode_ == Mode::Moving;
   const uint16_t interval = ramped ? rampIntervalUs_ : referenceInterval();
   if (static_cast<uint32_t>(now - lastStepAt_) < interval) return;
+  if (!allowStep) return;
   advance(now);
   if (ramped) {
     if (mode_ == Mode::Moving && ++position_ == config_.revolution) position_ = 0;

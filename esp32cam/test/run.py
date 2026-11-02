@@ -57,13 +57,14 @@ def compile_checked(command):
 
 
 compile_checked([zig, 'cc', '-std=c99', '-c', dep / 'cJSON.c', '-o', obj])
+motion = ROOT / 'libraries/SplitFlapMotion/src'
 debug = ['-g', '-O0'] + (['-gcodeview'] if os.name == 'nt' else []) if args.debug else []
 binary = build / ('test_bridge' + ('_debug' if args.debug else '') + ('.exe' if os.name == 'nt' else ''))
 compile_checked([zig, 'c++', '-std=c++11', '-Wall', '-Wextra', '-Werror',
     '-I' + str(ROOT / 'libraries/SplitFlapLink/src'), '-I' + str(ROOT / 'mega2560/test/stubs'),
-    '-I' + str(ROOT / 'mega2560/unit_test'), '-I' + str(dep),
-    ROOT / 'esp32cam/test/test_bridge.cpp', ROOT / 'mega2560/unit_test/bench.cpp',
-    ROOT / 'mega2560/unit_test/panel.cpp', obj, '-o', binary] + debug)
+    '-I' + str(ROOT / 'mega2560/unit_test'), '-I' + str(motion), '-I' + str(dep),
+    ROOT / 'esp32cam/test/test_bridge.cpp', motion / 'bench.cpp',
+    motion / 'panel.cpp', obj, '-o', binary] + debug)
 if not args.build_only:
     subprocess.run([binary], check=True, env=env)
 else:
@@ -75,3 +76,14 @@ compile_checked([zig, 'c++', '-std=c++11', '-Wall', '-Wextra', '-Werror',
     ROOT / 'esp32cam/test/test_program.cpp', obj, '-o', program_binary] + debug)
 if not args.build_only:
     subprocess.run([program_binary], check=True, env=env)
+
+# Single controller: production LocalEngine/McpBank/MotionStore with fake I2C and NVS.
+local_binary = build / ('test_local' + ('_debug' if args.debug else '') + ('.exe' if os.name == 'nt' else ''))
+compile_checked([zig, 'c++', '-std=c++11', '-Wall', '-Wextra', '-Werror',
+    '-I' + str(ROOT / 'libraries/SplitFlapLink/src'), '-I' + str(motion),
+    ROOT / 'esp32cam/test/test_local.cpp', motion / 'bench.cpp', motion / 'panel.cpp',
+    '-o', local_binary] + debug)
+if not args.build_only:
+    subprocess.run([local_binary], check=True, env=env)
+else:
+    print('Built:', local_binary)

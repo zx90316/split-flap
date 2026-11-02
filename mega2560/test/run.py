@@ -33,6 +33,7 @@ env.setdefault('ZIG_GLOBAL_CACHE_DIR', str(build / 'zig-global'))
 debug_flags = ['-g', '-O0'] if args.debug else []
 if args.debug and os.name == 'nt':
     debug_flags += ['-gcodeview']
+motion = root.parent / 'libraries/SplitFlapMotion/src'
 suites = ['test_' + args.suite] if args.suite else ['test_bench', 'test_panel', 'test_adapter', 'test_link']
 for suite in suites:
     suffix = '_debug' if args.debug else ''
@@ -40,8 +41,9 @@ for suite in suites:
     subprocess.run(compiler + ['-std=c++11', '-Wall', '-Wextra', '-Werror',
         '-I' + str(root / 'unit_test'), '-I' + str(root / 'test' / 'stubs'),
         '-I' + str(root.parent / 'libraries/SplitFlapLink/src'),
-        str(root / 'test' / (suite + '.cpp')), str(root / 'unit_test' / 'bench.cpp'),
-        str(root / 'unit_test' / 'panel.cpp'),
+        '-I' + str(motion),
+        str(root / 'test' / (suite + '.cpp')), str(motion / 'bench.cpp'),
+        str(motion / 'panel.cpp'),
         '-o', str(binary)] + debug_flags, check=True, env=env)
     if not args.build_only:
         subprocess.run([str(binary)], check=True)

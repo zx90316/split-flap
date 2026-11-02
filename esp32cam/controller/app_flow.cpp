@@ -14,8 +14,8 @@ bool App::beginFlow(Purpose purpose, const uint8_t* key, size_t size, uint32_t r
     else { cJSON* o = cJSON_CreateObject(); num(o, "id", id); json(o, 202); }
     return false;
   }
-  if (!s.connected || !s.valid || uint32_t(millis() - s.updatedAt) > 2000 || s.panel.usbLocked || !contiguous(s.settings)) {
-    if (request) error(409, "Mega 尚未就緒，或安裝配置不是連續位置。"); return false;
+  if (!s.connected || !s.valid || !s.hardwareReady || uint32_t(millis() - s.updatedAt) > 2000 || s.panel.usbLocked || !contiguous(s.settings)) {
+    if (request) error(409, SF_PEER " 尚未就緒，或安裝配置不是連續位置。"); return false;
   }
   if (request) { if (!idle(s)) return false; }
   else if (flow_.active() || pendingSettingsJob_ || s.maintenance || s.panel.busy || s.panel.saving || s.panel.watching || bridge_.pending()) return false;
@@ -120,7 +120,7 @@ void App::recoveryTick() {
     recoveryPending_ = false; copyString("復電等待連線逾時，請手動歸零。", flowMessage_, sizeof(flowMessage_)); return;
   }
   const State s = bridge_.snapshot();
-  if (!s.connected || !s.valid || s.panel.busy || s.panel.saving || s.panel.watching || bridge_.pending() || flow_.active()) return;
+  if (!s.connected || !s.valid || !s.hardwareReady || s.panel.busy || s.panel.saving || s.panel.watching || bridge_.pending() || flow_.active()) return;
   recoveryPending_ = false;
   if (!storageOk_ || !calibrated(settings_, s.settings) || s.panel.usbLocked) {
     copyString("復電自動復位未執行：請先完成全部位置校準。", flowMessage_, sizeof(flowMessage_)); return;

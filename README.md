@@ -4,6 +4,8 @@
 
 **[新硬體快速開始](esp32cam/README.md) · [已購清單與設定搬移](hardware/purchased-2026-10-26.md) · [正常供電／UART](esp32cam/wiring-runtime.svg) · [兩板 USB 燒錄](esp32cam/wiring-flashing.svg) · [驗證紀錄](esp32cam/validation.md)**
 
+**單主控分支（2026-11-02，`esp32s-single-controller`）：NodeMCU ESP-32S 經四片 MCP23017 直接控制 ULN2003／霍爾，不接 Mega，網頁功能相同。以 `python esp32cam/tools/dev.py build --single` 建置；軟體測試通過，尚未實板驗收。[單主控接線](esp32cam/wiring-single.md) · [驗證與驗收步驟](esp32cam/validation-single.md)**
+
 **目前進度（2026-11-01）：ESP32 1.3.1 包含位數管理、頁面內登入、歸零校準、復電恢復與時鐘輪播，另加入 OTA 寫入後等待新狀態。正式建置、核心回歸與 15 項工具／HTTP 測試通過；網頁沿用已通過 9 組流程的版本。現場舊版 1.2.0 的 OTA 在慢速上傳時仍中止，設定與停止狀態保留；新版已備妥，等待 ESP32 單獨接 USB 更新，尚未部署實板。詳見[驗證紀錄](esp32cam/validation.md)。**
 
 源碼目錄仍叫 `esp32cam/`，目前目標已改為 NodeMCU ESP-32S（4MB、無 PSRAM）；舊 CAM 更新檔不相容。新板 EEPROM／NVS 不會自動繼承舊板設定，先依搬移指南還原校準，再由新版網頁完成歸零校準。兩塊主控已於 2026-10-31 完成 USB 燒錄與開機初驗（本機 Mega=`COM5`、ESP32=`COM7`），詳見[驗證紀錄](esp32cam/validation.md)；板間通訊已恢復正常，後續聚焦校準、顯示與復電功能驗收。

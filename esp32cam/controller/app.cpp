@@ -40,8 +40,13 @@ void App::begin() {
   sntp_set_time_sync_notification_cb(ntpCallback); configTime(0, 0, "pool.ntp.org", "time.cloudflare.com");
   const char* headers[] = {"X-CSRF-Token", "Origin", "X-OTA-Ticket", "Cookie", "Content-Type"}; server_.collectHeaders(headers, 5);
   routes(); server_.begin(); mbedtls_md_init(&hash_);
+#ifdef SPLITFLAP_SINGLE
+  Serial.printf("Split-Flap %s %s. MCP23017 I2C SDA=%u SCL=%u RESET=%u, 400kHz.\n",
+                kHardwareName, kFirmwareVersion, kMcpSda, kMcpScl, kMcpReset);
+#else
   Serial.printf("Split-Flap %s %s. UART2 RX=%u TX=%u; Mega Serial1 115200.\n",
                 kHardwareName, kFirmwareVersion, kUartRx, kUartTx);
+#endif
   Serial.println("ACCESS: show device Wi-Fi and admin credentials. STATUS | NETWORK RESET | HELP");
   if (store_.fresh() || !storageOk_) printAccess();
   if (!storageOk_) Serial.println("FAULT: NVS unavailable; settings are not durable.");
@@ -65,9 +70,9 @@ void App::tick() {
         if (store_.save(pendingSettings_)) { settings_ = pendingSettings_; storageOk_ = true; }
         else {
           storageOk_ = false; bridge_.configurationFailed(pendingSettingsJob_);
-          pause("Mega 已保存；ESP32 顯示偏好保存失敗，請重新匯入。");
+          pause(SF_PEER " 已保存；ESP32 顯示偏好保存失敗，請重新匯入。");
         }
-      } else pause("Mega 拒絕匯入；ESP32 顯示偏好未更改。");
+      } else pause(SF_PEER " 拒絕匯入；ESP32 顯示偏好未更改。");
       pendingSettingsJob_ = 0; break;
     }
   }
@@ -247,7 +252,7 @@ void App::configuration() {
 }
 void App::getConfiguration() {
   if (pendingSettingsJob_) { error(409, "設定正在保存，請完成後再匯出。"); return; }
-  const State s = bridge_.snapshot(); if (!s.valid) { error(503, "尚未讀到 Mega 設定。"); return; }
+  const State s = bridge_.snapshot(); if (!s.valid) { error(503, "尚未讀到 " SF_PEER " 設定。"); return; }
   cJSON* o = cJSON_CreateObject(); num(o, "schema", 2); str(o, "device", "splitflap-esp32s");
   cJSON* mega = settingsJson(s.settings); cJSON_DeleteItemFromObjectCaseSensitive(mega, "units"); cJSON_AddItemToObject(o, "mega", mega);
   cJSON_AddItemToObject(o, "display", programJson(settings_)); json(o);
@@ -290,8 +295,8 @@ void App::preferences() {
   if (start) {
     if (!requestId(b, s, request)) { cJSON_Delete(b); return; }
     if (request < s.nextRequest) { cJSON_Delete(b); beginFlow(Purpose::StartDisplay, key, sizeof(key), request); return; }
-    if (!s.connected || !s.valid || s.panel.usbLocked || !contiguous(s.settings) || uint32_t(millis() - s.updatedAt) > 2000) {
-      cJSON_Delete(b); error(409, "Mega 尚未就緒。"); return;
+    if (!s.connected || !s.valid || !s.hardwareReady || s.panel.usbLocked || !contiguous(s.settings) || uint32_t(millis() - s.updatedAt) > 2000) {
+      cJSON_Delete(b); error(409, SF_PEER " 尚未就緒。"); return;
     }
   }
   if (calibrating_ || recoveryPending_ || !idle(s)) { cJSON_Delete(b); if (calibrating_ || recoveryPending_) error(409, "請先完成歸零流程。"); return; }
@@ -335,8 +340,8 @@ bool App::displayTarget(uint8_t* out) {
 void App::scheduler() {
   if (!running_ || flow_.active() || calibrating_ || recoveryPending_ || uint32_t(millis() - scheduleAt_) < 200) return;
   scheduleAt_ = millis(); const State s = bridge_.snapshot();
-  if (!s.connected || !s.valid || s.uncertain || s.panel.usbLocked || s.panel.usbRevision != lastUsbRevision_) {
-    pause("連線或控制權變更，請重新開始顯示。"); return;
+  if (!s.connected || !s.valid || !s.hardwareReady || s.uncertain || s.panel.usbLocked || s.panel.usbRevision != lastUsbRevision_) {
+    pause(kSingleController ? "MCP23017 故障或重新初始化，請重新開始顯示。" : "連線或控制權變更，請重新開始顯示。"); return;
   }
   if (automaticJob_) {
     const Job* job = nullptr; for (const auto& j : s.jobs) if (j.id == automaticJob_) job = &j;
@@ -381,10 +386,10 @@ bool App::awaitOtaState() {
     const auto result = otaGuard_.check(s, millis());
     if (result == OtaGuard::Result::Ready) return true;
     if (result == OtaGuard::Result::Waiting) { delay(2); continue; }
-    const char* reason = "更新期間 Mega 停止狀態或控制設定已改變。";
-    if (result == OtaGuard::Result::LinkLost) reason = "更新期間 Mega 通訊已中斷或重新連線。";
+    const char* reason = "更新期間 " SF_PEER " 停止狀態或控制設定已改變。";
+    if (result == OtaGuard::Result::LinkLost) reason = "更新期間 " SF_PEER " 通訊已中斷或重新連線。";
     else if (result == OtaGuard::Result::MaintenanceLost) reason = "更新維護鎖已解除，請重新準備更新。";
-    else if (result == OtaGuard::Result::Timeout) reason = "更新寫入後未能取得 Mega 新狀態，已中止並保留原韌體。";
+    else if (result == OtaGuard::Result::Timeout) reason = "更新寫入後未能取得 " SF_PEER " 新狀態，已中止並保留原韌體。";
     otaFailure(reason); return false;
   }
 }
@@ -414,7 +419,7 @@ void App::uploadOta() {
     const State s = bridge_.snapshot();
     if (!authenticated() || !csrfMatches() || !otaTicket_.length() ||
         !same(server_.header("X-OTA-Ticket"), otaTicket_) || !otaReady(s) || !bridge_.maintenance(true)) {
-      otaFailure("更新未授權，或尚未取得 Mega 停止確認。"); return;
+      otaFailure("更新未授權，或尚未取得 " SF_PEER " 停止確認。"); return;
     }
     otaAuthorized_ = true;
     otaGuard_.begin(s, otaStopJob_);
@@ -487,6 +492,13 @@ void App::state() {
   num(workflow, "step", flow_.step()); num(workflow, "steps", flow_.count()); str(workflow, "message", flowMessage_);
   num(workflow, "jogReadyMask", calJogReady_);
   str(o, "error", s.panel.error); cJSON_AddItemToObject(o, "mega", settingsJson(s.settings));
+  flag(o, "single", kSingleController);
+  if (kSingleController) {
+    cJSON* mcp = cJSON_AddObjectToObject(o, "mcp"); flag(mcp, "ready", s.hardwareReady); flag(mcp, "outputsOff", s.outputsDisabled);
+    num(mcp, "present", s.presentMask); num(mcp, "required", s.requiredMask); flag(mcp, "hall", s.hallEnabled);
+    flag(mcp, "configStorageOk", s.configStorageOk); num(mcp, "maxTickGapUs", s.maxTickGapUs);
+    num(mcp, "lateTicks", s.lateTicks); num(mcp, "maxFlushUs", s.maxFlushUs);
+  }
   cJSON* units = cJSON_AddArrayToObject(o, "units");
   for (uint8_t physical = 0; physical < 10; ++physical) {
     const auto& u = s.units[physical];
@@ -530,12 +542,17 @@ void App::console() {
         consoleLine_[consoleLength_] = 0;
         if (!strcmp(consoleLine_, "ACCESS")) printAccess();
         else if (!strcmp(consoleLine_, "STATUS")) {
-          const State s = bridge_.snapshot(); Serial.printf("Mega=%s digits=%u AP=%s STA=%s running=%u\n", s.connected ? "connected" : "offline",
+          const State s = bridge_.snapshot();
+          if (kSingleController) Serial.printf("MCP=%s present=0x%x required=0x%x error=%s late=%lu maxGap=%luus maxFlush=%luus\n",
+            s.hardwareReady ? "ready" : "offline", s.presentMask, s.requiredMask, s.panel.error[0] ? s.panel.error : "none",
+            static_cast<unsigned long>(s.lateTicks), static_cast<unsigned long>(s.maxTickGapUs), static_cast<unsigned long>(s.maxFlushUs));
+          else Serial.printf("Mega=%s ", s.connected ? "connected" : "offline");
+          Serial.printf("digits=%u AP=%s STA=%s running=%u\n",
             s.settings.count, WiFi.softAPIP().toString().c_str(), WiFi.localIP().toString().c_str(), running_);
         } else if (!strcmp(consoleLine_, "NETWORK RESET")) {
           pause("網路重設已暫停自動顯示。"); const uint8_t stop[] = {uint8_t(sf::Op::Stop), sf::kAll};
           resetStopJob_ = 0; bridge_.submit(stop, sizeof(stop), 0, resetStopJob_); resetRequested_ = true; resetAt_ = millis();
-          Serial.println("Network reset pending; stopping Mega first. Calibration is retained.");
+          Serial.println("Network reset pending; stopping motors first. Calibration is retained.");
         } else Serial.println("ACCESS | STATUS | NETWORK RESET | HELP");
       }
       consoleLength_ = 0; consoleDiscard_ = false;

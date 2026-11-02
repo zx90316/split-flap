@@ -1,5 +1,7 @@
 # ESP32-CAM＋MCP23017 單主控研究
 
+> **2026-11-02 更新：**已在分支 `esp32s-single-controller` 實作，目標改為 NodeMCU ESP-32S（I²C 改用 GPIO21／22、RST 用 GPIO23）。接線見 [wiring-single.md](wiring-single.md)，建置與待驗收項目見 [validation-single.md](validation-single.md)。下文的 ESP32-CAM 腳位分析保留為歷史紀錄。
+
 日期：2026-10-26（Asia/Taipei）。基準為目前已由使用者回報正常運行的 Mega＋ESP32-CAM 1.1.0。本文件為可行性研究，尚未將單主控韌體建置、燒入或接到馬達；現有成品程式與接線不變。
 
 ## 結論與現有零件

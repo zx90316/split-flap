@@ -33,11 +33,11 @@ F5 的建置／燒錄／串列選項由 Python 啟動 Arduino CLI，偵錯器的
 
 ## 中斷點與單步執行
 
-1. 在 [bench.cpp](unit_test/bench.cpp) 的 `Bench::tick`、`markerFound` 或 `homeDone` 設中斷點。
+1. 在 [bench.cpp](../libraries/SplitFlapMotion/src/bench.cpp) 的 `Bench::tick`、`markerFound` 或 `homeDone` 設中斷點。
 2. 選 **主機中斷點: 歸零與運動核心**，按 F5；會先編譯並在程式進入時暫停。
 3. 按 F5 繼續到中斷點，F10 逐步執行，F11 進入函式。在變數／監看視窗檢查 `mode_`、`stableHall_`、`stageSteps_`、`remaining_` 與 `coils_`。
 4. 要查串列命令剖析，可選 **主機中斷點: Arduino介面模擬**，在 [unit_test.ino](unit_test/unit_test.ino) 的 `command` 或 `loop` 設中斷點。
-5. 要查多位狀態，選 **主機中斷點: 多位顯示排程**，在 [panel.cpp](unit_test/panel.cpp) 的 `Panel::startNext`、`tick`、`setUnits` 設中斷點，查看 `mapping_`、`enabledMask_`、`cursor_` 與 `units_`。
+5. 要查多位狀態，選 **主機中斷點: 多位顯示排程**，在 [panel.cpp](../libraries/SplitFlapMotion/src/panel.cpp) 的 `Panel::startNext`、`tick`、`setUnits` 設中斷點，查看 `mapping_`、`enabledMask_`、`cursor_` 與 `units_`。
 
 這些程式在電腦上執行，使用理想轉子與 Arduino stub，**不連接或驅動實板**。USB 對實板提供的是燒錄與串列通訊；[ATmega2560 的 JTAG 晶片偵錯](https://www.microchip.com/en-us/product/ATmega2560)另需相容的硬體、接線與工具，本配置未新增實板 JTAG 工作階段。
 

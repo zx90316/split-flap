@@ -186,11 +186,11 @@ void Panel::startBatch(uint32_t now) {
   if (!started) batch_ = Batch::None;
 }
 
-void Panel::tick(uint32_t now, uint16_t rawHighMask) {
+void Panel::tick(uint32_t now, uint16_t rawHighMask, uint16_t allowSteps) {
   for (uint8_t i = 0; i < count_; ++i) {
     const uint8_t u = mapping_[i];
     const bool high = (rawHighMask & (1U << u)) != 0;
-    units_[u].tick(now, polarity_[u] ? !high : high);
+    units_[u].tick(now, polarity_[u] ? !high : high, (allowSteps & (1U << u)) != 0);
     if (units_[u].error()) { fail(u, units_[u].error()); return; }
   }
   if (batching()) {

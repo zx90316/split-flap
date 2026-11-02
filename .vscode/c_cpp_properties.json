@@ -12,6 +12,7 @@
         "${workspaceFolder}/.tools/arduino-data/packages/arduino/hardware/avr/1.8.8/cores/arduino",
         "${workspaceFolder}/.tools/arduino-data/packages/arduino/hardware/avr/1.8.8/variants/mega",
         "${workspaceFolder}/libraries/SplitFlapLink/src",
+        "${workspaceFolder}/libraries/SplitFlapMotion/src",
         "${workspaceFolder}/.tools/arduino-data/packages/arduino/hardware/avr/1.8.8/libraries/EEPROM/src"
       ],
       "defines": [
@@ -33,7 +34,8 @@
       "includePath": [
         "${workspaceFolder}/mega2560/unit_test",
         "${workspaceFolder}/mega2560/test/stubs",
-        "${workspaceFolder}/libraries/SplitFlapLink/src"
+        "${workspaceFolder}/libraries/SplitFlapLink/src",
+        "${workspaceFolder}/libraries/SplitFlapMotion/src"
       ],
       "intelliSenseMode": "windows-clang-x64",
       "cStandard": "c11",
@@ -46,6 +48,7 @@
       "includePath": [
         "${workspaceFolder}/esp32cam/controller",
         "${workspaceFolder}/libraries/SplitFlapLink/src",
+        "${workspaceFolder}/libraries/SplitFlapMotion/src",
         "${workspaceFolder}/.tools/arduino-data/packages/esp32/hardware/esp32/3.3.12/cores/esp32"
       ],
       "defines": [
@@ -54,6 +57,27 @@
         "ESP32",
         "F_CPU=240000000L",
         "CONFIG_IDF_TARGET_ESP32=1"
+      ],
+      "cStandard": "c11",
+      "cppStandard": "c++17"
+    },
+    {
+      "name": "ESP32-S single (MCP23017)",
+      "compilerPath": "${workspaceFolder}/.tools/arduino-data/packages/esp32/tools/esp-x32/2601/bin/xtensa-esp32-elf-g++.exe",
+      "compileCommands": "${workspaceFolder}/esp32cam/.build-single/compile_commands.json",
+      "includePath": [
+        "${workspaceFolder}/esp32cam/controller",
+        "${workspaceFolder}/libraries/SplitFlapLink/src",
+        "${workspaceFolder}/libraries/SplitFlapMotion/src",
+        "${workspaceFolder}/.tools/arduino-data/packages/esp32/hardware/esp32/3.3.12/cores/esp32"
+      ],
+      "defines": [
+        "ARDUINO=10819",
+        "ARDUINO_ARCH_ESP32",
+        "ESP32",
+        "F_CPU=240000000L",
+        "CONFIG_IDF_TARGET_ESP32=1",
+        "SPLITFLAP_SINGLE"
       ],
       "cStandard": "c11",
       "cppStandard": "c++17"
