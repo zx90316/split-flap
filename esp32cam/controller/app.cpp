@@ -158,6 +158,8 @@ void App::routes() {
   server_.on("/wiring-flashing.svg", HTTP_GET, [wiring]() { wiring(kWiringFlashingGzip, sizeof(kWiringFlashingGzip)); });
   server_.on("/wiring-mega.svg", HTTP_GET, [wiring]() { wiring(kWiringMegaGzip, sizeof(kWiringMegaGzip)); });
   server_.on("/wiring-hall.svg", HTTP_GET, [wiring]() { wiring(kWiringHallGzip, sizeof(kWiringHallGzip)); });
+  server_.on("/wiring-single.svg", HTTP_GET, [wiring]() { wiring(kWiringSingleGzip, sizeof(kWiringSingleGzip)); });
+  server_.on("/wiring-single-pins.svg", HTTP_GET, [wiring]() { wiring(kWiringSinglePinsGzip, sizeof(kWiringSinglePinsGzip)); });
   server_.on("/", HTTP_GET, [this]() {
     server_.sendHeader("Content-Encoding", "gzip"); server_.sendHeader("Cache-Control", "no-cache");
     server_.sendHeader("X-Content-Type-Options", "nosniff");

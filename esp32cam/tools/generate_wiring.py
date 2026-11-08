@@ -157,6 +157,156 @@ def flashing():
     s.save('wiring-flashing.svg')
 
 
+SDA, SCL, RST = TX, RX, '#b04a9e'
+
+
+def ground(s, x, y, color=GND):
+    """Ground flag: every one of these joins the same common-ground bus."""
+    s.wire([(x, y), (x, y + 16)], color, 3)
+    for i, half in enumerate((14, 9, 4)):
+        s.wire([(x - half, y + 16 + 6*i), (x + half, y + 16 + 6*i)], color, 3)
+
+
+def single():
+    s = Svg(1500, 1480, '單主控：NodeMCU ESP-32S ＋ 4 片 MCP23017（不接 Mega）',
+            '依模組印字接線；方塊為功能示意。所有接地符號接同一共地母線。I²C 主線盡量短，MCP 可靠近各自的 ULN。')
+    # Power
+    s.box(45, 140, 300, 150, '隔離式 12V 電源')
+    s.note(65, 212, ['正端經 F1 保險絲／主開關', '負端接 GND 共地'])
+    s.pin(345, 180, '+12V', V12); s.pin(345, 262, 'GND', GND); ground(s, 345, 262)
+    s.box(520, 150, 300, 130, 'LM2596 → 5.0V')
+    s.pin(520, 200, 'IN+', V12, 'left'); s.pin(820, 200, 'OUT+', V5)
+    s.text(540, 262, 'IN−／OUT− 接 GND 共地', 17, GND)
+    s.box(1150, 140, 305, 200, '馬達 12V 分支', '#fff4e6')
+    s.note(1170, 210, ['手動開關（必須保留）', '→ 各 ULN2003 的 +', '12V 不接 ESP32／MCP／霍爾', 'ULN GND 直接回共地點'])
+    s.wire([(345, 180), (440, 180), (440, 200), (520, 200)], V12, 4, True); s.dot(440, 180, V12)
+    s.wire([(440, 180), (440, 118), (1120, 118), (1120, 190), (1150, 190)], V12, 4, True)
+    s.wire([(820, 200), (920, 200), (920, 232)], V5, 4)
+    s.items.append('<rect x="910" y="232" width="20" height="40" rx="3" fill="#fff" stroke="#cc3746" stroke-width="3"/>')
+    s.text(940, 258, 'F2', 18, V5, weight='bold')
+    s.wire([(920, 272), (920, 1250)], V5, 5)
+    s.wire([(920, 330), (25, 330), (25, 470), (45, 470)], V5, 4); s.dot(920, 330, V5)
+    s.text(60, 362, '5V 控制分配：關閉馬達 12V 時仍供電', 18, V5, weight='bold')
+    # ESP32
+    s.box(45, 420, 330, 440, 'NodeMCU ESP-32S', '#edf3ff')
+    s.pin(45, 470, '5V 輸入', V5, 'left')
+    s.pin(375, 520, 'GPIO21 · SDA', SDA); s.pin(375, 590, 'GPIO22 · SCL', SCL)
+    s.pin(375, 660, 'GPIO23 · RST', RST); s.pin(375, 750, '3V3', V3)
+    s.note(65, 790, ['板上 USB：燒錄／監看', '（接 USB 前拔外部 5V）'], size=16)
+    s.pin(210, 860, 'GND', GND, 'left'); ground(s, 210, 860)
+    # Level shifter
+    s.box(500, 440, 250, 400, 'P011 電位轉換', '#f5effa')
+    s.note(518, 500, ['A 側 3.3V ↔ B 側 5V'], size=16)
+    for y, n, c in ((520, 0, SDA), (590, 1, SCL), (660, 2, RST)):
+        s.pin(500, y, f'A{n}', c, 'left'); s.pin(750, y, f'B{n}', c)
+        s.wire([(375, y), (500, y)], c, 4)
+    s.pin(500, 750, 'VCCA', V3, 'left'); s.pin(750, 750, 'VCCB', V5)
+    s.wire([(375, 750), (500, 750)], V3, 4)
+    s.wire([(750, 750), (920, 750)], V5, 4); s.dot(920, 750, V5)
+    s.note(518, 795, ['A3–A7／B3–B7 留空'], size=16)
+    s.pin(625, 840, 'GND', GND, 'left'); ground(s, 625, 840)
+    s.text(518, 900, '⚠ 10/31 冒煙過：先檢查或更換，', 16, V5)
+    s.text(518, 926, '且須為 MOS（BSS138 類）轉換板', 16, V5)
+    # I2C bus trunks
+    for x, y, c in ((830, 520, SDA), (860, 590, SCL), (890, 660, RST)):
+        s.wire([(750, y), (x, y)], c, 4); s.dot(x, y, c)
+    rows = []
+    for chip in range(4):
+        y0 = 400 + chip*235
+        last = chip == 3
+        s.box(990, y0, 250, 205, f'MCP23017 · 0x2{chip}', '#e7f3ec' if not last else '#fff7d6')
+        for k, (label, color, bus) in enumerate((('SDA', SDA, 830), ('SCL', SCL, 860), ('RST', RST, 890), ('VCC 5V', V5, 920))):
+            y = y0 + 60 + 30*k
+            s.wire([(bus, y), (990, y)], color, 3); s.dot(bus, y, color)
+            s.text(1004, y + 6, label, 15, color)
+        s.text(1004, y0 + 186, 'GND', 15, GND); s.wire([(990, y0 + 180), (965, y0 + 180)], GND, 3); ground(s, 965, y0 + 180)
+        bits = [(chip >> b) & 1 for b in (2, 1, 0)]
+        s.text(1225, y0 + 70, 'A2 A1 A0', 15, INK, anchor='end')
+        s.text(1225, y0 + 94, '  '.join('VCC' if b else 'GND' for b in bits), 14, INK, anchor='end')
+        s.text(1225, y0 + 124, 'ITA／ITB 不接', 14, GND, anchor='end')
+        rows.append(y0)
+    s.wire([(830, 520), (830, rows[-1] + 60)], SDA, 4)
+    s.wire([(860, 590), (860, rows[-1] + 90)], SCL, 4)
+    s.wire([(890, 660), (890, rows[-1] + 120)], RST, 4)
+    # Outputs
+    groups = [[('GPA0–3', 'U0'), ('GPA4–7', 'U1'), ('GPB0–3', 'U2'), ('GPB4–7', 'U3')],
+              [('GPA0–3', 'U4'), ('GPA4–7', 'U5'), ('GPB0–3', 'U6'), ('GPB4–7', 'U7')],
+              [('GPA0–3', 'U8'), ('GPA4–7', 'U9')]]
+    for chip, group in enumerate(groups):
+        for i, (pins, unit) in enumerate(group):
+            y = rows[chip] + 30 + 46*i
+            s.wire([(1240, y), (1312, y)], INK, 6)
+            s.text(1276, y - 8, pins, 13, INK, anchor='middle')
+            s.items.append(f'<rect x="1312" y="{y-17}" width="160" height="34" rx="7" fill="#fff4e6" stroke="#d27915" stroke-width="2"/>')
+            s.text(1392, y + 6, f'{unit} ULN IN1–4', 16, INK, weight='bold', anchor='middle')
+    s.text(1392, rows[2] + 140, 'GPB0–7 不接', 15, GND, anchor='middle')
+    y = rows[3] + 75
+    s.wire([(1240, y), (1312, y)], INK, 9)
+    s.text(1276, y - 10, '10 條', 13, INK, anchor='middle')
+    s.items.append(f'<rect x="1312" y="{y-38}" width="160" height="76" rx="7" fill="#fff7d6" stroke="#b08a00" stroke-width="2"/>')
+    s.text(1392, y - 8, 'KY-003 × 10', 16, INK, weight='bold', anchor='middle')
+    s.text(1392, y + 18, 'OUT（訊號）', 15, INK, anchor='middle')
+    s.note(1258, rows[3] + 150, ['GPA0–6 → U0–U6', 'GPB0–2 → U7–U9', '霍爾 + 接 5V'], size=15)
+    # Legend and rules
+    ly = 1385
+    for i, (label, color) in enumerate((('12V', V12), ('5V', V5), ('3.3V', V3), ('SDA', SDA), ('SCL', SCL), ('RST', RST), ('GND', GND))):
+        x = 45 + i*130
+        s.wire([(x, ly), (x + 44, ly)], color, 5); s.text(x + 54, ly + 6, label, 16, color, weight='bold')
+    s.note(45, 1430, ['粗線 = 4 條線（IN1–IN4），依 GPx0→IN1 … GPx3→IN4；霍爾 10 條。細節見 wiring-single-pins.svg。',
+                     '1～4 位只需 0x20＋0x23；5～8 位加 0x21；9～10 位再加 0x22。原 GPIO13／14 的 UART 線全部拆除。'], size=16)
+    s.save('wiring-single.svg')
+
+
+def single_pins():
+    s = Svg(1500, 1240, '單主控逐腳對照：MCP23017 → ULN2003 IN／KY-003',
+            '同一片的四顆馬達合併成一筆 16-bit 寫入；IN 順序接錯可在網頁用 ORDER／DIR 校正，不必改線。')
+    colors = ['#2b65c8', '#00866b', '#d27915', '#b04a9e']
+    units = ['0x20→U0　0x21→U4　0x22→U8', '0x20→U1　0x21→U5　0x22→U9',
+             '0x20→U2　0x21→U6　0x22 不接', '0x20→U3　0x21→U7　0x22 不接']
+    # Motor chip: four IN1..IN4 groups, one ULN2003 each.
+    s.box(45, 140, 700, 990, '馬達用 MCP（0x20／0x21／0x22）', '#e7f3ec')
+    s.items.append('<rect x="85" y="200" width="150" height="900" rx="10" fill="#fff" stroke="#183f36" stroke-width="2"/>')
+    s.text(160, 228, 'MCP23017', 17, INK, weight='bold', anchor='middle')
+    for p in range(16):
+        group = p // 4
+        y = 300 + 40*p + 62*group
+        name = f'GP{"AB"[p // 8]}{p % 8}'
+        if p % 4 == 0:
+            top = y - 50
+            s.items.append(f'<rect x="400" y="{top}" width="330" height="{40*3 + 72}" rx="9" fill="#fff4e6" stroke="{colors[group]}" stroke-width="2"/>')
+            s.text(414, top + 26, f'ULN2003 #{group + 1}：{units[group]}', 13, INK, weight='bold')
+        s.text(220, y + 6, name, 16, colors[group], weight='bold', anchor='end')
+        s.wire([(235, y), (400, y)], colors[group], 3); s.dot(235, y, colors[group]); s.dot(400, y, colors[group])
+        s.text(418, y + 6, f'IN{p % 4 + 1}', 16, colors[group], weight='bold')
+    # Hall chip
+    s.box(800, 140, 655, 640, '霍爾用 MCP（0x23）', '#fff7d6')
+    s.items.append('<rect x="840" y="200" width="150" height="490" rx="10" fill="#fff" stroke="#183f36" stroke-width="2"/>')
+    s.text(915, 228, 'MCP23017', 17, INK, weight='bold', anchor='middle')
+    for p in range(16):
+        y = 255 + 27*p
+        name = f'GP{"AB"[p // 8]}{p % 8}'
+        unit = p if p < 7 else p - 1 if 8 <= p <= 10 else None
+        color = INK if unit is not None else '#9aa8a3'
+        s.text(975, y + 5, name, 15, color, weight='bold', anchor='end')
+        if unit is None:
+            s.text(1010, y + 5, '不接（只能當輸出）' if p in (7, 15) else '不接', 14, color)
+        else:
+            s.wire([(990, y), (1150, y)], '#b08a00', 3); s.dot(990, y, '#b08a00')
+            s.text(1160, y + 5, f'U{unit} KY-003 OUT', 15, INK)
+    s.note(820, 728, ['KY-003：+ 接 5V、− 接 GND；低電位＝磁鐵到位。', 'MCP 內建上拉已由韌體開啟，不必外加電阻。'], size=15)
+    # Module header
+    s.box(800, 820, 655, 230, 'MCP23017 模組排針（四片相同）', '#edf3ff')
+    rows = [('VCC', '5V 控制分配', V5), ('GND', '共地', GND), ('SDA', 'P011 B0 ← A0 ← ESP GPIO21', SDA),
+            ('SCL', 'P011 B1 ← A1 ← ESP GPIO22', SCL), ('RST', 'P011 B2 ← A2 ← ESP GPIO23（低＝重設）', RST),
+            ('ITA／ITB', '不接', GND), ('A0 A1 A2', '依地址接 GND／VCC，不可浮接', INK)]
+    for i, (pin, to, color) in enumerate(rows):
+        y = 885 + 23*i
+        s.text(830, y, pin, 15, color, weight='bold'); s.text(950, y, to, 15, INK)
+    s.text(45, 1175, '地址：0x20 ＝ A2 A1 A0 全接 GND；0x21 ＝ 只有 A0 接 VCC；0x22 ＝ 只有 A1 接 VCC；0x23 ＝ A1、A0 接 VCC。', 17, INK, weight='bold')
+    s.text(45, 1205, '12V 只進 ULN2003 的 +；MCP、霍爾、P011 B 側都在 5V；ESP32 與 P011 A 側在 3.3V。', 17, V5)
+    s.save('wiring-single-pins.svg')
+
+
 if __name__ == '__main__':
-    runtime(); flashing()
-    print('Generated Mega2560 Pro + NodeMCU ESP-32S runtime and USB wiring diagrams.')
+    runtime(); flashing(); single(); single_pins()
+    print('Generated dual-controller runtime/USB and single-controller wiring diagrams.')

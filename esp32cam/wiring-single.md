@@ -4,6 +4,12 @@
 
 **尚未實板驗收。**下列為依程式與資料表整理的接線；接電前逐項核對實物印字。雙主控接法見 [wiring.md](wiring.md)，兩套韌體的 OTA 封裝互相拒收。
 
+![單主控完整接線](wiring-single.svg)
+
+![MCP23017 逐腳對照](wiring-single-pins.svg)
+
+兩張圖由 `python esp32cam/tools/dev.py diagrams` 產生，也內建在設備網頁（單主控模式的「完整接線圖」）。
+
 ## 為什麼走線比較好
 
 - ESP32 只出 **5 條**到 MCP 匯流排：SDA、SCL、RST（經電位轉換）＋5V、GND。

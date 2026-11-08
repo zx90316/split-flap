@@ -160,7 +160,7 @@ class ArtifactsTest(unittest.TestCase):
         for config in launches['configurations']:
             if 'preLaunchTask' in config:
                 self.assertIn(config['preLaunchTask'], labels)
-        for name in ['wiring-runtime.svg', 'wiring-flashing.svg']:
+        for name in ['wiring-runtime.svg', 'wiring-flashing.svg', 'wiring-single.svg', 'wiring-single-pins.svg']:
             from xml.etree import ElementTree
             ElementTree.parse(ROOT / 'esp32cam' / name)
 

@@ -1,0 +1,176 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1500 1240" role="img" aria-labelledby="title desc">
+<title id="title">單主控逐腳對照：MCP23017 → ULN2003 IN／KY-003</title><desc id="desc">同一片的四顆馬達合併成一筆 16-bit 寫入；IN 順序接錯可在網頁用 ORDER／DIR 校正，不必改線。</desc>
+<defs><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="context-stroke"/></marker></defs>
+<style>text{font-family:"Microsoft JhengHei","Noto Sans CJK TC",sans-serif;fill:#183f36}.wire{fill:none;stroke-linejoin:round;stroke-linecap:round}</style>
+<rect width="1500" height="1240" fill="#f3f6ef"/>
+<text x="45" y="62" font-size="30" font-weight="bold" text-anchor="start" style="fill:#183f36">單主控逐腳對照：MCP23017 → ULN2003 IN／KY-003</text>
+<text x="45" y="96" font-size="17" font-weight="normal" text-anchor="start" style="fill:#183f36">同一片的四顆馬達合併成一筆 16-bit 寫入；IN 順序接錯可在網頁用 ORDER／DIR 校正，不必改線。</text>
+<rect x="45" y="140" width="700" height="990" rx="13" fill="#e7f3ec" stroke="#bfd0c5" stroke-width="2"/>
+<text x="63" y="174" font-size="22" font-weight="bold" text-anchor="start" style="fill:#183f36">馬達用 MCP（0x20／0x21／0x22）</text>
+<rect x="85" y="200" width="150" height="900" rx="10" fill="#fff" stroke="#183f36" stroke-width="2"/>
+<text x="160" y="228" font-size="17" font-weight="bold" text-anchor="middle" style="fill:#183f36">MCP23017</text>
+<rect x="400" y="250" width="330" height="192" rx="9" fill="#fff4e6" stroke="#2b65c8" stroke-width="2"/>
+<text x="414" y="276" font-size="13" font-weight="bold" text-anchor="start" style="fill:#183f36">ULN2003 #1：0x20→U0　0x21→U4　0x22→U8</text>
+<text x="220" y="306" font-size="16" font-weight="bold" text-anchor="end" style="fill:#2b65c8">GPA0</text>
+<polyline class="wire" points="235,300 400,300" stroke="#2b65c8" stroke-width="3"/>
+<circle cx="235" cy="300" r="5" fill="#2b65c8"/>
+<circle cx="400" cy="300" r="5" fill="#2b65c8"/>
+<text x="418" y="306" font-size="16" font-weight="bold" text-anchor="start" style="fill:#2b65c8">IN1</text>
+<text x="220" y="346" font-size="16" font-weight="bold" text-anchor="end" style="fill:#2b65c8">GPA1</text>
+<polyline class="wire" points="235,340 400,340" stroke="#2b65c8" stroke-width="3"/>
+<circle cx="235" cy="340" r="5" fill="#2b65c8"/>
+<circle cx="400" cy="340" r="5" fill="#2b65c8"/>
+<text x="418" y="346" font-size="16" font-weight="bold" text-anchor="start" style="fill:#2b65c8">IN2</text>
+<text x="220" y="386" font-size="16" font-weight="bold" text-anchor="end" style="fill:#2b65c8">GPA2</text>
+<polyline class="wire" points="235,380 400,380" stroke="#2b65c8" stroke-width="3"/>
+<circle cx="235" cy="380" r="5" fill="#2b65c8"/>
+<circle cx="400" cy="380" r="5" fill="#2b65c8"/>
+<text x="418" y="386" font-size="16" font-weight="bold" text-anchor="start" style="fill:#2b65c8">IN3</text>
+<text x="220" y="426" font-size="16" font-weight="bold" text-anchor="end" style="fill:#2b65c8">GPA3</text>
+<polyline class="wire" points="235,420 400,420" stroke="#2b65c8" stroke-width="3"/>
+<circle cx="235" cy="420" r="5" fill="#2b65c8"/>
+<circle cx="400" cy="420" r="5" fill="#2b65c8"/>
+<text x="418" y="426" font-size="16" font-weight="bold" text-anchor="start" style="fill:#2b65c8">IN4</text>
+<rect x="400" y="472" width="330" height="192" rx="9" fill="#fff4e6" stroke="#00866b" stroke-width="2"/>
+<text x="414" y="498" font-size="13" font-weight="bold" text-anchor="start" style="fill:#183f36">ULN2003 #2：0x20→U1　0x21→U5　0x22→U9</text>
+<text x="220" y="528" font-size="16" font-weight="bold" text-anchor="end" style="fill:#00866b">GPA4</text>
+<polyline class="wire" points="235,522 400,522" stroke="#00866b" stroke-width="3"/>
+<circle cx="235" cy="522" r="5" fill="#00866b"/>
+<circle cx="400" cy="522" r="5" fill="#00866b"/>
+<text x="418" y="528" font-size="16" font-weight="bold" text-anchor="start" style="fill:#00866b">IN1</text>
+<text x="220" y="568" font-size="16" font-weight="bold" text-anchor="end" style="fill:#00866b">GPA5</text>
+<polyline class="wire" points="235,562 400,562" stroke="#00866b" stroke-width="3"/>
+<circle cx="235" cy="562" r="5" fill="#00866b"/>
+<circle cx="400" cy="562" r="5" fill="#00866b"/>
+<text x="418" y="568" font-size="16" font-weight="bold" text-anchor="start" style="fill:#00866b">IN2</text>
+<text x="220" y="608" font-size="16" font-weight="bold" text-anchor="end" style="fill:#00866b">GPA6</text>
+<polyline class="wire" points="235,602 400,602" stroke="#00866b" stroke-width="3"/>
+<circle cx="235" cy="602" r="5" fill="#00866b"/>
+<circle cx="400" cy="602" r="5" fill="#00866b"/>
+<text x="418" y="608" font-size="16" font-weight="bold" text-anchor="start" style="fill:#00866b">IN3</text>
+<text x="220" y="648" font-size="16" font-weight="bold" text-anchor="end" style="fill:#00866b">GPA7</text>
+<polyline class="wire" points="235,642 400,642" stroke="#00866b" stroke-width="3"/>
+<circle cx="235" cy="642" r="5" fill="#00866b"/>
+<circle cx="400" cy="642" r="5" fill="#00866b"/>
+<text x="418" y="648" font-size="16" font-weight="bold" text-anchor="start" style="fill:#00866b">IN4</text>
+<rect x="400" y="694" width="330" height="192" rx="9" fill="#fff4e6" stroke="#d27915" stroke-width="2"/>
+<text x="414" y="720" font-size="13" font-weight="bold" text-anchor="start" style="fill:#183f36">ULN2003 #3：0x20→U2　0x21→U6　0x22 不接</text>
+<text x="220" y="750" font-size="16" font-weight="bold" text-anchor="end" style="fill:#d27915">GPB0</text>
+<polyline class="wire" points="235,744 400,744" stroke="#d27915" stroke-width="3"/>
+<circle cx="235" cy="744" r="5" fill="#d27915"/>
+<circle cx="400" cy="744" r="5" fill="#d27915"/>
+<text x="418" y="750" font-size="16" font-weight="bold" text-anchor="start" style="fill:#d27915">IN1</text>
+<text x="220" y="790" font-size="16" font-weight="bold" text-anchor="end" style="fill:#d27915">GPB1</text>
+<polyline class="wire" points="235,784 400,784" stroke="#d27915" stroke-width="3"/>
+<circle cx="235" cy="784" r="5" fill="#d27915"/>
+<circle cx="400" cy="784" r="5" fill="#d27915"/>
+<text x="418" y="790" font-size="16" font-weight="bold" text-anchor="start" style="fill:#d27915">IN2</text>
+<text x="220" y="830" font-size="16" font-weight="bold" text-anchor="end" style="fill:#d27915">GPB2</text>
+<polyline class="wire" points="235,824 400,824" stroke="#d27915" stroke-width="3"/>
+<circle cx="235" cy="824" r="5" fill="#d27915"/>
+<circle cx="400" cy="824" r="5" fill="#d27915"/>
+<text x="418" y="830" font-size="16" font-weight="bold" text-anchor="start" style="fill:#d27915">IN3</text>
+<text x="220" y="870" font-size="16" font-weight="bold" text-anchor="end" style="fill:#d27915">GPB3</text>
+<polyline class="wire" points="235,864 400,864" stroke="#d27915" stroke-width="3"/>
+<circle cx="235" cy="864" r="5" fill="#d27915"/>
+<circle cx="400" cy="864" r="5" fill="#d27915"/>
+<text x="418" y="870" font-size="16" font-weight="bold" text-anchor="start" style="fill:#d27915">IN4</text>
+<rect x="400" y="916" width="330" height="192" rx="9" fill="#fff4e6" stroke="#b04a9e" stroke-width="2"/>
+<text x="414" y="942" font-size="13" font-weight="bold" text-anchor="start" style="fill:#183f36">ULN2003 #4：0x20→U3　0x21→U7　0x22 不接</text>
+<text x="220" y="972" font-size="16" font-weight="bold" text-anchor="end" style="fill:#b04a9e">GPB4</text>
+<polyline class="wire" points="235,966 400,966" stroke="#b04a9e" stroke-width="3"/>
+<circle cx="235" cy="966" r="5" fill="#b04a9e"/>
+<circle cx="400" cy="966" r="5" fill="#b04a9e"/>
+<text x="418" y="972" font-size="16" font-weight="bold" text-anchor="start" style="fill:#b04a9e">IN1</text>
+<text x="220" y="1012" font-size="16" font-weight="bold" text-anchor="end" style="fill:#b04a9e">GPB5</text>
+<polyline class="wire" points="235,1006 400,1006" stroke="#b04a9e" stroke-width="3"/>
+<circle cx="235" cy="1006" r="5" fill="#b04a9e"/>
+<circle cx="400" cy="1006" r="5" fill="#b04a9e"/>
+<text x="418" y="1012" font-size="16" font-weight="bold" text-anchor="start" style="fill:#b04a9e">IN2</text>
+<text x="220" y="1052" font-size="16" font-weight="bold" text-anchor="end" style="fill:#b04a9e">GPB6</text>
+<polyline class="wire" points="235,1046 400,1046" stroke="#b04a9e" stroke-width="3"/>
+<circle cx="235" cy="1046" r="5" fill="#b04a9e"/>
+<circle cx="400" cy="1046" r="5" fill="#b04a9e"/>
+<text x="418" y="1052" font-size="16" font-weight="bold" text-anchor="start" style="fill:#b04a9e">IN3</text>
+<text x="220" y="1092" font-size="16" font-weight="bold" text-anchor="end" style="fill:#b04a9e">GPB7</text>
+<polyline class="wire" points="235,1086 400,1086" stroke="#b04a9e" stroke-width="3"/>
+<circle cx="235" cy="1086" r="5" fill="#b04a9e"/>
+<circle cx="400" cy="1086" r="5" fill="#b04a9e"/>
+<text x="418" y="1092" font-size="16" font-weight="bold" text-anchor="start" style="fill:#b04a9e">IN4</text>
+<rect x="800" y="140" width="655" height="640" rx="13" fill="#fff7d6" stroke="#bfd0c5" stroke-width="2"/>
+<text x="818" y="174" font-size="22" font-weight="bold" text-anchor="start" style="fill:#183f36">霍爾用 MCP（0x23）</text>
+<rect x="840" y="200" width="150" height="490" rx="10" fill="#fff" stroke="#183f36" stroke-width="2"/>
+<text x="915" y="228" font-size="17" font-weight="bold" text-anchor="middle" style="fill:#183f36">MCP23017</text>
+<text x="975" y="260" font-size="15" font-weight="bold" text-anchor="end" style="fill:#183f36">GPA0</text>
+<polyline class="wire" points="990,255 1150,255" stroke="#b08a00" stroke-width="3"/>
+<circle cx="990" cy="255" r="5" fill="#b08a00"/>
+<text x="1160" y="260" font-size="15" font-weight="normal" text-anchor="start" style="fill:#183f36">U0 KY-003 OUT</text>
+<text x="975" y="287" font-size="15" font-weight="bold" text-anchor="end" style="fill:#183f36">GPA1</text>
+<polyline class="wire" points="990,282 1150,282" stroke="#b08a00" stroke-width="3"/>
+<circle cx="990" cy="282" r="5" fill="#b08a00"/>
+<text x="1160" y="287" font-size="15" font-weight="normal" text-anchor="start" style="fill:#183f36">U1 KY-003 OUT</text>
+<text x="975" y="314" font-size="15" font-weight="bold" text-anchor="end" style="fill:#183f36">GPA2</text>
+<polyline class="wire" points="990,309 1150,309" stroke="#b08a00" stroke-width="3"/>
+<circle cx="990" cy="309" r="5" fill="#b08a00"/>
+<text x="1160" y="314" font-size="15" font-weight="normal" text-anchor="start" style="fill:#183f36">U2 KY-003 OUT</text>
+<text x="975" y="341" font-size="15" font-weight="bold" text-anchor="end" style="fill:#183f36">GPA3</text>
+<polyline class="wire" points="990,336 1150,336" stroke="#b08a00" stroke-width="3"/>
+<circle cx="990" cy="336" r="5" fill="#b08a00"/>
+<text x="1160" y="341" font-size="15" font-weight="normal" text-anchor="start" style="fill:#183f36">U3 KY-003 OUT</text>
+<text x="975" y="368" font-size="15" font-weight="bold" text-anchor="end" style="fill:#183f36">GPA4</text>
+<polyline class="wire" points="990,363 1150,363" stroke="#b08a00" stroke-width="3"/>
+<circle cx="990" cy="363" r="5" fill="#b08a00"/>
+<text x="1160" y="368" font-size="15" font-weight="normal" text-anchor="start" style="fill:#183f36">U4 KY-003 OUT</text>
+<text x="975" y="395" font-size="15" font-weight="bold" text-anchor="end" style="fill:#183f36">GPA5</text>
+<polyline class="wire" points="990,390 1150,390" stroke="#b08a00" stroke-width="3"/>
+<circle cx="990" cy="390" r="5" fill="#b08a00"/>
+<text x="1160" y="395" font-size="15" font-weight="normal" text-anchor="start" style="fill:#183f36">U5 KY-003 OUT</text>
+<text x="975" y="422" font-size="15" font-weight="bold" text-anchor="end" style="fill:#183f36">GPA6</text>
+<polyline class="wire" points="990,417 1150,417" stroke="#b08a00" stroke-width="3"/>
+<circle cx="990" cy="417" r="5" fill="#b08a00"/>
+<text x="1160" y="422" font-size="15" font-weight="normal" text-anchor="start" style="fill:#183f36">U6 KY-003 OUT</text>
+<text x="975" y="449" font-size="15" font-weight="bold" text-anchor="end" style="fill:#9aa8a3">GPA7</text>
+<text x="1010" y="449" font-size="14" font-weight="normal" text-anchor="start" style="fill:#9aa8a3">不接（只能當輸出）</text>
+<text x="975" y="476" font-size="15" font-weight="bold" text-anchor="end" style="fill:#183f36">GPB0</text>
+<polyline class="wire" points="990,471 1150,471" stroke="#b08a00" stroke-width="3"/>
+<circle cx="990" cy="471" r="5" fill="#b08a00"/>
+<text x="1160" y="476" font-size="15" font-weight="normal" text-anchor="start" style="fill:#183f36">U7 KY-003 OUT</text>
+<text x="975" y="503" font-size="15" font-weight="bold" text-anchor="end" style="fill:#183f36">GPB1</text>
+<polyline class="wire" points="990,498 1150,498" stroke="#b08a00" stroke-width="3"/>
+<circle cx="990" cy="498" r="5" fill="#b08a00"/>
+<text x="1160" y="503" font-size="15" font-weight="normal" text-anchor="start" style="fill:#183f36">U8 KY-003 OUT</text>
+<text x="975" y="530" font-size="15" font-weight="bold" text-anchor="end" style="fill:#183f36">GPB2</text>
+<polyline class="wire" points="990,525 1150,525" stroke="#b08a00" stroke-width="3"/>
+<circle cx="990" cy="525" r="5" fill="#b08a00"/>
+<text x="1160" y="530" font-size="15" font-weight="normal" text-anchor="start" style="fill:#183f36">U9 KY-003 OUT</text>
+<text x="975" y="557" font-size="15" font-weight="bold" text-anchor="end" style="fill:#9aa8a3">GPB3</text>
+<text x="1010" y="557" font-size="14" font-weight="normal" text-anchor="start" style="fill:#9aa8a3">不接</text>
+<text x="975" y="584" font-size="15" font-weight="bold" text-anchor="end" style="fill:#9aa8a3">GPB4</text>
+<text x="1010" y="584" font-size="14" font-weight="normal" text-anchor="start" style="fill:#9aa8a3">不接</text>
+<text x="975" y="611" font-size="15" font-weight="bold" text-anchor="end" style="fill:#9aa8a3">GPB5</text>
+<text x="1010" y="611" font-size="14" font-weight="normal" text-anchor="start" style="fill:#9aa8a3">不接</text>
+<text x="975" y="638" font-size="15" font-weight="bold" text-anchor="end" style="fill:#9aa8a3">GPB6</text>
+<text x="1010" y="638" font-size="14" font-weight="normal" text-anchor="start" style="fill:#9aa8a3">不接</text>
+<text x="975" y="665" font-size="15" font-weight="bold" text-anchor="end" style="fill:#9aa8a3">GPB7</text>
+<text x="1010" y="665" font-size="14" font-weight="normal" text-anchor="start" style="fill:#9aa8a3">不接（只能當輸出）</text>
+<text x="820" y="728" font-size="15" font-weight="normal" text-anchor="start" style="fill:#183f36">KY-003：+ 接 5V、− 接 GND；低電位＝磁鐵到位。</text>
+<text x="820" y="757" font-size="15" font-weight="normal" text-anchor="start" style="fill:#183f36">MCP 內建上拉已由韌體開啟，不必外加電阻。</text>
+<rect x="800" y="820" width="655" height="230" rx="13" fill="#edf3ff" stroke="#bfd0c5" stroke-width="2"/>
+<text x="818" y="854" font-size="22" font-weight="bold" text-anchor="start" style="fill:#183f36">MCP23017 模組排針（四片相同）</text>
+<text x="830" y="885" font-size="15" font-weight="bold" text-anchor="start" style="fill:#cc3746">VCC</text>
+<text x="950" y="885" font-size="15" font-weight="normal" text-anchor="start" style="fill:#183f36">5V 控制分配</text>
+<text x="830" y="908" font-size="15" font-weight="bold" text-anchor="start" style="fill:#384b47">GND</text>
+<text x="950" y="908" font-size="15" font-weight="normal" text-anchor="start" style="fill:#183f36">共地</text>
+<text x="830" y="931" font-size="15" font-weight="bold" text-anchor="start" style="fill:#2b65c8">SDA</text>
+<text x="950" y="931" font-size="15" font-weight="normal" text-anchor="start" style="fill:#183f36">P011 B0 ← A0 ← ESP GPIO21</text>
+<text x="830" y="954" font-size="15" font-weight="bold" text-anchor="start" style="fill:#00866b">SCL</text>
+<text x="950" y="954" font-size="15" font-weight="normal" text-anchor="start" style="fill:#183f36">P011 B1 ← A1 ← ESP GPIO22</text>
+<text x="830" y="977" font-size="15" font-weight="bold" text-anchor="start" style="fill:#b04a9e">RST</text>
+<text x="950" y="977" font-size="15" font-weight="normal" text-anchor="start" style="fill:#183f36">P011 B2 ← A2 ← ESP GPIO23（低＝重設）</text>
+<text x="830" y="1000" font-size="15" font-weight="bold" text-anchor="start" style="fill:#384b47">ITA／ITB</text>
+<text x="950" y="1000" font-size="15" font-weight="normal" text-anchor="start" style="fill:#183f36">不接</text>
+<text x="830" y="1023" font-size="15" font-weight="bold" text-anchor="start" style="fill:#183f36">A0 A1 A2</text>
+<text x="950" y="1023" font-size="15" font-weight="normal" text-anchor="start" style="fill:#183f36">依地址接 GND／VCC，不可浮接</text>
+<text x="45" y="1175" font-size="17" font-weight="bold" text-anchor="start" style="fill:#183f36">地址：0x20 ＝ A2 A1 A0 全接 GND；0x21 ＝ 只有 A0 接 VCC；0x22 ＝ 只有 A1 接 VCC；0x23 ＝ A1、A0 接 VCC。</text>
+<text x="45" y="1205" font-size="17" font-weight="normal" text-anchor="start" style="fill:#cc3746">12V 只進 ULN2003 的 +；MCP、霍爾、P011 B 側都在 5V；ESP32 與 P011 A 側在 3.3V。</text>
+</svg>

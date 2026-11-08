@@ -11,6 +11,8 @@ ASSETS = {
     'kWiringFlashingGzip': ROOT / 'wiring-flashing.svg',
     'kWiringMegaGzip': ROOT.parent / 'mega2560/wiring-ten.svg',
     'kWiringHallGzip': ROOT.parent / 'mega2560/hall-board.svg',
+    'kWiringSingleGzip': ROOT / 'wiring-single.svg',
+    'kWiringSinglePinsGzip': ROOT / 'wiring-single-pins.svg',
 }
 
 

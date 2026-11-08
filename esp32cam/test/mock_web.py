@@ -246,9 +246,11 @@ def handler_for(model):
                     self.send_header('Content-Length', str(len(page)))
                     self.end_headers()
                     self.wfile.write(page)
-                elif path in {'/wiring-runtime.svg', '/wiring-flashing.svg', '/wiring-mega.svg', '/wiring-hall.svg'}:
+                elif path in {'/wiring-runtime.svg', '/wiring-flashing.svg', '/wiring-mega.svg', '/wiring-hall.svg',
+                              '/wiring-single.svg', '/wiring-single-pins.svg'}:
                     files = {'/wiring-runtime.svg': 'esp32cam/wiring-runtime.svg', '/wiring-flashing.svg': 'esp32cam/wiring-flashing.svg',
-                             '/wiring-mega.svg': 'mega2560/wiring-ten.svg', '/wiring-hall.svg': 'mega2560/hall-board.svg'}
+                             '/wiring-mega.svg': 'mega2560/wiring-ten.svg', '/wiring-hall.svg': 'mega2560/hall-board.svg',
+                             '/wiring-single.svg': 'esp32cam/wiring-single.svg', '/wiring-single-pins.svg': 'esp32cam/wiring-single-pins.svg'}
                     image = (ROOT / files[path]).read_bytes()
                     self.send_response(200)
                     self.send_header('Content-Type', 'image/svg+xml; charset=utf-8')
