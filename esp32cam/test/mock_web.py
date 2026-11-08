@@ -438,6 +438,17 @@ def create_server(port=8765):
     model = Model()
     class MockServer(ThreadingHTTPServer):
         request_queue_size = 64
+
+        def shutdown_request(self, request):
+            # Let the client close first. A server-first close after "Connection: close"
+            # is reset by some Windows traffic filters (seen with AdGuard) about 1 in 3 times.
+            try:
+                request.settimeout(2)
+                while request.recv(4096):
+                    pass
+            except OSError:
+                pass
+            request.close()
     return MockServer(('127.0.0.1', port), handler_for(model)), model
 
 

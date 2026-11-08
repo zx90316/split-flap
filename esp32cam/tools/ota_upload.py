@@ -55,7 +55,9 @@ class DeviceClient:
     def request(self, path, body=None, headers=None, authenticate=True):
         data = None if body is None else json.dumps(body).encode()
         login_attempted = False
-        for attempt in range(3):
+        dropped = 0
+        attempt = 0
+        while attempt < 3:
             request = urllib.request.Request(self.base + path, data=data,
                                              headers={'Content-Type': 'application/json', **(headers or {})})
             self.authorization(request)
@@ -67,6 +69,7 @@ class DeviceClient:
                 raw = error.read()
                 challenge = error.headers.get('WWW-Authenticate', '')
                 if error.code == 401 and authenticate and attempt < 2:
+                    attempt += 1
                     if challenge.startswith('Digest '):
                         self.challenge = urllib.request.parse_keqv_list(urllib.request.parse_http_list(challenge[7:]))
                         continue
@@ -82,6 +85,15 @@ class DeviceClient:
                 except (ValueError, UnicodeDecodeError):
                     result = {'error': 'Non-JSON error response'}
                 return error.code, result
+            except (ConnectionResetError, ConnectionAbortedError, http.client.RemoteDisconnected, urllib.error.URLError) as error:
+                # Dropped before any response (Wi-Fi, or a local traffic filter). State reads and
+                # login are harmless to repeat, and commands carry a request ID the device dedups.
+                # Firmware uploads use upload(), which is never retried.
+                reason = error.reason if isinstance(error, urllib.error.URLError) else error
+                dropped += 1
+                if dropped > 3 or not isinstance(reason, (ConnectionResetError, ConnectionAbortedError, http.client.RemoteDisconnected)):
+                    raise
+                time.sleep(0.2)
         raise RuntimeError('Authentication did not complete.')
 
     def get(self, path):
