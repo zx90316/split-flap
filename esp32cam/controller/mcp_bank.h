@@ -7,6 +7,9 @@ namespace cam {
 template <class Transport> class McpBank {
  public:
   explicit McpBank(Transport& io) : io_(io) {}
+  // Bit offset of a unit's IN1-IN4 nibble in its chip's OLATB:OLATA word. 0x20/0x21 use
+  // GPA0-3, GPA4-7, GPB0-3, GPB4-7; 0x22 puts U8 on GPA0-3 and U9 on GPB0-3.
+  static uint8_t shift(uint8_t unit) { return unit == 9 ? 8 : (unit % 4) * 4; }
   static uint8_t required(const sf::Settings& s, bool hall) {
     uint8_t mask = hall ? 8 : 0;
     for (uint8_t i = 0; i < s.count; ++i) mask |= 1 << (s.mapping[i] / 4);
@@ -37,7 +40,7 @@ template <class Transport> class McpBank {
     if (!ready_) return false;
     uint16_t words[3] = {};
     for (uint8_t u = 0; u < 10; ++u) if (panel.enabled(u))
-      words[u / 4] |= uint16_t(panel.unit(u).coils()) << ((u % 4) * 4);
+      words[u / 4] |= uint16_t(panel.unit(u).coils()) << shift(u);
     const uint32_t start = nowUs();
     for (uint8_t chip = 0; chip < 3; ++chip) {
       if (!(present_ & (1 << chip)) || words[chip] == shadow_[chip]) continue;
@@ -46,9 +49,9 @@ template <class Transport> class McpBank {
       shadow_[chip] = words[chip];
       const uint32_t committed = nowUs();
       for (uint8_t n = 0; n < 4 && chip * 4 + n < 10; ++n) {
-        const uint8_t u = chip * 4 + n, shift = n * 4;
-        if (((previous ^ words[chip]) >> shift) & 15) {
-          edgeAt_[u] = committed; edgeKnown_[u] = ((words[chip] >> shift) & 15) != 0;
+        const uint8_t u = chip * 4 + n, s = shift(u);
+        if (((previous ^ words[chip]) >> s) & 15) {
+          edgeAt_[u] = committed; edgeKnown_[u] = ((words[chip] >> s) & 15) != 0;
         }
       }
     }

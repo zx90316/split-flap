@@ -231,7 +231,7 @@ def single():
     # Outputs
     groups = [[('GPA0–3', 'U0'), ('GPA4–7', 'U1'), ('GPB0–3', 'U2'), ('GPB4–7', 'U3')],
               [('GPA0–3', 'U4'), ('GPA4–7', 'U5'), ('GPB0–3', 'U6'), ('GPB4–7', 'U7')],
-              [('GPA0–3', 'U8'), ('GPA4–7', 'U9')]]
+              [('GPA0–3', 'U8'), ('GPB0–3', 'U9')]]
     for chip, group in enumerate(groups):
         for i, (pins, unit) in enumerate(group):
             y = rows[chip] + 30 + 46*i
@@ -239,7 +239,7 @@ def single():
             s.text(1276, y - 8, pins, 13, INK, anchor='middle')
             s.items.append(f'<rect x="1312" y="{y-17}" width="160" height="34" rx="7" fill="#fff4e6" stroke="#d27915" stroke-width="2"/>')
             s.text(1392, y + 6, f'{unit} ULN IN1–4', 16, INK, weight='bold', anchor='middle')
-    s.text(1392, rows[2] + 140, 'GPB0–7 不接', 15, GND, anchor='middle')
+    s.text(1392, rows[2] + 140, 'GPA4–7、GPB4–7 不接', 15, GND, anchor='middle')
     y = rows[3] + 75
     s.wire([(1240, y), (1312, y)], INK, 9)
     s.text(1276, y - 10, '10 條', 13, INK, anchor='middle')
@@ -261,8 +261,8 @@ def single_pins():
     s = Svg(1500, 1240, '單主控逐腳對照：MCP23017 → ULN2003 IN／KY-003',
             '同一片的四顆馬達合併成一筆 16-bit 寫入；IN 順序接錯可在網頁用 ORDER／DIR 校正，不必改線。')
     colors = ['#2b65c8', '#00866b', '#d27915', '#b04a9e']
-    units = ['0x20→U0　0x21→U4　0x22→U8', '0x20→U1　0x21→U5　0x22→U9',
-             '0x20→U2　0x21→U6　0x22 不接', '0x20→U3　0x21→U7　0x22 不接']
+    units = ['0x20→U0　0x21→U4　0x22→U8', '0x20→U1　0x21→U5　0x22 不接',
+             '0x20→U2　0x21→U6　0x22→U9', '0x20→U3　0x21→U7　0x22 不接']
     # Motor chip: four IN1..IN4 groups, one ULN2003 each.
     s.box(45, 140, 700, 990, '馬達用 MCP（0x20／0x21／0x22）', '#e7f3ec')
     s.items.append('<rect x="85" y="200" width="150" height="900" rx="10" fill="#fff" stroke="#183f36" stroke-width="2"/>')

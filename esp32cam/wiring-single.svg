@@ -232,10 +232,10 @@
 <rect x="1312" y="883" width="160" height="34" rx="7" fill="#fff4e6" stroke="#d27915" stroke-width="2"/>
 <text x="1392" y="906" font-size="16" font-weight="bold" text-anchor="middle" style="fill:#183f36">U8 ULN IN1–4</text>
 <polyline class="wire" points="1240,946 1312,946" stroke="#183f36" stroke-width="6"/>
-<text x="1276" y="938" font-size="13" font-weight="normal" text-anchor="middle" style="fill:#183f36">GPA4–7</text>
+<text x="1276" y="938" font-size="13" font-weight="normal" text-anchor="middle" style="fill:#183f36">GPB0–3</text>
 <rect x="1312" y="929" width="160" height="34" rx="7" fill="#fff4e6" stroke="#d27915" stroke-width="2"/>
 <text x="1392" y="952" font-size="16" font-weight="bold" text-anchor="middle" style="fill:#183f36">U9 ULN IN1–4</text>
-<text x="1392" y="1010" font-size="15" font-weight="normal" text-anchor="middle" style="fill:#384b47">GPB0–7 不接</text>
+<text x="1392" y="1010" font-size="15" font-weight="normal" text-anchor="middle" style="fill:#384b47">GPA4–7、GPB4–7 不接</text>
 <polyline class="wire" points="1240,1180 1312,1180" stroke="#183f36" stroke-width="9"/>
 <text x="1276" y="1170" font-size="13" font-weight="normal" text-anchor="middle" style="fill:#183f36">10 條</text>
 <rect x="1312" y="1142" width="160" height="76" rx="7" fill="#fff7d6" stroke="#b08a00" stroke-width="2"/>

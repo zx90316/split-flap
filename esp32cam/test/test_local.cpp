@@ -31,8 +31,11 @@ struct FakeWire {
     us += 100;
     if (nack || !probe(a)) return false;
     const uint8_t chip = a - 0x20; registers[chip][r] = value;
+    // Physical wiring: 0x20/0x21 nibbles GPA0-3, GPA4-7, GPB0-3, GPB4-7; 0x22 U8=GPA0-3, U9=GPB0-3.
+    static const uint8_t offset[10] = {0, 4, 8, 12, 0, 4, 8, 12, 0, 8};
+    if (r == 0x14 && chip == 2) assert(!(value & 0xf0f0));  // 0x22 GPA4-7 / GPB4-7 unconnected.
     if (r == 0x14 && chip < 3) for (uint8_t n = 0; n < 4 && chip * 4 + n < 10; ++n) {
-      const uint8_t u = chip * 4 + n, mask = (value >> (n * 4)) & 15;
+      const uint8_t u = chip * 4 + n, mask = (value >> offset[u]) & 15;
       if (mask && mask != previous[u]) {
         if (edges[u]) assert(uint32_t(nowUs() - edges[u]) >= 800);
         edges[u] = nowUs(); ++steps[u]; physical[u] = (physical[u] + 1) % 4096;

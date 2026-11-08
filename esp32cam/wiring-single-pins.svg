@@ -32,7 +32,7 @@
 <circle cx="400" cy="420" r="5" fill="#2b65c8"/>
 <text x="418" y="426" font-size="16" font-weight="bold" text-anchor="start" style="fill:#2b65c8">IN4</text>
 <rect x="400" y="472" width="330" height="192" rx="9" fill="#fff4e6" stroke="#00866b" stroke-width="2"/>
-<text x="414" y="498" font-size="13" font-weight="bold" text-anchor="start" style="fill:#183f36">ULN2003 #2：0x20→U1　0x21→U5　0x22→U9</text>
+<text x="414" y="498" font-size="13" font-weight="bold" text-anchor="start" style="fill:#183f36">ULN2003 #2：0x20→U1　0x21→U5　0x22 不接</text>
 <text x="220" y="528" font-size="16" font-weight="bold" text-anchor="end" style="fill:#00866b">GPA4</text>
 <polyline class="wire" points="235,522 400,522" stroke="#00866b" stroke-width="3"/>
 <circle cx="235" cy="522" r="5" fill="#00866b"/>
@@ -54,7 +54,7 @@
 <circle cx="400" cy="642" r="5" fill="#00866b"/>
 <text x="418" y="648" font-size="16" font-weight="bold" text-anchor="start" style="fill:#00866b">IN4</text>
 <rect x="400" y="694" width="330" height="192" rx="9" fill="#fff4e6" stroke="#d27915" stroke-width="2"/>
-<text x="414" y="720" font-size="13" font-weight="bold" text-anchor="start" style="fill:#183f36">ULN2003 #3：0x20→U2　0x21→U6　0x22 不接</text>
+<text x="414" y="720" font-size="13" font-weight="bold" text-anchor="start" style="fill:#183f36">ULN2003 #3：0x20→U2　0x21→U6　0x22→U9</text>
 <text x="220" y="750" font-size="16" font-weight="bold" text-anchor="end" style="fill:#d27915">GPB0</text>
 <polyline class="wire" points="235,744 400,744" stroke="#d27915" stroke-width="3"/>
 <circle cx="235" cy="744" r="5" fill="#d27915"/>
