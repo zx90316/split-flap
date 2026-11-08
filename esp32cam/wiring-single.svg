@@ -241,8 +241,8 @@
 <rect x="1312" y="1142" width="160" height="76" rx="7" fill="#fff7d6" stroke="#b08a00" stroke-width="2"/>
 <text x="1392" y="1172" font-size="16" font-weight="bold" text-anchor="middle" style="fill:#183f36">KY-003 × 10</text>
 <text x="1392" y="1198" font-size="15" font-weight="normal" text-anchor="middle" style="fill:#183f36">OUT（訊號）</text>
-<text x="1258" y="1255" font-size="15" font-weight="normal" text-anchor="start" style="fill:#183f36">GPA0–6 → U0–U6</text>
-<text x="1258" y="1284" font-size="15" font-weight="normal" text-anchor="start" style="fill:#183f36">GPB0–2 → U7–U9</text>
+<text x="1258" y="1255" font-size="15" font-weight="normal" text-anchor="start" style="fill:#183f36">GPB0–4 → U0–U4</text>
+<text x="1258" y="1284" font-size="15" font-weight="normal" text-anchor="start" style="fill:#183f36">GPA0–4 → U5–U9</text>
 <text x="1258" y="1313" font-size="15" font-weight="normal" text-anchor="start" style="fill:#183f36">霍爾 + 接 5V</text>
 <polyline class="wire" points="45,1385 89,1385" stroke="#d27915" stroke-width="5"/>
 <text x="99" y="1391" font-size="16" font-weight="bold" text-anchor="start" style="fill:#d27915">12V</text>

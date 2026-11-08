@@ -246,7 +246,7 @@ def single():
     s.items.append(f'<rect x="1312" y="{y-38}" width="160" height="76" rx="7" fill="#fff7d6" stroke="#b08a00" stroke-width="2"/>')
     s.text(1392, y - 8, 'KY-003 × 10', 16, INK, weight='bold', anchor='middle')
     s.text(1392, y + 18, 'OUT（訊號）', 15, INK, anchor='middle')
-    s.note(1258, rows[3] + 150, ['GPA0–6 → U0–U6', 'GPB0–2 → U7–U9', '霍爾 + 接 5V'], size=15)
+    s.note(1258, rows[3] + 150, ['GPB0–4 → U0–U4', 'GPA0–4 → U5–U9', '霍爾 + 接 5V'], size=15)
     # Legend and rules
     ly = 1385
     for i, (label, color) in enumerate((('12V', V12), ('5V', V5), ('3.3V', V3), ('SDA', SDA), ('SCL', SCL), ('RST', RST), ('GND', GND))):
@@ -285,7 +285,7 @@ def single_pins():
     for p in range(16):
         y = 255 + 27*p
         name = f'GP{"AB"[p // 8]}{p % 8}'
-        unit = p if p < 7 else p - 1 if 8 <= p <= 10 else None
+        unit = p - 8 if 8 <= p <= 12 else p + 5 if p <= 4 else None  # GPB0-4: U0-U4, GPA0-4: U5-U9
         color = INK if unit is not None else '#9aa8a3'
         s.text(975, y + 5, name, 15, color, weight='bold', anchor='end')
         if unit is None:

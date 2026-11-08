@@ -15,7 +15,7 @@ struct FakeWire {
   uint16_t physical[10] = {};
   uint32_t steps[10] = {}, edges[10] = {};
   uint8_t previous[10] = {}, energizedPeak = 0;
-  uint16_t hallRaw = 0x077f;
+  uint16_t hallRaw = 0x1f1f;
   bool automaticHall = false;
   uint32_t hallReads = 0;
   uint32_t nowUs() const { return uint32_t(us); }
@@ -48,7 +48,7 @@ struct FakeWire {
     us += 125; if (nack || !probe(a)) return false;
     if (a == 0x23 && r == 0x12) {
       v = hallRaw;
-      if (automaticHall) for (uint8_t u = 0; u < 10; ++u) if (physical[u] < 16) v &= ~(1U << (u < 7 ? u : u + 1));
+      if (automaticHall) for (uint8_t u = 0; u < 10; ++u) if (physical[u] < 16) v &= ~(1U << (u < 5 ? 8 + u : u - 5));
       ++hallReads;
     } else v = registers[a - 0x20][r];
     return true;
@@ -220,4 +220,17 @@ void appFlowInterface() {
   s.engine.maintenance(false); s.run(5000); assert(s.engine.state().hardwareReady && !s.wire.held);
   puts("PASS local App interface: reserve/complete dedup, ActionFlow ARM+HOME, snapshot serial, external job retention, OTA maintenance RESET hold");
 }
-int main() { widths(); faultsAndPersistence(); missingAndCorruption(); motionCommands(); appFlowInterface(); }
+// Hall board 0x23: U0-U4 on GPB0-4, U5-U9 on GPA0-4. Unused pins never read as a marker.
+void hallMapping() {
+  FakeWire wire; Bank bank(wire); assert(bank.begin(9));
+  assert(wire.registers[3][0x00] == 0x1f1f && wire.registers[3][0x0c] == 0x1f1f);
+  const uint8_t pins[10] = {8, 9, 10, 11, 12, 0, 1, 2, 3, 4};
+  for (uint8_t u = 0; u < 10; ++u) {
+    wire.hallRaw = uint16_t(0xffff & ~(1U << pins[u])); uint16_t high = 0;
+    assert(bank.halls(high) && high == uint16_t(0x3ff & ~(1U << u)));
+  }
+  wire.hallRaw = uint16_t(~0x1f1f); uint16_t high = 0; assert(bank.halls(high) && high == 0);
+  wire.hallRaw = 0x1f1f; assert(bank.halls(high) && high == 0x3ff);
+  puts("PASS Hall pin map: U0-U4=GPB0-4, U5-U9=GPA0-4, other pins ignored");
+}
+int main() { widths(); faultsAndPersistence(); missingAndCorruption(); motionCommands(); appFlowInterface(); hallMapping(); }

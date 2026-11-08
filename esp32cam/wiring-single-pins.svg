@@ -104,49 +104,49 @@
 <text x="975" y="260" font-size="15" font-weight="bold" text-anchor="end" style="fill:#183f36">GPA0</text>
 <polyline class="wire" points="990,255 1150,255" stroke="#b08a00" stroke-width="3"/>
 <circle cx="990" cy="255" r="5" fill="#b08a00"/>
-<text x="1160" y="260" font-size="15" font-weight="normal" text-anchor="start" style="fill:#183f36">U0 KY-003 OUT</text>
+<text x="1160" y="260" font-size="15" font-weight="normal" text-anchor="start" style="fill:#183f36">U5 KY-003 OUT</text>
 <text x="975" y="287" font-size="15" font-weight="bold" text-anchor="end" style="fill:#183f36">GPA1</text>
 <polyline class="wire" points="990,282 1150,282" stroke="#b08a00" stroke-width="3"/>
 <circle cx="990" cy="282" r="5" fill="#b08a00"/>
-<text x="1160" y="287" font-size="15" font-weight="normal" text-anchor="start" style="fill:#183f36">U1 KY-003 OUT</text>
+<text x="1160" y="287" font-size="15" font-weight="normal" text-anchor="start" style="fill:#183f36">U6 KY-003 OUT</text>
 <text x="975" y="314" font-size="15" font-weight="bold" text-anchor="end" style="fill:#183f36">GPA2</text>
 <polyline class="wire" points="990,309 1150,309" stroke="#b08a00" stroke-width="3"/>
 <circle cx="990" cy="309" r="5" fill="#b08a00"/>
-<text x="1160" y="314" font-size="15" font-weight="normal" text-anchor="start" style="fill:#183f36">U2 KY-003 OUT</text>
+<text x="1160" y="314" font-size="15" font-weight="normal" text-anchor="start" style="fill:#183f36">U7 KY-003 OUT</text>
 <text x="975" y="341" font-size="15" font-weight="bold" text-anchor="end" style="fill:#183f36">GPA3</text>
 <polyline class="wire" points="990,336 1150,336" stroke="#b08a00" stroke-width="3"/>
 <circle cx="990" cy="336" r="5" fill="#b08a00"/>
-<text x="1160" y="341" font-size="15" font-weight="normal" text-anchor="start" style="fill:#183f36">U3 KY-003 OUT</text>
+<text x="1160" y="341" font-size="15" font-weight="normal" text-anchor="start" style="fill:#183f36">U8 KY-003 OUT</text>
 <text x="975" y="368" font-size="15" font-weight="bold" text-anchor="end" style="fill:#183f36">GPA4</text>
 <polyline class="wire" points="990,363 1150,363" stroke="#b08a00" stroke-width="3"/>
 <circle cx="990" cy="363" r="5" fill="#b08a00"/>
-<text x="1160" y="368" font-size="15" font-weight="normal" text-anchor="start" style="fill:#183f36">U4 KY-003 OUT</text>
-<text x="975" y="395" font-size="15" font-weight="bold" text-anchor="end" style="fill:#183f36">GPA5</text>
-<polyline class="wire" points="990,390 1150,390" stroke="#b08a00" stroke-width="3"/>
-<circle cx="990" cy="390" r="5" fill="#b08a00"/>
-<text x="1160" y="395" font-size="15" font-weight="normal" text-anchor="start" style="fill:#183f36">U5 KY-003 OUT</text>
-<text x="975" y="422" font-size="15" font-weight="bold" text-anchor="end" style="fill:#183f36">GPA6</text>
-<polyline class="wire" points="990,417 1150,417" stroke="#b08a00" stroke-width="3"/>
-<circle cx="990" cy="417" r="5" fill="#b08a00"/>
-<text x="1160" y="422" font-size="15" font-weight="normal" text-anchor="start" style="fill:#183f36">U6 KY-003 OUT</text>
+<text x="1160" y="368" font-size="15" font-weight="normal" text-anchor="start" style="fill:#183f36">U9 KY-003 OUT</text>
+<text x="975" y="395" font-size="15" font-weight="bold" text-anchor="end" style="fill:#9aa8a3">GPA5</text>
+<text x="1010" y="395" font-size="14" font-weight="normal" text-anchor="start" style="fill:#9aa8a3">不接</text>
+<text x="975" y="422" font-size="15" font-weight="bold" text-anchor="end" style="fill:#9aa8a3">GPA6</text>
+<text x="1010" y="422" font-size="14" font-weight="normal" text-anchor="start" style="fill:#9aa8a3">不接</text>
 <text x="975" y="449" font-size="15" font-weight="bold" text-anchor="end" style="fill:#9aa8a3">GPA7</text>
 <text x="1010" y="449" font-size="14" font-weight="normal" text-anchor="start" style="fill:#9aa8a3">不接（只能當輸出）</text>
 <text x="975" y="476" font-size="15" font-weight="bold" text-anchor="end" style="fill:#183f36">GPB0</text>
 <polyline class="wire" points="990,471 1150,471" stroke="#b08a00" stroke-width="3"/>
 <circle cx="990" cy="471" r="5" fill="#b08a00"/>
-<text x="1160" y="476" font-size="15" font-weight="normal" text-anchor="start" style="fill:#183f36">U7 KY-003 OUT</text>
+<text x="1160" y="476" font-size="15" font-weight="normal" text-anchor="start" style="fill:#183f36">U0 KY-003 OUT</text>
 <text x="975" y="503" font-size="15" font-weight="bold" text-anchor="end" style="fill:#183f36">GPB1</text>
 <polyline class="wire" points="990,498 1150,498" stroke="#b08a00" stroke-width="3"/>
 <circle cx="990" cy="498" r="5" fill="#b08a00"/>
-<text x="1160" y="503" font-size="15" font-weight="normal" text-anchor="start" style="fill:#183f36">U8 KY-003 OUT</text>
+<text x="1160" y="503" font-size="15" font-weight="normal" text-anchor="start" style="fill:#183f36">U1 KY-003 OUT</text>
 <text x="975" y="530" font-size="15" font-weight="bold" text-anchor="end" style="fill:#183f36">GPB2</text>
 <polyline class="wire" points="990,525 1150,525" stroke="#b08a00" stroke-width="3"/>
 <circle cx="990" cy="525" r="5" fill="#b08a00"/>
-<text x="1160" y="530" font-size="15" font-weight="normal" text-anchor="start" style="fill:#183f36">U9 KY-003 OUT</text>
-<text x="975" y="557" font-size="15" font-weight="bold" text-anchor="end" style="fill:#9aa8a3">GPB3</text>
-<text x="1010" y="557" font-size="14" font-weight="normal" text-anchor="start" style="fill:#9aa8a3">不接</text>
-<text x="975" y="584" font-size="15" font-weight="bold" text-anchor="end" style="fill:#9aa8a3">GPB4</text>
-<text x="1010" y="584" font-size="14" font-weight="normal" text-anchor="start" style="fill:#9aa8a3">不接</text>
+<text x="1160" y="530" font-size="15" font-weight="normal" text-anchor="start" style="fill:#183f36">U2 KY-003 OUT</text>
+<text x="975" y="557" font-size="15" font-weight="bold" text-anchor="end" style="fill:#183f36">GPB3</text>
+<polyline class="wire" points="990,552 1150,552" stroke="#b08a00" stroke-width="3"/>
+<circle cx="990" cy="552" r="5" fill="#b08a00"/>
+<text x="1160" y="557" font-size="15" font-weight="normal" text-anchor="start" style="fill:#183f36">U3 KY-003 OUT</text>
+<text x="975" y="584" font-size="15" font-weight="bold" text-anchor="end" style="fill:#183f36">GPB4</text>
+<polyline class="wire" points="990,579 1150,579" stroke="#b08a00" stroke-width="3"/>
+<circle cx="990" cy="579" r="5" fill="#b08a00"/>
+<text x="1160" y="584" font-size="15" font-weight="normal" text-anchor="start" style="fill:#183f36">U4 KY-003 OUT</text>
 <text x="975" y="611" font-size="15" font-weight="bold" text-anchor="end" style="fill:#9aa8a3">GPB5</text>
 <text x="1010" y="611" font-size="14" font-weight="normal" text-anchor="start" style="fill:#9aa8a3">不接</text>
 <text x="975" y="638" font-size="15" font-weight="bold" text-anchor="end" style="fill:#9aa8a3">GPB6</text>

@@ -65,7 +65,8 @@ template <class Transport> class McpBank {
   bool halls(uint16_t& highMask) {
     uint16_t raw = 0;
     if (!ready_ || !(present_ & 8) || !io_.read16(0x23, 0x12, raw)) return fail("i2c_hall");
-    highMask = uint16_t((raw & 0x7f) | ((raw & 0x700) >> 1)); return true;
+    // GPIOB is the high byte: GPB0-4 carry U0-U4, GPA0-4 carry U5-U9.
+    highMask = uint16_t(((raw >> 8) & 0x1f) | ((raw & 0x1f) << 5)); return true;
   }
   bool auditOne() {
     if (!ready_) return false;
@@ -92,7 +93,7 @@ template <class Transport> class McpBank {
   const char* error() const { return fault_; }
  private:
   bool fail(const char* reason) { fault_ = reason; disable(); return false; }
-  static const uint16_t kHallPins = 0x077f;
+  static const uint16_t kHallPins = 0x1f1f;  // GPA0-4 and GPB0-4; GPA7/GPB7 stay unused.
   Transport& io_;
   uint16_t shadow_[3] = {};
   uint32_t edgeAt_[10] = {}, maxFlush_ = 0;
